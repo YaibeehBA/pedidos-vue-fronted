@@ -27,7 +27,20 @@ const togglePasswordVisibility = (field) => {
     }
 };
 
-
+const validateCelular = () => {
+  // Solo permitir números
+  form.celular = form.celular.replace(/\D/g, '');
+  // Limitar a 10 dígitos
+  if (form.celular.length > 10) {
+    form.celular = form.celular.slice(0, 10);
+  }
+// Validar si el celular tiene 10 dígitos y comienza con 0
+if (form.celular && !/^0\d{9}$/.test(form.celular)) {
+    errors.celular = ['El celular debe tener 10 dígitos y empezar con 0'];
+  } else {
+    delete errors.celular; // Eliminar error si el celular es válido
+  }
+};
 const errors = reactive({});
 
 
@@ -181,7 +194,7 @@ const register = async () => {
                         <input type="text" placeholder="Ingrese su nombre" v-model="form.nombre" id="name" class="form-control" :class="{ 'is-invalid': errors.nombre }" />
                         <span class="input-icon material-icons ">person</span>
                     </div>
-                    <div class="invalid-feedback" v-if="errors.nombre">
+                    <div class="feedback" v-if="errors.nombre">
                         {{ errors.nombre[0] }}
                     </div>
                 </div>
@@ -190,19 +203,19 @@ const register = async () => {
                         <input type="text" placeholder="Ingrese su apellido" v-model="form.apellido" id="apellido" class="form-control" :class="{ 'is-invalid': errors.apellido }" />
                         <span class="input-icon material-icons">person_outline</span>
                     </div>
-                    <div class="invalid-feedback" v-if="errors.apellido">
+                    <div class="feedback" v-if="errors.apellido">
                         {{ errors.apellido[0] }}
                     </div>
                 </div>
-            </div>
+            </div> 
 
             <!-- Fila para Celular -->
-            <div class="mb-3">
+             <div class="mb-3">
                 <div class="input-container">
-                    <input type="text" placeholder="Ingrese su celular" v-model="form.celular" id="celular" class="form-control" :class="{ 'is-invalid': errors.celular }" />
+                    <input type="text" placeholder="Ingrese su celular"  @input="validateCelular" v-model="form.celular" id="celular" class="form-control" :class="{ 'is-invalid': errors.celular }" />
                     <span class="input-icon material-icons">phone</span>
                 </div>
-                <div class="invalid-feedback" v-if="errors.celular">
+                <div class="feedback" v-if="errors.celular">
                     {{ errors.celular[0] }}
                 </div>
             </div>
@@ -213,7 +226,7 @@ const register = async () => {
                     <input type="email" placeholder="Ingrese su correo electrónico" v-model="form.email" id="email" class="form-control" :class="{ 'is-invalid': errors.email }" />
                     <span class="input-icon material-icons">email</span>
                 </div>
-                <div class="invalid-feedback" v-if="errors.email">
+                <div class="feedback" v-if="errors.email">
                     {{ errors.email[0] }}
                 </div>
             </div>
@@ -227,7 +240,7 @@ const register = async () => {
                         {{ isPasswordVisible ? 'visibility' : 'visibility_off' }}
                     </span>
                 </div>
-                <div class="invalid-feedback" v-if="errors.password">
+                <div class="feedback" v-if="errors.password">
                     {{ errors.password[0] }}
                 </div>
             </div>
@@ -241,7 +254,7 @@ const register = async () => {
                         {{ isPasswordConfirmVisible ? 'visibility' : 'visibility_off' }}
                     </span>
                 </div>
-                <div class="invalid-feedback" v-if="errors.password_confirmation">
+                <div class="feedback" v-if="errors.password_confirmation">
                     {{ errors.password_confirmation[0] }}
                 </div>
             </div>
@@ -391,7 +404,7 @@ const register = async () => {
     background-color: #f8d7da;
 }
 
-.invalid-feedback {
+.feedback {
     color: #dc3545;
     font-size: 0.875rem;
 }

@@ -45,7 +45,7 @@ const userStore = useUserStore(); // Accede al store de usuario
 
 const router = useRouter();
 
-const logout = async () => {
+ const logout = async () => {
   try {
     // Realizamos la petición al backend para cerrar sesión
     const response = await User.logout();
@@ -53,11 +53,13 @@ const logout = async () => {
     // Verificamos la respuesta
     if (response.data) {
       // Eliminamos el token de la sesión
-      localStorage.removeItem('auth');
+       localStorage.removeItem('auth');
       
-      // Actualizamos el estado de autenticación en el store de Pinia
-      userStore.authenticated = false;
+      // // Actualizamos el estado de autenticación en el store de Pinia
+       userStore.authenticated = false;
       userStore.token = null;
+      userStore.user = null;
+     
 
       // Redirigimos al usuario al Login
       router.push({ name: 'Login' });
@@ -71,6 +73,9 @@ const logout = async () => {
     console.error('Error:', error);
   }
 };
+
+
+
 </script>
 
 

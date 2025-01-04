@@ -62,10 +62,23 @@ const login = async () => {
     
     if (response.data) {
       if (response.data.token) {
-        localStorage.setItem('auth', response.data.token);
-        userStore.authenticated = true;
-        userStore.token = response.data.token;
-        router.push({ name: 'home' })
+         localStorage.setItem('auth', response.data.token);
+         userStore.authenticated = true;
+
+         userStore.token = response.data.token;
+         userStore.user = response.data.user;
+        
+
+        // userStore.setUserData(response.data.token, response.data.user || null); 
+        // show_alerta('Inicio de sesión exitoso', 'success', '');
+        if (response.data.user.esadmin === 1) {
+          router.push({ name: 'AdminLayout' }); // Ruta para administradores
+        } else {
+          router.push({ name: 'home' }); // Ruta para usuarios normales
+        }
+
+        // router.push({ name: 'home' })
+
       }
     
     }
