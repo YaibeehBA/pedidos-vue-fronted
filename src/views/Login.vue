@@ -72,7 +72,7 @@ const login = async () => {
         // userStore.setUserData(response.data.token, response.data.user || null); 
         // show_alerta('Inicio de sesión exitoso', 'success', '');
         if (response.data.user.esadmin === 1) {
-          router.push({ name: 'AdminLayout' }); // Ruta para administradores
+          router.push({ name: 'Dashboard' }); // Ruta para administradores
         } else {
           router.push({ name: 'home' }); // Ruta para usuarios normales
         }

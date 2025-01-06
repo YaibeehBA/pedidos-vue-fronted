@@ -8,6 +8,15 @@ import { useUserStore } from '@/stores/authstore';
 
 const userStore = useUserStore(); // Accede al store de usuario
 const router = useRouter();
+
+const isDropdownOpen = ref({
+  products: false,
+});
+
+const toggleDropdown = (key) => {
+  isDropdownOpen.value[key] = !isDropdownOpen.value[key];
+};
+
 const logout = async () => {
   try {
     // Realizamos la petición al backend para cerrar sesión
@@ -67,30 +76,57 @@ const toggleSidebar = () => {
           </RouterLink>
         </li>
         <li class="nav-item">
-          <RouterLink to="/admin/categories" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
+          <RouterLink to="/admin/categorias" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
             <span class="material-icons me-3">category</span>
             <span v-show="isExpanded">Categorías</span>
           </RouterLink>
         </li>
         <li class="nav-item">
-          <RouterLink to="/admin/sizes" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
+          <RouterLink to="/admin/tallas" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
             <span class="material-icons me-3">checkroom</span>
             
             <span v-show="isExpanded">Tallas</span>
           </RouterLink>
         </li>
         <li class="nav-item">
-          <RouterLink to="/admin/colors" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
+          <RouterLink to="/admin/colores" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
             <span class="material-icons me-3">palette</span>
             <span v-show="isExpanded">Colores</span>
           </RouterLink>
         </li>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <RouterLink to="/admin/products" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
             <span class="material-icons me-3">shopping_bag</span>
             <span v-show="isExpanded">Productos</span>
           </RouterLink>
-        </li>
+        </li> -->
+        <li class="nav-item">
+        <!-- Opción principal: Productos -->
+        <div class="nav-link d-flex align-items-center px-4 py-2 text-dark" @click="toggleDropdown('products')">
+          <span class="material-icons me-3">shopping_bag</span>
+          <span v-show="isExpanded">Productos</span>
+          <span class="material-icons ms-auto" v-if="isDropdownOpen.products">expand_less</span>
+          <span class="material-icons ms-auto" v-else>expand_more</span>
+        </div>
+
+        <!-- Submenú desplegable -->
+        <ul v-if="isDropdownOpen.products" class="list-unstyled ps-4">
+          <li class="nav-item">
+            <RouterLink to="/admin/productobase" class="nav-link d-flex align-items-center py-2 text-dark">
+              <span class="material-icons me-2">layers</span>
+            Base
+            </RouterLink>
+          </li>
+          <li class="nav-item">
+            <RouterLink to="/admin/productofinal" class="nav-link d-flex align-items-center py-2 text-dark">
+              <span class="material-icons me-2">check_circle</span>
+              Finales
+            </RouterLink>
+          </li>
+        </ul>
+      </li>
+
+
         <li class="nav-item">
           <!-- <RouterLink to="/admin/notifications" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
             <span class="material-icons me-3">notifications</span>
@@ -118,10 +154,10 @@ const toggleSidebar = () => {
       </ul>
     </nav>
 
-    <div class="p-4">
-      <button class="btn btn-light w-100 d-flex align-items-center justify-content-start px-4 py-2">
+    <div class="p-4  ">
+      <button @click.prevent="logout" class=" btn btn-light w-100 d-flex align-items-center justify-content-start px-4 py-2">
         <span class="material-icons me-3">logout</span>
-        <span  @click.prevent="logout" v-show="isExpanded">Logout</span>
+        <span   v-show="isExpanded">Salir</span>
       </button>
     </div>
   </aside>
@@ -171,4 +207,16 @@ const toggleSidebar = () => {
 .collapsed .sidebar-header {
   justify-content: center !important;
 }
+
+ul.list-unstyled li a {
+  display: flex;
+  align-items: center;
+  font-size: 0.9rem;
+}
+
+ul.list-unstyled li span.material-icons {
+  font-size: 1rem;
+  color: #0a131b; /* Color gris estándar */
+}
+
 </style>

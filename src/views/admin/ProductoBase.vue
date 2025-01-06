@@ -5,16 +5,16 @@
       class="btn btn-primary"
       @click="openAddCategoryModal"
     >
-      Añadir Nueva Categoría
+      Añadir Nuevo Producto Base
     </button>
   </div>
   
-  <!-- Modal para agregar categoría -->
+  <!-- Modal para agregar producto -->
   <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addCategoryModalLabel">Añadir Categoría</h5>
+          <h5 class="modal-title" id="addCategoryModalLabel">Añadir Producto Base</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -26,7 +26,27 @@
             <label for="categoryDescription" class="form-label">Descripción</label>
             <input type="text" id="categoryDescription" v-model="categoryDescription" class="form-control" />
           </div>
+       
+          <div class="mb-3">
+            <label for="categorySelect" class="form-label">Categoría</label>
+            <select 
+              id="categorySelect" 
+              v-model="selectedCategory" 
+              class="form-select"
+              required
+            >
+              <option value="" disabled selected>Seleccione una categoría</option>
+              <option 
+                v-for="categoria in allCategories" 
+                :key="categoria.id" 
+                :value="categoria.id"
+              >
+                {{ categoria.nombre }}
+              </option>
+            </select>
+          </div>
         </div>
+        
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
           <button type="button" @click="addCategory" class="btn btn-primary">Guardar</button>
@@ -52,6 +72,24 @@
             <label for="editCategoryDescription" class="form-label">Descripción</label>
             <input type="text" id="editCategoryDescription" v-model="categoryDescription" class="form-control" />
           </div>
+          <div class="mb-3">
+            <label for="editCategorySelect" class="form-label">Categoría</label>
+              <select 
+                id="editCategorySelect" 
+                v-model="selectedCategory" 
+                class="form-select"
+                required
+              >
+                <option value="" disabled>Seleccione una categoría</option>
+                <option 
+                  v-for="categoria in allCategories" 
+                  :key="categoria.id" 
+                  :value="categoria.id"
+                >
+                  {{ categoria.nombre }}
+                </option>
+              </select>
+          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -69,25 +107,31 @@
           <th>Nº</th>
           <th>Nombre</th>
           <th>Descripción</th>
+          <th>Categoría</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(category, index) in categories" :key="category.id">
+        <tr v-for="(producto, index) in categories" :key="producto.id">
           <td>{{ index+1 }}</td>
-          <td>{{ category.nombre }}</td>
-          <td>{{ category.descripcion }}</td>
-          <td>
+          <td>{{ producto.nombre }}</td>
+          <td>{{ producto.descripcion }}</td>
+          <td>{{ producto.categoria.nombre }}</td>
+          <td >
             <div class="btn-group">
-              <button @click="openEditModal(category)" class="btn btn-warning">
+
+              <button @click="openEditModal(producto)" class="btn btn-warning ">
                 <span class="material-icons">edit</span>
+                
               </button>
-              <button @click="deleteCategory(category.id)" class="btn btn-danger">
-                <span class="material-icons">delete</span>
-              </button>
+              <button @click="deleteCategory(producto.id)" class="btn btn-danger">
+                  <span class="material-icons">delete</span>
+                </button>
             </div>
+            
           </td>
         </tr>
+
       </tbody>
     </table>
   </div>
@@ -95,6 +139,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import ProductoBase from '@/apis/ProductosBase';
 import Producto from '@/apis/Productos';
 import { show_alerta } from '@/apis/Api';
 import { initializeDataTable } from '@/apis/utils';
@@ -104,78 +149,91 @@ const categoryName = ref("");
 const categoryDescription = ref("");
 const isEditMode = ref(false);
 let currentCategoryId = ref(null);
+const selectedCategory = ref(null); // Para almacenar la categoría seleccionada
+const allCategories = ref([]); // Para listar todas las categorías disponibles
 
-// const initializeDataTable = () => {
-//   if ($.fn.dataTable.isDataTable('#tabla')) {
-//     $('#tabla').DataTable().destroy();  // Destruir la instancia anterior
-//   }
-//   $('#tabla').DataTable({
-//     responsive: true,
-//     language: {
-//       decimal: "",
-//       emptyTable: "No hay información",
-//       info: "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
-//       infoEmpty: "Mostrando 0 to 0 of 0 Entradas",
-//       infoFiltered: "(Filtrado de _MAX_ total entradas)",
-//       infoPostFix: "",
-//       thousands: ",",
-//       lengthMenu: "Mostrar _MENU_ Entradas",
-//       loadingRecords: "Cargando...",
-//       processing: "Procesando...",
-//       search: "Buscar:",
-//       zeroRecords: "Sin resultados encontrados",
-//       paginate: {
-//         first: "Primero",
-//         last: "Ultimo",
-//         next: "Siguiente",
-//         previous: "Anterior",
-//       },
-//     },
-//   });
-// };
-// Añadir categoría
+
 
 initializeDataTable();
 
 const fetchCategories = async () => {
   try {
-    const data = await Producto.fetchCategories();
+    const data = await ProductoBase.fetchCategories();
     categories.value = [...data];
   } catch (error) {
-    console.error("Error al cargar las categorías:", error);
+    console.error("Error al cargar los productos base:", error);
   }
 };
 
-onMounted(() => {
-  fetchCategories();
-});
+const fetchAllCategories = async () => {
+  try {
+    // Asumiendo que fetchCategories devuelve directamente el array
+    const response = await Producto.fetchCategories();
+    allCategories.value = Array.isArray(response) ? response : [];
+    console.log('Categorías cargadas:', allCategories.value);
+  } catch (error) {
+    console.error("Error al cargar todas las categorías:", error);
+    show_alerta('Error al cargar las categorías', 'error');
+  }
+};
+
+
+
 
 // abrir modal para añadir categoría
-const openAddCategoryModal = () => {
-  categoryName.value = "";  
-  categoryDescription.value = "";
-  isEditMode.value = false;
+const openAddCategoryModal = async () => {
+  try {
+    // Recargar las categorías antes de abrir el modal
+    await fetchAllCategories();
+    
+    // Resetear los valores
+    categoryName.value = "";
+    categoryDescription.value = "";
+    selectedCategory.value = null;
+    isEditMode.value = false;
 
-  const modalElement = document.getElementById('addCategoryModal');
-  const modalInstance = new bootstrap.Modal(modalElement);
-  modalInstance.show();
+    // Abrir el modal
+    const modalElement = document.getElementById('addCategoryModal');
+    const modalInstance = new bootstrap.Modal(modalElement);
+    modalInstance.show();
+  } catch (error) {
+    console.error("Error al abrir el modal:", error);
+    show_alerta('Error al cargar las categorías', 'error');
+  }
 };
 
 // abrir modal para editar categoría
-const openEditModal = (category) => {
-  categoryName.value = category.nombre;
-  categoryDescription.value = category.descripcion;
-  currentCategoryId.value = category.id;
-  isEditMode.value = true;
+const openEditModal = async (producto) => {
+  try {
+    // Recargar las categorías antes de abrir el modal
+    await fetchAllCategories();
+    
+    categoryName.value = producto.nombre;
+    categoryDescription.value = producto.descripcion;
+    selectedCategory.value = producto.categoria?.id;
+    currentCategoryId.value = producto.id;
 
-  const modalElement = document.getElementById('editCategoryModal');
-  const modalInstance = new bootstrap.Modal(modalElement);
-  modalInstance.show();
+    const modalElement = document.getElementById('editCategoryModal');
+    const modalInstance = new bootstrap.Modal(modalElement);
+    modalInstance.show();
+  } catch (error) {
+    console.error("Error al abrir el modal de edición:", error);
+    show_alerta('Error al cargar las categorías', 'error');
+  }
 };
+onMounted(async () => {
+  try {
+    await Promise.all([fetchCategories(), fetchAllCategories()]);
+    initializeDataTable();
+  } catch (error) {
+    console.error("Error en la inicialización:", error);
+    show_alerta('Error al cargar los datos', 'error');
+  }
+});
 
 // Add a new categoría
 const addCategory = async () => {
-  if (!categoryName.value || !categoryDescription.value) {
+  if (!categoryName.value || !categoryDescription.value || !selectedCategory.value) {
     show_alerta("Por favor completa todos los campos", "warning");
     return;
   }
@@ -184,15 +242,18 @@ const addCategory = async () => {
     const categoryData = {
       nombre: categoryName.value,
       descripcion: categoryDescription.value,
+      categoria_id: selectedCategory.value,
     };
 
-    const response = await Producto.createCategory(categoryData);
+    const response = await ProductoBase.createCategory(categoryData);
     show_alerta('Categoría creada correctamente', 'success');
 
     if (response && response.data) {
       categories.value.push(response.data); // Add new category to the array
       categoryName.value = "";
       categoryDescription.value = "";
+      selectedCategory.value = null;
+
 
       // Close modal
       const modalElement = document.getElementById('addCategoryModal');
@@ -202,9 +263,9 @@ const addCategory = async () => {
       }
 
       // Re-initialize the data table
-      setTimeout(() => {
+      
         initializeDataTable();
-      }, 0);
+      
     }
   } catch (error) {
     console.error("Error al crear la categoría:", error);
@@ -214,7 +275,7 @@ const addCategory = async () => {
 
 // Update category
 const updateCategory = async () => {
-  if (!categoryName.value || !categoryDescription.value) {
+  if (!categoryName.value || !categoryDescription.value || !selectedCategory.value) {
     show_alerta("Por favor completa todos los campos", "warning");
     return;
   }
@@ -223,9 +284,10 @@ const updateCategory = async () => {
     const categoryData = {
       nombre: categoryName.value,
       descripcion: categoryDescription.value,
+      categoria_id: selectedCategory.value,
     };
 
-    const response = await Producto.updateCategory(currentCategoryId.value, categoryData);
+    const response = await ProductoBase.updateCategory(currentCategoryId.value, categoryData);
     show_alerta('Categoría actualizada correctamente', 'success');
 
     if (response && response.data) {
@@ -234,6 +296,7 @@ const updateCategory = async () => {
 
       categoryName.value = "";
       categoryDescription.value = "";
+      selectedCategory.value = null;
 
       const modalElement = document.getElementById('editCategoryModal');
       const modalInstance = bootstrap.Modal.getInstance(modalElement);
@@ -252,19 +315,7 @@ const updateCategory = async () => {
   }
 };
 
-// Delete a category
-// const deleteCategory = async (id) => {
-//   try {
-//     const response = await Producto.deleteCategory(id);
-//     if (response) {
-//       categories.value = categories.value.filter(category => category.id !== id);
-//       show_alerta('Categoría eliminada correctamente', 'success');
-//     }
-//   } catch (error) {
-//     console.error("Error al eliminar la categoría:", error);
-//     show_alerta('Error al eliminar la categoría', 'error');
-//   }
-// };
+
 
 import Swal from 'sweetalert2'; 
 
@@ -283,7 +334,7 @@ const deleteCategory = async (id) => {
 
     // Si el usuario confirma la eliminación
     if (result.isConfirmed) {
-      const response = await Producto.deleteCategory(id);
+      const response = await ProductoBase.deleteCategory(id);
       if (response) {
         // Si la categoría es eliminada, actualizamos el listado
         categories.value = categories.value.filter(category => category.id !== id);

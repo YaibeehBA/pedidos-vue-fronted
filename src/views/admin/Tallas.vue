@@ -5,7 +5,7 @@
       class="btn btn-primary"
       @click="openAddCategoryModal"
     >
-      Añadir Nueva Categoría
+      Añadir Nueva Talla
     </button>
   </div>
   
@@ -14,7 +14,7 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addCategoryModalLabel">Añadir Categoría</h5>
+          <h5 class="modal-title" id="addCategoryModalLabel">Añadir Talla</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -22,10 +22,7 @@
             <label for="categoryName" class="form-label">Nombre</label>
             <input type="text" id="categoryName" v-model="categoryName" class="form-control" />
           </div>
-          <div class="mb-3">
-            <label for="categoryDescription" class="form-label">Descripción</label>
-            <input type="text" id="categoryDescription" v-model="categoryDescription" class="form-control" />
-          </div>
+          
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -35,12 +32,12 @@
     </div>
   </div>
 
-  <!-- Modal para actualizar categoría -->
+  <!-- Modal para actualizar talla -->
   <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="editCategoryModalLabel">Actualizar Categoría</h5>
+          <h5 class="modal-title" id="editCategoryModalLabel">Actualizar Talla</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
@@ -48,10 +45,7 @@
             <label for="editCategoryName" class="form-label">Nombre</label>
             <input type="text" id="editCategoryName" v-model="categoryName" class="form-control" />
           </div>
-          <div class="mb-3">
-            <label for="editCategoryDescription" class="form-label">Descripción</label>
-            <input type="text" id="editCategoryDescription" v-model="categoryDescription" class="form-control" />
-          </div>
+          
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -68,21 +62,19 @@
         <tr>
           <th>Nº</th>
           <th>Nombre</th>
-          <th>Descripción</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="(category, index) in categories" :key="category.id">
-          <td>{{ index+1 }}</td>
+          <td>{{ index+1}}</td>
           <td>{{ category.nombre }}</td>
-          <td>{{ category.descripcion }}</td>
           <td>
             <div class="btn-group">
               <button @click="openEditModal(category)" class="btn btn-warning">
                 <span class="material-icons">edit</span>
               </button>
-              <button @click="deleteCategory(category.id)" class="btn btn-danger">
+              <button @click="deleteTallas(category.id)" class="btn btn-danger">
                 <span class="material-icons">delete</span>
               </button>
             </div>
@@ -95,65 +87,32 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import Producto from '@/apis/Productos';
+import Tallas from '@/apis/Tallas';
 import { show_alerta } from '@/apis/Api';
 import { initializeDataTable } from '@/apis/utils';
 
 const categories = ref([]);
-const categoryName = ref("");
-const categoryDescription = ref("");
+const categoryName = ref(""); // Usando `categoryName` ya que solo tenemos este campo para tallas.
 const isEditMode = ref(false);
 let currentCategoryId = ref(null);
 
-// const initializeDataTable = () => {
-//   if ($.fn.dataTable.isDataTable('#tabla')) {
-//     $('#tabla').DataTable().destroy();  // Destruir la instancia anterior
-//   }
-//   $('#tabla').DataTable({
-//     responsive: true,
-//     language: {
-//       decimal: "",
-//       emptyTable: "No hay información",
-//       info: "Mostrando _START_ a _END_ de _TOTAL_ Entradas",
-//       infoEmpty: "Mostrando 0 to 0 of 0 Entradas",
-//       infoFiltered: "(Filtrado de _MAX_ total entradas)",
-//       infoPostFix: "",
-//       thousands: ",",
-//       lengthMenu: "Mostrar _MENU_ Entradas",
-//       loadingRecords: "Cargando...",
-//       processing: "Procesando...",
-//       search: "Buscar:",
-//       zeroRecords: "Sin resultados encontrados",
-//       paginate: {
-//         first: "Primero",
-//         last: "Ultimo",
-//         next: "Siguiente",
-//         previous: "Anterior",
-//       },
-//     },
-//   });
-// };
-// Añadir categoría
-
-initializeDataTable();
-
-const fetchCategories = async () => {
+// Obtener todas las tallas al montar
+const fetchTallas = async () => {
   try {
-    const data = await Producto.fetchCategories();
+    const data = await Tallas.fetchTallas();
     categories.value = [...data];
   } catch (error) {
-    console.error("Error al cargar las categorías:", error);
+    console.error("Error al cargar las Tallas:", error);
   }
 };
 
 onMounted(() => {
-  fetchCategories();
+  fetchTallas();
 });
 
-// abrir modal para añadir categoría
+// Función para abrir el modal de agregar
 const openAddCategoryModal = () => {
   categoryName.value = "";  
-  categoryDescription.value = "";
   isEditMode.value = false;
 
   const modalElement = document.getElementById('addCategoryModal');
@@ -161,10 +120,9 @@ const openAddCategoryModal = () => {
   modalInstance.show();
 };
 
-// abrir modal para editar categoría
+// Función para abrir el modal de editar
 const openEditModal = (category) => {
   categoryName.value = category.nombre;
-  categoryDescription.value = category.descripcion;
   currentCategoryId.value = category.id;
   isEditMode.value = true;
 
@@ -173,67 +131,58 @@ const openEditModal = (category) => {
   modalInstance.show();
 };
 
-// Add a new categoría
+// Añadir nueva talla
 const addCategory = async () => {
-  if (!categoryName.value || !categoryDescription.value) {
+  if (!categoryName.value) {
     show_alerta("Por favor completa todos los campos", "warning");
     return;
   }
 
   try {
-    const categoryData = {
-      nombre: categoryName.value,
-      descripcion: categoryDescription.value,
-    };
+    const categoryData = { nombre: categoryName.value };
 
-    const response = await Producto.createCategory(categoryData);
-    show_alerta('Categoría creada correctamente', 'success');
+    const response = await Tallas.createTallas(categoryData);
+    show_alerta('Talla creada correctamente', 'success');
 
     if (response && response.data) {
-      categories.value.push(response.data); // Add new category to the array
-      categoryName.value = "";
-      categoryDescription.value = "";
+      categories.value.push(response.data); // Agregar nueva talla
+      categoryName.value = ""; // Limpiar el campo
 
-      // Close modal
       const modalElement = document.getElementById('addCategoryModal');
       const modalInstance = bootstrap.Modal.getInstance(modalElement);
       if (modalInstance) {
         modalInstance.hide();
       }
 
-      // Re-initialize the data table
+      // Re-iniciar tabla
       setTimeout(() => {
         initializeDataTable();
       }, 0);
     }
   } catch (error) {
-    console.error("Error al crear la categoría:", error);
-    show_alerta('Error al crear la categoría', 'error');
+    console.error("Error al crear la talla:", error);
+    show_alerta('Error al crear la talla', 'error');
   }
 };
 
-// Update category
+// Actualizar talla
 const updateCategory = async () => {
-  if (!categoryName.value || !categoryDescription.value) {
+  if (!categoryName.value) {
     show_alerta("Por favor completa todos los campos", "warning");
     return;
   }
 
   try {
-    const categoryData = {
-      nombre: categoryName.value,
-      descripcion: categoryDescription.value,
-    };
+    const categoryData = { nombre: categoryName.value };
 
-    const response = await Producto.updateCategory(currentCategoryId.value, categoryData);
-    show_alerta('Categoría actualizada correctamente', 'success');
+    const response = await Tallas.updateTallas(currentCategoryId.value, categoryData);
+    show_alerta('Talla actualizada correctamente', 'success');
 
     if (response && response.data) {
       const index = categories.value.findIndex(category => category.id === currentCategoryId.value);
-      categories.value[index] = response.data;  // Update the existing category
+      categories.value[index] = response.data;  // Actualizamos la talla
 
-      categoryName.value = "";
-      categoryDescription.value = "";
+      categoryName.value = ""; // Limpiar el campo
 
       const modalElement = document.getElementById('editCategoryModal');
       const modalInstance = bootstrap.Modal.getInstance(modalElement);
@@ -241,66 +190,46 @@ const updateCategory = async () => {
         modalInstance.hide();
       }
 
-      // Re-initialize the data table
+      // Re-iniciar tabla
       setTimeout(() => {
         initializeDataTable();
       }, 0);
     }
   } catch (error) {
-    console.error("Error al actualizar la categoría:", error);
-    show_alerta('Error al actualizar la categoría', 'error');
+    console.error("Error al actualizar la talla:", error);
+    show_alerta('Error al actualizar la talla', 'error');
   }
 };
-
-// Delete a category
-// const deleteCategory = async (id) => {
-//   try {
-//     const response = await Producto.deleteCategory(id);
-//     if (response) {
-//       categories.value = categories.value.filter(category => category.id !== id);
-//       show_alerta('Categoría eliminada correctamente', 'success');
-//     }
-//   } catch (error) {
-//     console.error("Error al eliminar la categoría:", error);
-//     show_alerta('Error al eliminar la categoría', 'error');
-//   }
-// };
-
 import Swal from 'sweetalert2'; 
-
-const deleteCategory = async (id) => {
+// Eliminar talla
+const deleteTallas = async (id) => {
   try {
-    // Mostrar la alerta de confirmación de eliminación
     const result = await Swal.fire({
-      title: '¿Estás seguro de eliminar esta categoría?',
+      title: '¿Estás seguro de eliminar esta talla?',
       text: 'Esta acción no se puede deshacer.',
       icon: 'warning',
-      showCancelButton: true,  // Mostrar botón "No" (cancelar)
-      confirmButtonText: 'Sí', // Botón "Sí"
-      cancelButtonText: 'No',  // Botón "No"
-      buttonsStyling: true,     // Estilo de los botones
+      showCancelButton: true,
+      confirmButtonText: 'Sí',
+      cancelButtonText: 'No',
+      buttonsStyling: true,
     });
 
-    // Si el usuario confirma la eliminación
     if (result.isConfirmed) {
-      const response = await Producto.deleteCategory(id);
+      const response = await Tallas.deleteTallas(id);
       if (response) {
-        // Si la categoría es eliminada, actualizamos el listado
         categories.value = categories.value.filter(category => category.id !== id);
-        show_alerta('Categoría eliminada correctamente', 'success');
+        show_alerta('Talla eliminada correctamente', 'success');
       }
     } else {
-      // Si el usuario cancela, mostrar un mensaje
       show_alerta('Eliminación cancelada', 'info');
     }
   } catch (error) {
-    console.error("Error al eliminar la categoría:", error);
-    show_alerta('Error al eliminar la categoría', 'error');
+    console.error("Error al eliminar la talla:", error);
+    show_alerta('Error al eliminar la talla', 'error');
   }
 };
-
-
 </script>
+
  
 
 
