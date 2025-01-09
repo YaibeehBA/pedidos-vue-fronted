@@ -49,7 +49,93 @@ const User = {
       console.error('Error al cerrar sesión:', error);
       throw error;
     }
-  }
+  },
+  async fetchUsuarios() {
+    try {
+      const token = localStorage.getItem('auth');
+      if (!token) {
+        throw new Error('Token de autenticación no disponible');
+      }
+
+      const response = await Api.get('admin/usuarios', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data.users;
+    } catch (error) {
+      console.error('Error al obtener los usuarios:', error);
+      throw error;
+    }
+  },
+
+  
+
+  async updateUsuario(userId, updatedData) {
+    try {
+      const token = localStorage.getItem('auth');
+      if (!token) {
+        throw new Error('Token de autenticación no disponible');
+      }
+
+      const response = await Api.put(
+        `admin/usuarios/${userId}`,
+        updatedData,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+
+      return response.data;
+    } catch (error) {
+      console.error('Error al actualizar el usuario:', error);
+      throw error;
+    }
+  },
+
+  async deleteUsuario(userId) {
+    try {
+      const token = localStorage.getItem('auth');
+      if (!token) {
+        throw new Error('Token de autenticación no disponible');
+      }
+
+      const response = await Api.delete(`admin/usuarios/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Error al eliminar el usuario:', error);
+      throw error;
+    }
+  },
+
+  async getUsuarioById(userId) {
+    try {
+      const token = localStorage.getItem('auth');
+      if (!token) {
+        throw new Error('Token de autenticación no disponible');
+      }
+
+      const response = await Api.get(`admin/usuarios/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener el usuario por ID:', error);
+      throw error;
+    }
+  },
   
 
 };

@@ -3,58 +3,124 @@
     <button
       type="button"
       class="btn btn-primary"
-      @click="openAddCategoryModal"
+      @click="openAddProductModal"
     >
-      Añadir Nuevo Producto Base
+      Añadir Nuevo Producto Final
     </button>
   </div>
   
   <!-- Modal para agregar producto -->
-  <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+  <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="addCategoryModalLabel">Añadir Producto Base</h5>
+          <h5 class="modal-title" id="addProductModalLabel">Añadir Producto Final</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            <label for="categoryName" class="form-label">Nombre</label>
-            <input type="text" id="categoryName" v-model="categoryName" class="form-control" />
-          </div>
-          <div class="mb-3">
-            <label for="categoryDescription" class="form-label">Descripción</label>
-            <input type="text" id="categoryDescription" v-model="categoryDescription" class="form-control" />
-          </div>
-       
-          <div class="mb-3">
-            <label for="categorySelect" class="form-label">Categoría</label>
-            <select 
-              id="categorySelect" 
-              v-model="selectedCategory" 
+            <label for="baseProductSelect" class="form-label">Producto Base</label>
+            <select
+              id="baseProductSelect"
+              v-model="productData.producto_id"
               class="form-select"
               required
             >
-              <option value="" disabled selected>Seleccione una categoría</option>
-              <option 
-                v-for="categoria in allCategories" 
-                :key="categoria.id" 
-                :value="categoria.id"
+              <option value="" disabled selected>Seleccione un producto base</option>
+              <option
+                v-for="producto in baseProducts"
+                :key="producto.id"
+                :value="producto.id"
               >
-                {{ categoria.nombre }}
+                {{ producto.nombre }}
               </option>
             </select>
           </div>
+
+          <div class="mb-3">
+            <label for="productImage" class="form-label">Imagen</label>
+            <input 
+              type="file" 
+              id="productImage" 
+              @change="handleImageUpload" 
+              class="form-control" 
+              accept="image/*" 
+              required 
+            />
+            <div v-if="productData.imagePreview" class="mt-2">
+              <img :src="productData.imagePreview" alt="Preview" class="image-preview" style="max-width: 200px;" />
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="productPrice" class="form-label">Precio Base</label>
+            <input 
+              type="number" 
+              step="0.01" 
+              id="productPrice" 
+              v-model="productData.precio_base" 
+              class="form-control" 
+              required 
+            />
+          </div>
+
+          <div class="mb-3">
+            <label for="colorSelect" class="form-label">Color</label>
+            <select
+              id="colorSelect"
+              v-model="productData.color_id"
+              class="form-select"
+              required
+            >
+              <option value="" disabled selected>Seleccione un color</option>
+              <option
+                v-for="color in colors"
+                :key="color.id"
+                :value="color.id"
+              >
+                {{ color.nombre }}
+              </option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="sizeSelect" class="form-label">Talla</label>
+            <select
+              id="sizeSelect"
+              v-model="productData.talla_id"
+              class="form-select"
+              required
+            >
+              <option value="" disabled selected>Seleccione una talla</option>
+              <option
+                v-for="talla in sizes"
+                :key="talla.id"
+                :value="talla.id"
+              >
+                {{ talla.nombre }}
+              </option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label for="stockInput" class="form-label">Stock</label>
+            <input 
+              type="number" 
+              id="stockInput" 
+              v-model="productData.stock" 
+              class="form-control" 
+              required 
+            />
+          </div>
         </div>
-        
+
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-          <button type="button" @click="addCategory" class="btn btn-primary">Guardar</button>
+          <button type="button" @click="validateForm() && addProduct()" class="btn btn-primary">Guardar</button>
         </div>
       </div>
     </div>
   </div>
-
   <!-- Modal para actualizar categoría -->
   <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -99,39 +165,44 @@
     </div>
   </div>
 
-  <!-- Lista de categorías con botones de editar y eliminar -->
+  <!-- Lista de productos -->
   <div>
     <table id="tabla" class="table table-striped table-bordered">
       <thead>
         <tr>
           <th>Nº</th>
-          <th>Nombre</th>
-          <th>Descripción</th>
-          <th>Categoría</th>
+          <th>Producto Base</th>
+          <th>Imagen</th>
+          <th>Precio Base</th>
+          <th>Color</th>
+          <th>Talla</th>
+          <!-- <th>Stock</th> -->
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(producto, index) in categories" :key="producto.id">
-          <td>{{ index+1 }}</td>
-          <td>{{ producto.nombre }}</td>
-          <td>{{ producto.descripcion }}</td>
-          <td>{{ producto.categoria.nombre }}</td>
-          <td >
-            <div class="btn-group">
+        <tr v-for="(producto, index) in products" :key="producto.id">
+          <td>{{ index + 1 }}</td>
+          <td>{{ getProductoBaseName(producto.producto_id) }}</td>
+          <td>
+            <img :src="getImageUrl(producto.imagen_url)" alt="Imagen del Producto" class="product-image" />
 
-              <button @click="openEditModal(producto)" class="btn btn-warning ">
+          </td>
+          <td>{{ producto.precio_base }}</td>
+          <td>{{ getColorName(producto.color_id) }}</td>
+          <td>{{ getTallaName(producto.talla_id) }}</td>
+          <!-- <td>{{ producto.stock }}</td> -->
+          <td>
+            <div class="btn-group">
+              <button @click="openEditModal(producto)" class="btn btn-warning">
                 <span class="material-icons">edit</span>
-                
               </button>
-              <button @click="deleteCategory(producto.id)" class="btn btn-danger">
-                  <span class="material-icons">delete</span>
-                </button>
+              <button @click="deleteProduct(producto.id)" class="btn btn-danger">
+                <span class="material-icons">delete</span>
+              </button>
             </div>
-            
           </td>
         </tr>
-
       </tbody>
     </table>
   </div>
@@ -139,226 +210,266 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import ProductoFinal from '@/apis/ProductosFinal';
 import ProductoBase from '@/apis/ProductosBase';
-import Producto from '@/apis/Productos';
+import Tallas from '@/apis/Tallas';
+import Colores from '@/apis/Colores';
 import { show_alerta } from '@/apis/Api';
 import { initializeDataTable } from '@/apis/utils';
-
-const categories = ref([]);
-const categoryName = ref("");
-const categoryDescription = ref("");
-const isEditMode = ref(false);
-let currentCategoryId = ref(null);
-const selectedCategory = ref(null); // Para almacenar la categoría seleccionada
-const allCategories = ref([]); // Para listar todas las categorías disponibles
-
-
-
-initializeDataTable();
-
-const fetchCategories = async () => {
-  try {
-    const data = await ProductoBase.fetchCategories();
-    categories.value = [...data];
-  } catch (error) {
-    console.error("Error al cargar los productos base:", error);
-  }
-};
-
-const fetchAllCategories = async () => {
-  try {
-    // Asumiendo que fetchCategories devuelve directamente el array
-    const response = await Producto.fetchCategories();
-    allCategories.value = Array.isArray(response) ? response : [];
-    console.log('Categorías cargadas:', allCategories.value);
-  } catch (error) {
-    console.error("Error al cargar todas las categorías:", error);
-    show_alerta('Error al cargar las categorías', 'error');
-  }
-};
-
-
-
-
-// abrir modal para añadir categoría
-const openAddCategoryModal = async () => {
-  try {
-    // Recargar las categorías antes de abrir el modal
-    await fetchAllCategories();
-    
-    // Resetear los valores
-    categoryName.value = "";
-    categoryDescription.value = "";
-    selectedCategory.value = null;
-    isEditMode.value = false;
-
-    // Abrir el modal
-    const modalElement = document.getElementById('addCategoryModal');
-    const modalInstance = new bootstrap.Modal(modalElement);
-    modalInstance.show();
-  } catch (error) {
-    console.error("Error al abrir el modal:", error);
-    show_alerta('Error al cargar las categorías', 'error');
-  }
-};
-
-// abrir modal para editar categoría
-const openEditModal = async (producto) => {
-  try {
-    // Recargar las categorías antes de abrir el modal
-    await fetchAllCategories();
-    
-    categoryName.value = producto.nombre;
-    categoryDescription.value = producto.descripcion;
-    selectedCategory.value = producto.categoria?.id;
-    currentCategoryId.value = producto.id;
-
-    const modalElement = document.getElementById('editCategoryModal');
-    const modalInstance = new bootstrap.Modal(modalElement);
-    modalInstance.show();
-  } catch (error) {
-    console.error("Error al abrir el modal de edición:", error);
-    show_alerta('Error al cargar las categorías', 'error');
-  }
-};
-onMounted(async () => {
-  try {
-    await Promise.all([fetchCategories(), fetchAllCategories()]);
-    initializeDataTable();
-  } catch (error) {
-    console.error("Error en la inicialización:", error);
-    show_alerta('Error al cargar los datos', 'error');
-  }
-});
-
-// Add a new categoría
-const addCategory = async () => {
-  if (!categoryName.value || !categoryDescription.value || !selectedCategory.value) {
-    show_alerta("Por favor completa todos los campos", "warning");
-    return;
-  }
-
-  try {
-    const categoryData = {
-      nombre: categoryName.value,
-      descripcion: categoryDescription.value,
-      categoria_id: selectedCategory.value,
-    };
-
-    const response = await ProductoBase.createCategory(categoryData);
-    show_alerta('Categoría creada correctamente', 'success');
-
-    if (response && response.data) {
-      categories.value.push(response.data); // Add new category to the array
-      categoryName.value = "";
-      categoryDescription.value = "";
-      selectedCategory.value = null;
-
-
-      // Close modal
-      const modalElement = document.getElementById('addCategoryModal');
-      const modalInstance = bootstrap.Modal.getInstance(modalElement);
-      if (modalInstance) {
-        modalInstance.hide();
-      }
-
-      // Re-initialize the data table
-      
-        initializeDataTable();
-      
-    }
-  } catch (error) {
-    console.error("Error al crear la categoría:", error);
-    show_alerta('Error al crear la categoría', 'error');
-  }
-};
-
-// Update category
-const updateCategory = async () => {
-  if (!categoryName.value || !categoryDescription.value || !selectedCategory.value) {
-    show_alerta("Por favor completa todos los campos", "warning");
-    return;
-  }
-
-  try {
-    const categoryData = {
-      nombre: categoryName.value,
-      descripcion: categoryDescription.value,
-      categoria_id: selectedCategory.value,
-    };
-
-    const response = await ProductoBase.updateCategory(currentCategoryId.value, categoryData);
-    show_alerta('Categoría actualizada correctamente', 'success');
-
-    if (response && response.data) {
-      const index = categories.value.findIndex(category => category.id === currentCategoryId.value);
-      categories.value[index] = response.data;  // Update the existing category
-
-      categoryName.value = "";
-      categoryDescription.value = "";
-      selectedCategory.value = null;
-
-      const modalElement = document.getElementById('editCategoryModal');
-      const modalInstance = bootstrap.Modal.getInstance(modalElement);
-      if (modalInstance) {
-        modalInstance.hide();
-      }
-
-      // Re-initialize the data table
-      setTimeout(() => {
-        initializeDataTable();
-      }, 0);
-    }
-  } catch (error) {
-    console.error("Error al actualizar la categoría:", error);
-    show_alerta('Error al actualizar la categoría', 'error');
-  }
-};
-
-
-
 import Swal from 'sweetalert2'; 
 
-const deleteCategory = async (id) => {
+const products = ref([]);
+const baseProducts = ref([]);
+const colors = ref([]);
+const sizes = ref([]);
+
+const productData = ref({
+  producto_id: '',
+  imagen_url: null,
+  precio_base: '',
+  color_id: '',
+  talla_id: '',
+  stock: 0,
+  imagePreview: null
+});
+
+// Función para validar el formulario
+const validateForm = () => {
+  if (!productData.value.producto_id) {
+    show_alerta("Seleccione un producto base", "warning");
+    return false;
+  }
+  if (!productData.value.precio_base) {
+    show_alerta("Ingrese un precio base", "warning");
+    return false;
+  }
+  if (!productData.value.color_id) {
+    show_alerta("Seleccione un color", "warning");
+    return false;
+  }
+  if (!productData.value.talla_id) {
+    show_alerta("Seleccione una talla", "warning");
+    return false;
+  }
+  if (!productData.value.stock || productData.value.stock < 0) {
+    show_alerta("Ingrese una cantidad válida de stock", "warning");
+    return false;
+  }
+  if (!(productData.value.imagen_url instanceof File)) {
+    show_alerta("Seleccione una imagen válida", "warning");
+    return false;
+  }
+  return true;
+};
+const handleImageUpload = (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif'];
+  const maxSize = 5 * 1024 * 1024; // 5MB
+
+  if (!allowedTypes.includes(file.type)) {
+    show_alerta('El archivo debe ser una imagen válida (jpeg, png, jpg, gif)', 'error');
+    event.target.value = '';
+    return;
+  }
+
+  if (file.size > maxSize) {
+    show_alerta('La imagen no debe superar los 5MB', 'error');
+    event.target.value = '';
+    return;
+  }
+
+  // Guardamos directamente el archivo, no creamos un objeto
+  productData.value.imagen_url = file;
+  
+  // Creamos la vista previa
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    productData.value.imagePreview = e.target.result;
+  };
+  reader.readAsDataURL(file);
+};
+
+// Función para obtener la URL de la imagen
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return '';
+
+  if (imagePath.startsWith('http')) {
+    return imagePath;
+  }
+
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+  return `${baseUrl}/storage/${imagePath}`;
+};
+
+// Funciones helper para obtener nombres
+const getProductoBaseName = (id) => {
+  const producto = baseProducts.value.find(p => p.id === id);
+  return producto ? producto.nombre : '';
+};
+
+const getColorName = (id) => {
+  const color = colors.value.find(c => c.id === id);
+  return color ? color.nombre : '';
+};
+
+const getTallaName = (id) => {
+  const talla = sizes.value.find(t => t.id === id);
+  return talla ? talla.nombre : '';
+};
+
+// Función para cargar todos los datos
+const fetchAllData = async () => {
   try {
-    // Mostrar la alerta de confirmación de eliminación
+    const [productsData, baseProductsData, colorsData, sizesData] = await Promise.all([
+      ProductoFinal.fetchCategories(),
+      ProductoBase.fetchCategories(),
+      Colores.fetchColores(),
+      Tallas.fetchTallas()
+    ]);
+
+    products.value = productsData;
+    baseProducts.value = baseProductsData;
+    colors.value = colorsData;
+    sizes.value = sizesData;
+  } catch (error) {
+    console.error("Error al cargar los datos:", error);
+    show_alerta('Error al cargar los datos', 'error');
+  }
+};
+
+const openAddProductModal = () => {
+  productData.value = {
+    producto_id: '',
+    imagen_url: null,
+    precio_base: '',
+    color_id: '',
+    talla_id: '',
+    stock: 0,
+    imagePreview: null
+  };
+  
+  const modalElement = document.getElementById('addProductModal');
+  const modalInstance = new bootstrap.Modal(modalElement);
+  modalInstance.show();
+};
+
+// Función para añadir un nuevo producto
+const addProduct = async () => {
+  if (!validateForm()) return;
+
+  try {
+    const formData = new FormData();
+    
+    // Convertir valores a string para asegurar el formato correcto
+    formData.append('producto_id', String(productData.value.producto_id));
+    formData.append('precio_base', String(productData.value.precio_base));
+    formData.append('color_id', String(productData.value.color_id));
+    formData.append('talla_id', String(productData.value.talla_id));
+    formData.append('stock', String(productData.value.stock));
+    
+    // Verificar si hay una imagen y es un archivo válido
+    if (productData.value.imagen_url instanceof File) {
+      formData.append('imagen_url', productData.value.imagen_url);
+    } else {
+      // Si no hay imagen, no la incluimos en el FormData
+      show_alerta('Por favor, seleccione una imagen', 'warning');
+      return;
+    }
+
+    // Imprimir el contenido del FormData para debug
+    for (let pair of formData.entries()) {
+      console.log(pair[0] + ': ' + pair[1]);
+    }
+
+    const response = await ProductoFinal.createCategory(formData);
+    
+    if (response && response.data) {
+      show_alerta('Producto creado correctamente', 'success');
+      await fetchAllData();
+      
+      const modalElement = document.getElementById('addProductModal');
+      const modalInstance = bootstrap.Modal.getInstance(modalElement);
+      if (modalInstance) {
+        modalInstance.hide();
+      }
+
+      // Limpiar el formulario
+      productData.value = {
+        producto_id: '',
+        imagen_url: null,
+        precio_base: '',
+        color_id: '',
+        talla_id: '',
+        stock: 0,
+        imagePreview: null
+      };
+
+      initializeDataTable();
+    }
+  } catch (error) {
+    console.error("Error al crear el producto:", error);
+    show_alerta(error.response?.data?.message || 'Error al crear el producto', 'error');
+  }
+};
+const deleteProduct = async (id) => {
+  try {
     const result = await Swal.fire({
-      title: '¿Estás seguro de eliminar esta categoría?',
+      title: '¿Estás seguro de eliminar este producto?',
       text: 'Esta acción no se puede deshacer.',
       icon: 'warning',
-      showCancelButton: true,  // Mostrar botón "No" (cancelar)
-      confirmButtonText: 'Sí', // Botón "Sí"
-      cancelButtonText: 'No',  // Botón "No"
-      buttonsStyling: true,     // Estilo de los botones
+      showCancelButton: true,
+      confirmButtonText: 'Sí',
+      cancelButtonText: 'No',
+      buttonsStyling: true,
     });
 
-    // Si el usuario confirma la eliminación
     if (result.isConfirmed) {
-      const response = await ProductoBase.deleteCategory(id);
+      const response = await ProductoFinal.deleteCategory(id);
       if (response) {
-        // Si la categoría es eliminada, actualizamos el listado
-        categories.value = categories.value.filter(category => category.id !== id);
-        show_alerta('Categoría eliminada correctamente', 'success');
+        await fetchAllData();
+        show_alerta('Producto eliminado correctamente', 'success');
       }
     } else {
-      // Si el usuario cancela, mostrar un mensaje
       show_alerta('Eliminación cancelada', 'info');
     }
   } catch (error) {
-    console.error("Error al eliminar la categoría:", error);
-    show_alerta('Error al eliminar la categoría', 'error');
+    console.error("Error al eliminar el producto:", error);
+    show_alerta('Error al eliminar el producto', 'error');
   }
 };
+
+onMounted(async () => {
+  await fetchAllData();
+  initializeDataTable();
+});
+
+
+
+
 
 
 </script>
  
 
 
-
-
-
 <style scoped>
+.product-image {
+  max-width: 100px;
+  max-height: 100px;
+  object-fit: contain;
+}
+
+/* Estilo para la preview de la imagen en el modal */
+.image-preview {
+  max-width: 200px;
+  max-height: 200px;
+  margin-top: 10px;
+}
+
+
+
 .btn-group {
   gap: 10px; /* Espaciado entre botones */
 }

@@ -68,7 +68,7 @@ const router = createRouter({
         },
         {
           path: 'usuarios',
-          name: 'Usuarios',
+          name: 'usuarios',
           component: Usuarios,
         },
         {

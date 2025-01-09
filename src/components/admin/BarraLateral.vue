@@ -140,7 +140,7 @@ const toggleSidebar = () => {
           </RouterLink>
         </li>
         <li class="nav-item">
-          <RouterLink to="/admin/users" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
+          <RouterLink to="/admin/usuarios" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
             <span class="material-icons me-3">person</span>
             <span v-show="isExpanded">Usuarios</span>
           </RouterLink>
