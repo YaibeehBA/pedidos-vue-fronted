@@ -28,6 +28,28 @@ const router = createRouter({
       component: () => import('../views/Registro.vue'),
     },
     {
+      path: '/DetalleProducto/:id',
+      name: 'DetalleProducto',
+      component: () => import('../views/ProductView.vue'),
+      
+    },
+    {
+      path: '/PedidoOrden',
+      name: 'PedidoOrden',
+      component: () => import('../views/pedidos/PedidoOrden.vue'),
+      
+    },
+    {
+      path: '/OlvideContrasena',
+      name: 'OlvideContrasena',
+      component: () => import('../views/OlvideContrasena.vue'),
+    },
+    {
+      path: '/RestablecerContrasena',
+      name: 'RestablecerContrasena',
+      component: () => import('../views/RestablecerContrasena.vue'),
+    },
+    {
       path: '/Pedidos',
       name: 'Pedidos',
       component: () => import('../views/Pedidos.vue'),

@@ -151,7 +151,7 @@ const login = async () => {
 
                 <!-- Enlace de recuperar contraseña -->
                 <div class="text-end mb-4">
-                    <a href="#" class="forgot-password">Olvide mi contraseña?</a>
+                  <router-link to="/OlvideContrasena" class="forgot-password">Olvide mi contraseña?</router-link>
                 </div>
 
                 <!-- Botón de iniciar sesión -->

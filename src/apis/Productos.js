@@ -121,6 +121,19 @@ const Producto = {
       throw error;
     }
   },
+  async fetchCategoriesPublica() {
+    try {
+      // Llama a la nueva ruta pública
+      const response = await Api.get('public/categorias'); // Usa la ruta pública de tu API
+  
+      // Retorna los datos directamente
+      return response.data.data;
+    } catch (error) {
+      console.error('Error al obtener las categorías:', error);
+      throw error; // Lanza el error para manejarlo en el flujo principal
+    }
+  },
+  
 };
 
 export default Producto;

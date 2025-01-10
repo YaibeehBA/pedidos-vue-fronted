@@ -1,6 +1,7 @@
 import Api from '@/apis/Api'
 import Csrf from '../apis/Csrf';
 
+
 const User = {
   async register(form) {
     try {
@@ -19,6 +20,26 @@ const User = {
       return response;
     } catch (error) {
       console.error('Error al iniciar session:', error);
+      throw error;
+    }
+  },
+  async OlvideContrasena(form) {
+    try {
+      await Csrf.getCookie();
+      const response = await Api.post('auth/forgot-password', form); 
+      return response;
+    } catch (error) {
+      console.error('Error al enviar el correo de recuperación:', error);
+      throw error;
+    }
+  },
+  async RestablecerContrasena(form) {
+    try {
+      await Csrf.getCookie();
+      const response = await Api.post('auth/reset-password', form); 
+      return response;
+    } catch (error) {
+      console.error('Error al restablecer la contraseña:', error);
       throw error;
     }
   },

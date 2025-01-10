@@ -10,105 +10,107 @@
     </div>
 
     <div class="products-grid">
-        <!-- Product Card -->
-        <div class="product-card">
-            <div class="product-image-wrap">
-                <img src="https://i.pinimg.com/736x/65/a7/03/65a703451eb4173250f80063679b2841.jpg" 
-                     alt="Producto 1" 
-                     class="product-image">
-                <button class="wishlist-btn">
-                    <span class="material-icons">favorite_border </span>
-                    
-                </button>
-            </div>
-            <div class="product-info">
-                <h3>Vista previa</h3>
-                <p class="price"> <span class="material-icons">local_shipping</span>Realizar Pedido</p>
-            </div>
-        </div>
-
-        <!-- Repetir la card anterior 5 veces más -->
-        <div class="product-card">
-            <div class="product-image-wrap">
-                <img src="https://i.pinimg.com/736x/15/72/32/1572323a287991f646f7b873059a3572.jpg" 
-                     alt="Producto 1" 
-                     class="product-image">
-                <button class="wishlist-btn">
-                    <span class="material-icons">favorite_border </span>
-                    
-                </button>
-            </div>
-            <div class="product-info">
-                <h3>Vista previa</h3>
-                <p class="price"> <span class="material-icons">local_shipping</span>Realizar Pedido</p>
-            </div>
-        </div>
-        <div class="product-card">
-            <div class="product-image-wrap">
-                <img src="https://i.pinimg.com/736x/dc/ca/f1/dccaf179919197bc4764b8296a451328.jpg" 
-                     alt="Producto 1" 
-                     class="product-image">
-                <button class="wishlist-btn">
-                    <span class="material-icons">favorite_border </span>
-                </button>
-            </div>
-            <div class="product-info">
-                <h3>Vista previa</h3>
-                <p class="price"> <span class="material-icons">local_shipping</span>Realizar Pedido</p>
-            </div>
-        </div>
-        <div class="product-card">
-            <div class="product-image-wrap">
-                <img src="https://i.pinimg.com/736x/83/85/a9/8385a94ae1498449681174e693fa132c.jpg" 
-                     alt="Producto 1" 
-                     class="product-image">
-                <button class="wishlist-btn">
-                    <span class="material-icons">favorite_border </span>
-                    
-                </button>
-            </div>
-            <div class="product-info">
-                <h3>Vista previa</h3>
-                <p class="price"> <span class="material-icons">local_shipping</span>Realizar Pedido</p>
-            </div>
-        </div>
-        <div class="product-card">
-            <div class="product-image-wrap">
-                <img src="https://i.pinimg.com/736x/3f/1b/20/3f1b20998806b5ab670ab2633efa5d19.jpg" 
-                     alt="Producto 1" 
-                     class="product-image">
-                <button class="wishlist-btn">
-                    <span class="material-icons">favorite_border </span>
-                    
-                </button>
-            </div>
-            <div class="product-info">
-                <h3>Vista previa</h3>
-                <p class="price"> <span class="material-icons">local_shipping</span>Realizar Pedido</p>
-                
-            </div>
-        </div>
-        <div class="product-card">
-            <div class="product-image-wrap">
-                <img src="https://i.pinimg.com/736x/bf/27/98/bf27984c795ab9199d9f2f50f79cc7bf.jpg" 
-                     alt="Producto 1" 
-                     class="product-image">
-                <button class="wishlist-btn">
-                    <span class="material-icons">favorite_border </span>
-                    
-                </button>
-            </div>
-            <div class="product-info">
-                <h3>Vista previa</h3>
-                <p class="price"> <span class="material-icons">local_shipping</span>Realizar Pedido</p>
-                
-            </div>
-        </div>
+    <!-- Product Card -->
+    <div
+      v-for="category in categoriesWithImages"
+      :key="category.id"
+      class="product-card"
+    >
+      <div class="product-image-wrap">
+        <img
+          :src="category.imagenUrl"
+          alt="Imagen del producto"
+          class="product-image"
+        />
+        <button class="wishlist-btn">
+          <span class="material-icons">favorite_border</span>
+        </button>
+      </div>
+      <div class="product-info">
+        <h3>{{ category.nombre }}</h3>
+        <p class="price">
+           <router-link 
+                :to="{ 
+                    name: 'DetalleProducto', 
+                    params: { id: category.id } 
+                }"
+               
+                >
+                <span class="material-icons">local_shipping</span>
+                Realizar Pedido
+            </router-link>
+        </p>
+      </div>
     </div>
+  </div>
 </main>
 
   </template>
   
+  <script setup>
+import { ref, onMounted, computed } from "vue";
+import Producto from "@/apis/Productos";
+import axios from "axios";
+
+const categories = ref([]);
+const productosConImagenes = ref([]);
+
+// Obtener las categorías
+const fetchCategories = async () => {
+  try {
+    const data = await Producto.fetchCategoriesPublica();
+    categories.value = data; // Asignar categorías obtenidas
+  } catch (error) {
+    console.error("Error al obtener categorías públicas:", error);
+  }
+};
+
+// Obtener productos con imágenes
+const fetchProductosConImagenes = async () => {
+  try {
+    const response = await axios.get(
+      "http://localhost:8000/api/public/variante-productos"
+    );
+    productosConImagenes.value = response.data.data; // Asignar datos obtenidos
+  } catch (error) {
+    console.error("Error al obtener productos con imágenes:", error);
+  }
+};
+// En el script del componente que contiene el router-link
+// Combinar categorías con imágenes
+const categoriesWithImages = computed(() =>
+  categories.value
+    .map((category) => {
+      const productos = productosConImagenes.value.find(
+        (producto) => producto.categoria_id === category.id
+      )?.productos;
+
+      const primeraVariante = productos?.flatMap((producto) =>
+        producto.variantes
+      ).find((variante) => variante.imagen_url);
+
+      if (primeraVariante) {
+        const imagenUrl = `http://localhost:8000/storage/${primeraVariante.imagen_url}`;
+        console.log(`Imagen para la categoría "${category.nombre}": ${imagenUrl}`);
+        return {
+          id: category.id,
+          nombre: category.nombre,
+          imagenUrl,
+        };
+      }
+
+      console.log(`No hay imagen para la categoría "${category.nombre}"`);
+      return null;
+    })
+    .filter(Boolean) // Eliminar categorías sin imagen
+);
+
+onMounted(async () => {
+  await fetchCategories(); // Obtener categorías
+  await fetchProductosConImagenes(); // Obtener imágenes
+});
+</script>
+
 <style scoped>
 
 .product-section {
