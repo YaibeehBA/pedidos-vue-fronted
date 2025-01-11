@@ -175,6 +175,7 @@ const realizarPedido = () => {
         precio: varianteSeleccionada.value.precio_base,
         talla: varianteSeleccionada.value.talla,
         color: varianteSeleccionada.value.color || 'Default Color',
+        imagen_url: `http://localhost:8000/storage/${varianteSeleccionada.value.imagen_url}` 
       }
     });
   }
