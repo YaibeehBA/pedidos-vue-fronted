@@ -142,7 +142,8 @@ const queryParams = route.query;
   const precio = queryParams.precio;
   const talla = queryParams.talla;
   const color = queryParams.color || 'No Color';
-  const imagenUrl = queryParams.imagen_url || '';
+  // const imagenUrl = queryParams.imagen_url || '';
+  const imagenUrl = computed(() => decodeURIComponent(route.query.imagen_url));
   
  
 

@@ -15,7 +15,7 @@
             <img
               v-for="(variante, index) in productoSeleccionado?.variantes"
               :key="index"
-              :src="`http://localhost:8000/storage/${variante.imagen_url}`"
+              :src="`${IMAGE_BASE_URL}/${variante.imagen_url}`"
               alt="Miniatura"
               class="thumbnail"
               :class="{ 'selected-thumbnail': variante.imagen_url === varianteSeleccionada?.imagen_url }"
@@ -96,9 +96,14 @@ import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import axios from "axios";
 import { useRouter } from "vue-router"; 
+import { useUserStore } from '@/stores/authstore';
+import { IMAGE_BASE_URL } from "@/apis/Api";
+import { PublicApi } from "@/apis/Api";
+
 
 const route = useRoute();
 const router = useRouter();
+const userStore = useUserStore();
 const productos = ref([]);
 const productoSeleccionado = ref(null);
 const varianteSeleccionada = ref(null);
@@ -128,7 +133,7 @@ const handleScroll = (direction) => {
 
 const fetchProductos = async () => {
   try {
-    const response = await axios.get('http://localhost:8000/api/public/variante-productos');
+    const response = await PublicApi.get('/variante-productos');
     if (response.data && Array.isArray(response.data.data)) {
       const categoriaSeleccionada = response.data.data.find(categoria => 
         categoria.categoria_id === parseInt(categoriaId.value)
@@ -155,7 +160,7 @@ const seleccionarProducto = (producto) => {
 
 const actualizarProductoSeleccionado = (variante) => {
   varianteSeleccionada.value = variante;
-  selectedImage.value = `http://localhost:8000/storage/${variante.imagen_url}`;
+  selectedImage.value = `${IMAGE_BASE_URL}/${variante.imagen_url}`;
 };
 
 onMounted(() => {
@@ -164,20 +169,40 @@ onMounted(() => {
 
 const realizarPedido = () => {
   if (productoSeleccionado.value && varianteSeleccionada.value) {
-    // Enviar los datos del producto y variante como query params, incluyendo producto_id.
-    router.push({
-      name: 'PedidoOrden', // Nombre de la ruta de la vista de pedido
-      query: {
-        producto_id: productoSeleccionado.value.producto_id, // Asegúrate de que producto_id sea correcto
-        variante_id: varianteSeleccionada.value.id,
-        nombre: productoSeleccionado.value.nombre,
-        descripcion: productoSeleccionado.value.descripcion,
-        precio: varianteSeleccionada.value.precio_base,
-        talla: varianteSeleccionada.value.talla,
-        color: varianteSeleccionada.value.color || 'Default Color',
-        imagen_url: `http://localhost:8000/storage/${varianteSeleccionada.value.imagen_url}` 
-      }
-    });
+    // Verificar si el usuario está autenticado
+    if (!userStore.authenticated) {
+      // Guardar los detalles del producto en la URL del login
+      router.replace({
+        path: '/Login',
+        query: {
+          redirect: '/DetalleProducto/' + categoriaId.value,
+          returnTo: 'PedidoOrden',
+          producto_id: productoSeleccionado.value.producto_id,
+          variante_id: varianteSeleccionada.value.id,
+          nombre: productoSeleccionado.value.nombre,
+          descripcion: productoSeleccionado.value.descripcion,
+          precio: varianteSeleccionada.value.precio_base,
+          talla: varianteSeleccionada.value.talla,
+          color: varianteSeleccionada.value.color || 'Default Color',
+          imagen_url: encodeURIComponent(`${IMAGE_BASE_URL}/${varianteSeleccionada.value.imagen_url}`)
+        }
+      });
+    } else {
+      // Si está autenticado, proceder directamente a la página de pedido
+      router.replace({
+        name: 'PedidoOrden',
+        query: {
+          producto_id: productoSeleccionado.value.producto_id,
+          variante_id: varianteSeleccionada.value.id,
+          nombre: productoSeleccionado.value.nombre,
+          descripcion: productoSeleccionado.value.descripcion,
+          precio: varianteSeleccionada.value.precio_base,
+          talla: varianteSeleccionada.value.talla,
+          color: varianteSeleccionada.value.color || 'Default Color',
+          imagen_url: `${IMAGE_BASE_URL}/${varianteSeleccionada.value.imagen_url}`
+        }
+      });
+    }
   }
 };
 

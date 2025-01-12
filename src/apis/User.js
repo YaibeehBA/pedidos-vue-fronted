@@ -43,6 +43,7 @@ const User = {
       throw error;
     }
   },
+  
   async logout() {
     try {
       await Csrf.getCookie();  // Obtenemos y validamos el token CSRF

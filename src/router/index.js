@@ -8,6 +8,7 @@ import Tallas from '@/views/admin/Tallas.vue';
 import Colores from '@/views/admin/Colores.vue';
 import ProductoBase from '@/views/admin/ProductoBase.vue';
 import ProductoFinal from '@/views/admin/ProductoFinal.vue';
+import { useUserStore } from '@/stores/authstore';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -58,6 +59,7 @@ const router = createRouter({
       path: '/admin',
       name:AdminLayout,
       component: AdminLayout,  // 'AdminLayout' es ahora un contenedor
+      meta: { requiresAdmin: true },
       children: [
         {
           path: '',
@@ -100,7 +102,50 @@ const router = createRouter({
         },
       ],
     },
+    {
+      path: '/no-autorizado',
+      name: 'NotFound',
+      component: () => import('../views/NotFound.vue'),
+    },
+    // Ruta catch-all para cualquier ruta que no exista
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: { name: 'NotFound' }
+    }
   ],
+});
+
+
+
+
+router.beforeEach((to, from, next) => {
+  const userStore = useUserStore();
+
+  // Validación para rutas de administrador
+  if (to.matched.some(record => record.meta.requiresAdmin)) {
+    if (userStore.authenticated && userStore.user?.esadmin) {
+      next(); // El usuario es administrador, permitir acceso
+    } else {
+      next({ path: '/no-autorizado' }); // Redirigir si no es administrador
+    }
+    return;
+  }
+
+  // Validación para rutas que requieren autenticación general
+  if (to.matched.some(record => record.meta.requiresAuth)) {
+    if (userStore.authenticated) {
+      next(); // El usuario está autenticado, permitir acceso
+    } else {
+      next({
+        path: '/Login',
+        query: { redirect: to.fullPath } // Guardar la ruta de redirección
+      });
+    }
+    return;
+  }
+
+  // Continuar para rutas públicas
+  next();
 });
 
 

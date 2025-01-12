@@ -62,7 +62,7 @@ const router = useRouter();
      
 
       // Redirigimos al usuario al Login
-      router.push({ name: 'Login' });
+      router.push({ name: 'home' });
 
       // Mostramos el mensaje de éxito
       show_alerta('Cierre de sesión con éxito', 'success', '');
@@ -72,6 +72,7 @@ const router = useRouter();
     show_alerta('Error al cerrar sesión', 'error', '');
     console.error('Error:', error);
   }
+
 };
 
 
@@ -113,9 +114,10 @@ const router = useRouter();
                           Mis Pedidos
                       </router-link>
                   </li>
-                  <li class="nav-item" v-if="userStore.authenticated" >
-                    <router-link @click.prevent="logout" class="nav-link" to="/logout">Salir</router-link>
-                  </li>
+                  <li class="nav-item" v-if="userStore.authenticated">
+  <a href="#" @click.prevent="logout" class="nav-link">Salir</a> <!-- Uso de a en lugar de router-link -->
+</li>
+
               </ul>
 
               <!-- Iconos de la derecha -->

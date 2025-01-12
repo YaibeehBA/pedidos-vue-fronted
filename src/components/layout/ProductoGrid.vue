@@ -50,7 +50,8 @@
   <script setup>
 import { ref, onMounted, computed } from "vue";
 import Producto from "@/apis/Productos";
-import axios from "axios";
+import { PublicApi } from "@/apis/Api";
+import { IMAGE_BASE_URL } from "@/apis/Api";
 
 const categories = ref([]);
 const productosConImagenes = ref([]);
@@ -68,15 +69,13 @@ const fetchCategories = async () => {
 // Obtener productos con imágenes
 const fetchProductosConImagenes = async () => {
   try {
-    const response = await axios.get(
-      "http://localhost:8000/api/public/variante-productos"
-    );
+    const response = await PublicApi.get('/variante-productos');
     productosConImagenes.value = response.data.data; // Asignar datos obtenidos
   } catch (error) {
     console.error("Error al obtener productos con imágenes:", error);
   }
 };
-// En el script del componente que contiene el router-link
+
 // Combinar categorías con imágenes
 const categoriesWithImages = computed(() =>
   categories.value
@@ -90,7 +89,8 @@ const categoriesWithImages = computed(() =>
       ).find((variante) => variante.imagen_url);
 
       if (primeraVariante) {
-        const imagenUrl = `http://localhost:8000/storage/${primeraVariante.imagen_url}`;
+        const imagenUrl = `${IMAGE_BASE_URL}/${primeraVariante.imagen_url}`;
+        // const imagenUrl = `http://localhost:8000/storage/${primeraVariante.imagen_url}`;
         console.log(`Imagen para la categoría "${category.nombre}": ${imagenUrl}`);
         return {
           id: category.id,
