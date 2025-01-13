@@ -228,49 +228,6 @@ const validarPrendas = () => {
   obtenerFechaEntrega();
 };
 
-// Función para obtener la fecha de entrega desde la API
-// const obtenerFechaEntrega = async () => {
-//   // Limpiamos el mensaje de feedback antes de hacer la solicitud
-//   mensajeFeedback.value = "";
-
-//   try {
-//     // Realiza la solicitud al servidor con la cantidad de prendas
-//     const response = await PublicApi.post("calcular-fecha-entrega", {
-//       cantidad: prendas.value, // Enviar el número de prendas al servidor
-//     });
-
-//     if (response.status === 200) {
-//       // Convertir la fecha ISO a un objeto Date para mostrarla de forma más amigable
-//       const fechaEntregaFormateada = new Date(response.data.fecha_entrega);
-      
-
-//       fechaEntrega.value = fechaEntregaFormateada.toLocaleDateString('es-ES', {
-//         year: 'numeric',
-//         month: 'long',
-//         day: 'numeric',
-//       });
-
-//       // Determinar el mensaje de feedback en función de la cantidad de prendas
-//       let mensaje = "";
-//       if (prendas.value <= 6) {
-//         mensaje = "El pedido incluye hasta 6 prendas, por lo tanto, la fecha de entrega es en 3 días.";
-//       } else if (prendas.value <= 15) {
-//         mensaje = "El pedido incluye entre 7 y 15 prendas, por lo tanto, la fecha de entrega es en 5 días.";
-//       } else if (prendas.value <= 30) {
-//         mensaje = "El pedido incluye entre 16 y 30 prendas, por lo tanto, la fecha de entrega es en 7 días.";
-//       }
-
-//       // Mostrar el mensaje de feedback
-//       mensajeFeedback.value = mensaje;
-
-//     } else {
-//       mensajeFeedback.value = "No se pudo obtener la fecha de entrega.";
-//     }
-//   } catch (error) {
-//     console.error("Error al obtener la fecha de entrega:", error);
-//     mensajeFeedback.value = error.response?.data?.message || "Hubo un error al consultar la fecha.";
-//   }
-// };
 
 
 const obtenerFechaEntrega = async () => {
@@ -326,42 +283,7 @@ const obtenerFechaEntrega = async () => {
 
 
 
-// const createOrder = async () => {
-//   // Validación del usuario y cantidad
-//   if (!user.value || !user.value.id) {
-//     mensajeFeedback.value = "Por favor, inicie sesión para realizar el pedido.";
-//     return;
-//   }
-
-//   if (!prendas.value || prendas.value <= 0) {
-//     mensajeFeedback.value = "La cantidad de productos debe ser mayor que 0.";
-//     return;
-//   }
-
-//   // Construir el cuerpo de la solicitud para la orden
-//   const ordenData = {
-//     usuario_id: user.value.id,  // ID del usuario autenticado
-//     detalles: [
-//       { producto_id: productoId, cantidad: prendas.value },  // Producto seleccionado
-//     ]
-//   };
-
-//   try {
-//     // Llamada a la API para crear la orden
-//     const response = await PublicApi.post("orden", ordenData);
-
-//     if (response.status === 200) {
-//       mensajeFeedback.value = "¡La orden se ha creado exitosamente!";
-//       alert('¡Orden creada con éxito!');
-//     } else {
-//       mensajeFeedback.value = "Hubo un problema al crear la orden.";
-//     }
-//   } catch (error) {
-//     console.error('Error al crear la orden:', error);
-//     mensajeFeedback.value = "Error al realizar el pedido. Intente nuevamente más tarde.";
-//   }
-// };
-  
+// Crear una nueva orden
 const createOrder = async () => {
   // Validaciones
   if (!user.value || !user.value.id) {
@@ -386,7 +308,9 @@ const createOrder = async () => {
   const ordenData = {
     usuario_id: user.value.id,
     detalles: [
-      { producto_id: productoId, cantidad: prendas.value },
+      { variante_id: varianteId,
+        cantidad: prendas.value 
+      },
     ],
   };
 

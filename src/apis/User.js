@@ -177,8 +177,17 @@ const User = {
       throw error; 
     }
   },
-  
 
-};
+  getProfile() {
+    const token = localStorage.getItem('auth')
+    if (!token) return Promise.reject('No token found')
+
+    return axios.get('/api/user/profile', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    })
+  }
+}
 
 export default User;

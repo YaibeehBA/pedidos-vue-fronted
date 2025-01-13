@@ -118,17 +118,59 @@ const router = createRouter({
 
 
 
-router.beforeEach((to, from, next) => {
+// router.beforeEach((to, from, next) => {
+//   const userStore = useUserStore();
+
+//   // userStore.syncAuthentication();
+
+//   // Validación para rutas de administrador
+//   if (to.matched.some(record => record.meta.requiresAdmin)) {
+//     if (userStore.authenticated && userStore.user?.esadmin) {
+     
+//       next(); // El usuario es administrador, permitir acceso
+//     } else {
+//       next({ path: '/no-autorizado' }); // Redirigir si no es administrador
+//     }
+//     return;
+//   }
+
+//   // Validación para rutas que requieren autenticación general
+//   if (to.matched.some(record => record.meta.requiresAuth)) {
+//     if (userStore.authenticated) {
+//       next(); // El usuario está autenticado, permitir acceso
+//     } else {
+//       next({
+//         path: '/Login',
+//         query: { redirect: to.fullPath } // Guardar la ruta de redirección
+//       });
+//     }
+//     return;
+//   }
+
+//   // Continuar para rutas públicas
+//   next();
+// });
+
+
+router.beforeEach(async (to, from, next) => {
   const userStore = useUserStore();
 
-  userStore.syncAuthentication();
+  // Verificar autenticación al inicio
+  await userStore.checkAuth();
 
   // Validación para rutas de administrador
   if (to.matched.some(record => record.meta.requiresAdmin)) {
     if (userStore.authenticated && userStore.user?.esadmin) {
-      next(); // El usuario es administrador, permitir acceso
+      next();
+    } else if (userStore.authenticated) {
+      // Usuario autenticado pero no es admin
+      next({ path: '/no-autorizado' });
     } else {
-      next({ path: '/no-autorizado' }); // Redirigir si no es administrador
+      // Usuario no autenticado
+      next({
+        path: '/Login',
+        query: { redirect: to.fullPath }
+      });
     }
     return;
   }
@@ -136,21 +178,24 @@ router.beforeEach((to, from, next) => {
   // Validación para rutas que requieren autenticación general
   if (to.matched.some(record => record.meta.requiresAuth)) {
     if (userStore.authenticated) {
-      next(); // El usuario está autenticado, permitir acceso
+      next();
     } else {
       next({
         path: '/Login',
-        query: { redirect: to.fullPath } // Guardar la ruta de redirección
+        query: { redirect: to.fullPath }
       });
     }
+    return;
+  }
+
+  // Redirigir a la página principal si ya está autenticado
+  if (to.path === '/Login' && userStore.authenticated) {
+    next({ path: '/' }); // Redirigir al home o dashboard
     return;
   }
 
   // Continuar para rutas públicas
   next();
 });
-
-
-
 
 export default router
