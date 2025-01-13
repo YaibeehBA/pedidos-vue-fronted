@@ -29,8 +29,6 @@
 
 
 <script setup>
-import VueCal from 'vue-cal'; 
-import 'vue-cal/dist/vuecal.css'; 
 import { ref, onMounted } from 'vue';
 import { Bar } from 'vue-chartjs';
 import Calendario from '@/components/admin/Calendario.vue';

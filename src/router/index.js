@@ -10,6 +10,8 @@ import ProductoBase from '@/views/admin/ProductoBase.vue';
 import ProductoFinal from '@/views/admin/ProductoFinal.vue';
 import { useUserStore } from '@/stores/authstore';
 import Reportes from '@/views/admin/Reportes.vue';
+import Pedidos from '../views/Pedidos.vue';
+import PedidosAdmin from '@/views/admin/PedidosAdmin.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -101,6 +103,11 @@ const router = createRouter({
           name: 'reportes',
           component: Reportes,
         },
+        {
+          path: 'pedidosadmin',
+          name: 'pedidosadmin',
+          component: PedidosAdmin,
+        }
       ],
     },
     {

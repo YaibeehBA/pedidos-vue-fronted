@@ -82,6 +82,37 @@ const toggleSidebar = () => {
           </RouterLink>
         </li>
         <li class="nav-item">
+        <!-- Opción principal: Productos -->
+              <div class="nav-link d-flex align-items-center px-4 py-2 text-dark" @click="toggleDropdown('products')">
+                <span class="material-icons me-3">shopping_bag</span>
+                <span v-show="isExpanded">Productos</span>
+                <span class="material-icons ms-auto" v-if="isDropdownOpen.products">expand_less</span>
+                <span class="material-icons ms-auto" v-else>expand_more</span>
+              </div>
+
+        <!-- Submenú desplegable -->
+            <ul v-if="isDropdownOpen.products" class="list-unstyled ps-4">
+              <li class="nav-item">
+                <RouterLink to="/admin/productobase" class="nav-link d-flex align-items-center py-2 text-dark">
+                  <span class="material-icons me-2">layers</span>
+                Base
+                </RouterLink>
+              </li>
+              <li class="nav-item">
+                <RouterLink to="/admin/productofinal" class="nav-link d-flex align-items-center py-2 text-dark">
+                  <span class="material-icons me-2">check_circle</span>
+                  Finales
+                </RouterLink>
+              </li>
+            </ul>
+       </li>
+        <li class="nav-item">
+          <RouterLink to="/admin/pedidosadmin" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
+            <span class="material-icons me-3">receipt_long</span>
+            <span v-show="isExpanded">Pedidos</span>
+          </RouterLink>
+        </li>
+        <li class="nav-item">
           <RouterLink to="/admin/categorias" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
             <span class="material-icons me-3">category</span>
             <span v-show="isExpanded">Categorías</span>
@@ -106,31 +137,7 @@ const toggleSidebar = () => {
             <span v-show="isExpanded">Productos</span>
           </RouterLink>
         </li> -->
-        <li class="nav-item">
-        <!-- Opción principal: Productos -->
-        <div class="nav-link d-flex align-items-center px-4 py-2 text-dark" @click="toggleDropdown('products')">
-          <span class="material-icons me-3">shopping_bag</span>
-          <span v-show="isExpanded">Productos</span>
-          <span class="material-icons ms-auto" v-if="isDropdownOpen.products">expand_less</span>
-          <span class="material-icons ms-auto" v-else>expand_more</span>
-        </div>
-
-        <!-- Submenú desplegable -->
-        <ul v-if="isDropdownOpen.products" class="list-unstyled ps-4">
-          <li class="nav-item">
-            <RouterLink to="/admin/productobase" class="nav-link d-flex align-items-center py-2 text-dark">
-              <span class="material-icons me-2">layers</span>
-            Base
-            </RouterLink>
-          </li>
-          <li class="nav-item">
-            <RouterLink to="/admin/productofinal" class="nav-link d-flex align-items-center py-2 text-dark">
-              <span class="material-icons me-2">check_circle</span>
-              Finales
-            </RouterLink>
-          </li>
-        </ul>
-      </li>
+      
 
 
         <li class="nav-item">
