@@ -68,11 +68,17 @@ const toggleSidebar = () => {
     </div>
     
     <nav class="mt-4 flex-grow-1">
-      <ul class="nav flex-column">
+      <ul class="nav flex-column vh-100 list-unstyled">
         <li class="nav-item">
           <RouterLink to="/admin" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
             <span class="material-icons me-3">dashboard</span>
             <span v-show="isExpanded">Dashboard</span>
+          </RouterLink>
+        </li>
+        <li class="nav-item">
+          <RouterLink to="/admin/reportes" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
+            <span class="material-icons me-3">summarize</span>
+            <span v-show="isExpanded">Reportes</span>
           </RouterLink>
         </li>
         <li class="nav-item">

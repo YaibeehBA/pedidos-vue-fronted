@@ -9,6 +9,7 @@ import Colores from '@/views/admin/Colores.vue';
 import ProductoBase from '@/views/admin/ProductoBase.vue';
 import ProductoFinal from '@/views/admin/ProductoFinal.vue';
 import { useUserStore } from '@/stores/authstore';
+import Reportes from '@/views/admin/Reportes.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -96,9 +97,9 @@ const router = createRouter({
           component: Usuarios,
         },
         {
-          path: 'usuarios',
-          name: 'Usuarios',
-          component: Usuarios,
+          path: 'reportes',
+          name: 'reportes',
+          component: Reportes,
         },
       ],
     },
@@ -116,40 +117,6 @@ const router = createRouter({
 });
 
 
-
-
-// router.beforeEach((to, from, next) => {
-//   const userStore = useUserStore();
-
-//   // userStore.syncAuthentication();
-
-//   // Validación para rutas de administrador
-//   if (to.matched.some(record => record.meta.requiresAdmin)) {
-//     if (userStore.authenticated && userStore.user?.esadmin) {
-     
-//       next(); // El usuario es administrador, permitir acceso
-//     } else {
-//       next({ path: '/no-autorizado' }); // Redirigir si no es administrador
-//     }
-//     return;
-//   }
-
-//   // Validación para rutas que requieren autenticación general
-//   if (to.matched.some(record => record.meta.requiresAuth)) {
-//     if (userStore.authenticated) {
-//       next(); // El usuario está autenticado, permitir acceso
-//     } else {
-//       next({
-//         path: '/Login',
-//         query: { redirect: to.fullPath } // Guardar la ruta de redirección
-//       });
-//     }
-//     return;
-//   }
-
-//   // Continuar para rutas públicas
-//   next();
-// });
 
 
 router.beforeEach(async (to, from, next) => {
