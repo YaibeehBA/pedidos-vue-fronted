@@ -158,6 +158,25 @@ const User = {
       throw error;
     }
   },
+  async UsuarioActual() {
+    try {
+      // Recuperar el token del localStorage
+      const token = localStorage.getItem('auth');
+      if (!token) {
+        throw new Error('Token de autenticación no disponible');
+      }
+      const response = await Api.get('user', {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      return response.data;
+    } catch (error) {
+      console.error('Error al obtener los datos del usuario:', error);
+      throw error; 
+    }
+  },
   
 
 };

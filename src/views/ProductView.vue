@@ -3,10 +3,8 @@
     <!-- Breadcrumb -->
     <nav aria-label="breadcrumb">
       <ol class="breadcrumb">
-        <li class="breadcrumb-item"><a href="#">Home</a></li>
-        <li class="breadcrumb-item"><a href="#">Men</a></li>
-        <li class="breadcrumb-item"><a href="#">Tops</a></li>
-        <li class="breadcrumb-item active" aria-current="page">Peanuts Long Sleeve Sweatshirt</li>
+        <a href="/" class="text-dark text-decoration-none">Inicio</a>
+      
       </ol>
     </nav>
 

@@ -1,6 +1,5 @@
 <template>
     <div>
-      <h2>Peanuts Long Sleeve Sweatshirt</h2>
       <p>A baseball-themed collection, a favorite of the Peanuts friends.</p>
       <p>
         <strong>$122.00</strong>

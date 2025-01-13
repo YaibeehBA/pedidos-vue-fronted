@@ -121,6 +121,8 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore();
 
+  userStore.syncAuthentication();
+
   // Validación para rutas de administrador
   if (to.matched.some(record => record.meta.requiresAdmin)) {
     if (userStore.authenticated && userStore.user?.esadmin) {

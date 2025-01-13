@@ -88,8 +88,7 @@ export const useUserStore = defineStore('user', {
       if (token) {
         this.token = token;
         this.authenticated = true;
-        // Opcionalmente, puedes decodificar el token si contiene datos del usuario
-        // Ejemplo: Decodificar JWT y obtener usuario
+        
         this.user = this.user || null; // Asegúrate de manejar el usuario correctamente
       } else {
         this.authenticated = false;
