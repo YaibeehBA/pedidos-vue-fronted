@@ -89,7 +89,7 @@ const router = useRouter();
              
                 <router-link to="/" class="navbar-brand fw-bold fs-2">
 
-                  <img src="https://img.freepik.com/vector-premium/mujer-nativa-americana-mas-cincuenta-anos-haciendo-mocasines_1238364-97558.jpg?semt=ais_hybrid" height="50" alt="Logo" />
+                  <img src="/logo.jpeg" height="50" alt="Logo" />
                 </router-link>
               
               <router-link to="/" class="navbar-brand fw-bold fs-2">New Blessings</router-link>

@@ -4,7 +4,7 @@ import Csrf from './Csrf';      // Asegúrate de que esta ruta esté correcta.
 const Tallas = {
   async fetchTallas() {
     try {
-      await Csrf.getCookie(); // Validamos el token CSRF
+      // await Csrf.getCookie(); // Validamos el token CSRF
 
       const token = localStorage.getItem('auth');
       if (!token) {
@@ -26,7 +26,7 @@ const Tallas = {
 
   async createTallas(categoryData) {
     try {
-      await Csrf.getCookie();
+      // await Csrf.getCookie();
 
       const token = localStorage.getItem('auth');
       if (!token) {
@@ -53,7 +53,7 @@ const Tallas = {
 
   async updateTallas(categoryId, updatedData) {
     try {
-      await Csrf.getCookie();
+      // await Csrf.getCookie();
 
       const token = localStorage.getItem('auth');
       if (!token) {
@@ -80,7 +80,7 @@ const Tallas = {
 
   async deleteTallas(categoryId) {
     try {
-      await Csrf.getCookie();
+      // await Csrf.getCookie();
 
       const token = localStorage.getItem('auth');
       if (!token) {
@@ -102,7 +102,7 @@ const Tallas = {
 
   async getTallasId(categoryId) {
     try {
-      await Csrf.getCookie();
+      // await Csrf.getCookie();
 
       const token = localStorage.getItem('auth');
       if (!token) {

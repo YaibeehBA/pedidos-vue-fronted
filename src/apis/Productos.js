@@ -4,7 +4,7 @@ import Csrf from './Csrf';      // Asegúrate de que esta ruta esté correcta.
 const Producto = {
   async fetchCategories() {
     try {
-      await Csrf.getCookie(); // Validamos el token CSRF
+      // await Csrf.getCookie(); // Validamos el token CSRF
 
       const token = localStorage.getItem('auth');
       if (!token) {
@@ -26,7 +26,7 @@ const Producto = {
 
   async createCategory(categoryData) {
     try {
-      await Csrf.getCookie();
+      // await Csrf.getCookie();
 
       const token = localStorage.getItem('auth');
       if (!token) {
@@ -53,7 +53,7 @@ const Producto = {
 
   async updateCategory(categoryId, updatedData) {
     try {
-      await Csrf.getCookie();
+      // await Csrf.getCookie();
 
       const token = localStorage.getItem('auth');
       if (!token) {
@@ -80,7 +80,7 @@ const Producto = {
 
   async deleteCategory(categoryId) {
     try {
-      await Csrf.getCookie();
+      // await Csrf.getCookie();
 
       const token = localStorage.getItem('auth');
       if (!token) {
@@ -102,7 +102,7 @@ const Producto = {
 
   async getCategoryById(categoryId) {
     try {
-      await Csrf.getCookie();
+      // await Csrf.getCookie();
 
       const token = localStorage.getItem('auth');
       if (!token) {

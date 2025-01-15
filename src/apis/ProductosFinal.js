@@ -4,7 +4,7 @@ import Csrf from './Csrf';      // Asegúrate de que esta ruta esté correcta.
 const ProductoFinal = {
   async fetchCategories() {
     try {
-      await Csrf.getCookie(); // Validamos el token CSRF
+      // await Csrf.getCookie(); // Validamos el token CSRF
 
       const token = localStorage.getItem('auth');
       if (!token) {
@@ -25,7 +25,7 @@ const ProductoFinal = {
   },
   async fetchAgrupado() {
     try {
-      await Csrf.getCookie(); // Validamos el token CSRF
+      // await Csrf.getCookie(); // Validamos el token CSRF
 
       const token = localStorage.getItem('auth');
       if (!token) {
@@ -47,7 +47,7 @@ const ProductoFinal = {
 
   async createCategory(categoryData) {
     try {
-      await Csrf.getCookie();
+      // await Csrf.getCookie();
 
       const token = localStorage.getItem('auth');
       if (!token) {
@@ -75,7 +75,7 @@ const ProductoFinal = {
 
   async updateCategory(categoryId, updatedData) {
     try {
-      await Csrf.getCookie();
+      // await Csrf.getCookie();
 
       const token = localStorage.getItem('auth');
       if (!token) {
@@ -88,7 +88,8 @@ const ProductoFinal = {
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
+             'Content-Type': 'application/json',
+            //  'Content-Type': 'multipart/form-data'
           },
         }
       );
@@ -102,7 +103,7 @@ const ProductoFinal = {
 
   async deleteCategory(categoryId) {
     try {
-      await Csrf.getCookie();
+      // await Csrf.getCookie();
 
       const token = localStorage.getItem('auth');
       if (!token) {
@@ -124,7 +125,7 @@ const ProductoFinal = {
 
   async getCategoryById(categoryId) {
     try {
-      await Csrf.getCookie();
+      // await Csrf.getCookie();
 
       const token = localStorage.getItem('auth');
       if (!token) {
