@@ -82,14 +82,14 @@ const ProductoFinal = {
         throw new Error('Token de autenticación no disponible');
       }
 
-      const response = await Api.put(
+      const response = await Api.post(
         `admin/detalles-productos/${categoryId}`,
         updatedData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
-             'Content-Type': 'application/json',
-            //  'Content-Type': 'multipart/form-data'
+            //  'Content-Type': 'application/json',
+              'Content-Type': 'multipart/form-data'
           },
         }
       );

@@ -331,12 +331,30 @@ const handleImageUpload = (event) => {
   reader.readAsDataURL(file);
 };
 
+// const getImageUrl = (imagePath) => {
+//   if (!imagePath) return '';
+//   if (imagePath.startsWith('http')) return imagePath;
+//   const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+//   return `${baseUrl}/storage/${imagePath}`;
+// };
 const getImageUrl = (imagePath) => {
-  if (!imagePath) return '';
-  if (imagePath.startsWith('http')) return imagePath;
+  if (!imagePath) return ''; // Si no hay imagen
+  if (typeof imagePath === 'string' && imagePath.startsWith('http')) {
+    return imagePath; // Si es una URL, devuelve la URL
+  }
+  if (imagePath instanceof File) {
+    // Si es un archivo, devolver un 'preview' temporal (solo si es una imagen cargada).
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      return e.target.result;  // Aquí puedes devolver la vista previa de la imagen
+    };
+    reader.readAsDataURL(imagePath); // Convertir el archivo en base64 para mostrarlo
+  }
+  // Si es otro tipo de valor (como una imagen sin url), manejarlo aquí
   const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
   return `${baseUrl}/storage/${imagePath}`;
 };
+
 
 const getProductoBaseName = (id) => {
   const producto = baseProducts.value.find(p => p.id === id);
@@ -506,29 +524,80 @@ const validateEditForm = () => {
   return true;
 };
 
-// Función para actualizar el producto
+// // Función para actualizar el producto
+// const updateProduct = async () => {
+//   if (!validateEditForm()) return;
+
+//   try {
+//     const formData = new FormData();
+    
+//     formData.append('producto_id', String(editData.value.producto_id));
+//     formData.append('precio_base', String(editData.value.precio_base));
+//     formData.append('color_id', String(editData.value.color_id));
+    
+//     // Agregar las tallas seleccionadas
+//     editData.value.tallas.forEach((tallaId, index) => {
+//       formData.append(`tallas[${index}]`, tallaId);
+//     });
+    
+//     // Solo agregar la imagen si se seleccionó una nueva
+//     if (editData.value.imagen_url instanceof File) {
+      
+//       formData.append('imagen_url', editData.value.imagen_url);
+//     }
+
+      
+
+//     const response = await ProductoFinal.updateCategory(editData.value.id, formData);
+    
+//     if (response && response.data) {
+//       show_alerta('Producto actualizado correctamente', 'success');
+//       await fetchAllData();
+      
+//       const modalElement = document.getElementById('editProductModal');
+//       const modalInstance = bootstrap.Modal.getInstance(modalElement);
+//       if (modalInstance) {
+//         modalInstance.hide();
+//       }
+//     }
+//   } catch (error) {
+//     console.error("Error al actualizar el producto:", error);
+//     show_alerta(error.response?.data?.message || 'Error al actualizar el producto', 'error');
+//   }
+// };
+
 const updateProduct = async () => {
   if (!validateEditForm()) return;
 
   try {
     const formData = new FormData();
     
-    formData.append('producto_id', String(editData.value.producto_id));
-    formData.append('precio_base', String(editData.value.precio_base));
-    formData.append('color_id', String(editData.value.color_id));
+    // Añadir los campos al FormData solo si tienen valor
+    if (editData.value.producto_id) {
+      formData.append('producto_id', String(editData.value.producto_id));
+    }
     
-    // Agregar las tallas seleccionadas
-    editData.value.tallas.forEach((tallaId, index) => {
-      formData.append(`tallas[${index}]`, tallaId);
-    });
+    if (editData.value.precio_base) {
+      formData.append('precio_base', String(editData.value.precio_base));
+    }
     
-    // Solo agregar la imagen si se seleccionó una nueva
+    if (editData.value.color_id) {
+      formData.append('color_id', String(editData.value.color_id));
+    }
+    
+    // Añadir tallas seleccionadas
+    if (editData.value.tallas && editData.value.tallas.length > 0) {
+      editData.value.tallas.forEach((tallaId, index) => {
+        formData.append(`tallas[${index}]`, String(tallaId));
+      });
+    }
+    
+    // Añadir imagen solo si se seleccionó una nueva
     if (editData.value.imagen_url instanceof File) {
       formData.append('imagen_url', editData.value.imagen_url);
     }
 
-    // Agregar el método PUT para Laravel
-
+    // Asegurarse que ProductoFinal.updateCategory use POST
     const response = await ProductoFinal.updateCategory(editData.value.id, formData);
     
     if (response && response.data) {
@@ -540,10 +609,24 @@ const updateProduct = async () => {
       if (modalInstance) {
         modalInstance.hide();
       }
+
+      // Limpiar el formulario después de actualizar
+      editData.value = {
+        id: null,
+        producto_id: '',
+        imagen_url: null,
+        precio_base: '',
+        color_id: '',
+        tallas: [],
+        imagePreview: null
+      };
     }
   } catch (error) {
     console.error("Error al actualizar el producto:", error);
-    show_alerta(error.response?.data?.message || 'Error al actualizar el producto', 'error');
+    show_alerta(
+      error.response?.data?.message || 'Error al actualizar el producto', 
+      'error'
+    );
   }
 };
 
