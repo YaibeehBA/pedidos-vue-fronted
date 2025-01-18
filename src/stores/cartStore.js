@@ -5,7 +5,8 @@ import { useUserStore } from './authstore' // Cambiado de useAuthStore a useUser
 
 export const useCartStore = defineStore('cart', {
   state: () => ({
-    cartItems: []
+    cartItems: [],
+    _cartItemsCount: 0
   }),
 
   actions: {
@@ -40,7 +41,8 @@ export const useCartStore = defineStore('cart', {
         }
     },
     clearCart() {
-      this.cartItems = []
+      this.cartItems = [];
+      this._cartItemsCount = 0;
     },
 
     async createOrder() {

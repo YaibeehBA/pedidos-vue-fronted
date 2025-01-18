@@ -133,10 +133,7 @@
     </div>
   </div>
 
-    <!-- Puedes agregar un indicador del carrito en alguna parte visible -->
-    <div class="cart-indicator" v-if="userStore.authenticated">
-    Productos en carrito: {{ cartStore.cartItemsCount }}
-  </div>
+    
 
 </template>
 
@@ -508,16 +505,7 @@ const realizarPedido = async () => {
 .color-box:hover {
   transform: scale(1.1);
 }
-.cart-indicator {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background-color: #28a745;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 20px;
-  z-index: 1000;
-}
+
 /* Estilos móviles */
 @media (max-width: 767px) {
   .vertical-slider-container {

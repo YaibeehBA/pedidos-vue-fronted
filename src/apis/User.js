@@ -52,7 +52,8 @@ const User = {
       if (!token) {
         throw new Error('No estás autenticado');
       }
-  
+      
+      
       // Realizamos la solicitud GET para cerrar sesión con el token CSRF
       const response = await Api.get('/auth/logout', {
         headers: {
