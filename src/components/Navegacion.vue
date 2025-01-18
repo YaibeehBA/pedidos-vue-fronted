@@ -114,9 +114,15 @@ const router = useRouter();
                           Mis Pedidos
                       </router-link>
                   </li>
+                  <li class="nav-item">
+                      <router-link  class="nav-item nav-link" :to="{ name: 'Carrito' }">
+                        
+                        <span class="material-icons px-2">shopping_cart</span>
+                      </router-link>
+                  </li>
                   <li class="nav-item" v-if="userStore.authenticated">
-  <a href="#" @click.prevent="logout" class="nav-link">Salir</a> <!-- Uso de a en lugar de router-link -->
-</li>
+                    <a href="#" @click.prevent="logout" class="nav-link">Salir</a> <!-- Uso de a en lugar de router-link -->
+                  </li>
 
               </ul>
 

@@ -132,6 +132,12 @@
       </div>
     </div>
   </div>
+
+    <!-- Puedes agregar un indicador del carrito en alguna parte visible -->
+    <div class="cart-indicator" v-if="userStore.authenticated">
+    Productos en carrito: {{ cartStore.cartItemsCount }}
+  </div>
+
 </template>
 
 <script setup>
@@ -141,10 +147,13 @@ import { useRouter } from "vue-router";
 import { useUserStore } from '@/stores/authstore';
 import { IMAGE_BASE_URL } from "@/apis/Api";
 import { PublicApi } from "@/apis/Api";
+import { useCartStore } from '@/stores/cartStore';
 
 const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
+const cartStore = useCartStore();
+
 const productos = ref([]);
 const productoSeleccionado = ref(null);
 const varianteSeleccionada = ref(null);
@@ -209,21 +218,21 @@ const seleccionarTalla = (talla) => {
 
 
 
-const añadirAlCarrito = () => {
-  if (!tallaSeleccionada.value) {
-    alert('Por favor seleccione una talla');
-    return;
-  }
-  // lógica para añadir al carrito
-};
+// const añadirAlCarrito = () => {
+//   if (!tallaSeleccionada.value) {
+//     alert('Por favor seleccione una talla');
+//     return;
+//   }
+//   // lógica para añadir al carrito
+// };
 
-const realizarPedido = () => {
-  if (!tallaSeleccionada.value) {
-    alert('Por favor seleccione una talla');
-    return;
-  }
-  //  lógica para realizar el pedido
-};
+// const realizarPedido = () => {
+//   if (!tallaSeleccionada.value) {
+//     alert('Por favor seleccione una talla');
+//     return;
+//   }
+//   //  lógica para realizar el pedido
+// };
 const validarInput = (event) => {
   // Permitir solo números y la tecla de borrar
   if (!/^\d+$/.test(event.key) && event.key !== 'Backspace' && event.key !== 'Delete') {
@@ -277,10 +286,93 @@ const decrementarCantidad = () => {
 };
 
 
+
 onMounted(() => {
   fetchProductos();
 });
 
+// ----------------------------------------------------------
+const añadirAlCarrito = () => {
+  if (!userStore.authenticated) {
+    alert('Por favor inicie sesión para añadir productos al carrito');
+    router.push('/login'); // O la ruta que uses para el login
+    return;
+  }
+
+  if (!tallaSeleccionada.value) {
+    alert('Por favor seleccione una talla');
+    return;
+  }
+
+  // Encontrar el ID de la talla seleccionada
+  const tallaId = varianteSeleccionada.value.tallas.find(
+    t => t.nombre === tallaSeleccionada.value
+  )?.id;
+
+  if (!tallaId) {
+    alert('Error al identificar la talla seleccionada');
+    return;
+  }
+
+  try {
+    cartStore.addToCart(
+      varianteSeleccionada.value.id, // detalles_productos_id
+      cantidad.value,                 // cantidad
+      tallaId                        // talla_id
+    );
+
+    alert('Producto añadido al carrito exitosamente');
+    
+    // Resetear selecciones
+    tallaSeleccionada.value = null;
+    cantidad.value = 1;
+    cantidadInput.value = '1';
+  } catch (error) {
+    console.error('Error al añadir al carrito:', error);
+    alert('Error al añadir el producto al carrito');
+  }
+};
+
+const realizarPedido = async () => {
+  if (!userStore.authenticated) {
+    alert('Por favor inicie sesión para realizar un pedido');
+    router.push('/login');
+    return;
+  }
+
+  if (!tallaSeleccionada.value) {
+    alert('Por favor seleccione una talla');
+    return;
+  }
+
+  // Encontrar el ID de la talla seleccionada
+  const tallaId = varianteSeleccionada.value.tallas.find(
+    t => t.nombre === tallaSeleccionada.value
+  )?.id;
+
+  if (!tallaId) {
+    alert('Error al identificar la talla seleccionada');
+    return;
+  }
+
+  try {
+    // Primero añadimos el producto al carrito
+    cartStore.addToCart(
+      varianteSeleccionada.value.id,
+      cantidad.value,
+      tallaId
+    );
+
+    // Luego creamos la orden inmediatamente
+    await cartStore.createOrder();
+
+    alert('¡Pedido realizado con éxito!');
+    router.push('/Pedidos'); // O la ruta donde muestres las órdenes del usuario
+  } catch (error) {
+    console.error('Error al realizar el pedido:', error);
+    alert('Error al realizar el pedido');
+  }
+};
 // const realizarPedido = () => {
 //   if (productoSeleccionado.value && varianteSeleccionada.value) {
 //     // Verificar si el usuario está autenticado
@@ -416,7 +508,16 @@ onMounted(() => {
 .color-box:hover {
   transform: scale(1.1);
 }
-
+.cart-indicator {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #28a745;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  z-index: 1000;
+}
 /* Estilos móviles */
 @media (max-width: 767px) {
   .vertical-slider-container {

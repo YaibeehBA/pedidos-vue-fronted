@@ -59,6 +59,11 @@ const router = createRouter({
       component: () => import('../views/Pedidos.vue'),
     },
     {
+      path: '/Carrito',
+      name: 'Carrito',
+      component: () => import('../views/pedidos/Carrito.vue'),
+    },
+    {
       path: '/admin',
       name:AdminLayout,
       component: AdminLayout,  // 'AdminLayout' es ahora un contenedor
