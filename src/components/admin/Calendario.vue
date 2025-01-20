@@ -1,32 +1,25 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 
-const pickupOrders = ref([
-  {
-    id: 1,
-    orderId: 'ORD-001',
-    customerName: 'John Doe',
-    date: '2025-01-15',
-    status: 'pendiente'
-  },
-  {
-    id: 2,
-    orderId: 'ORD-002',
-    customerName: 'Jane Smith',
-    date: '2025-01-15',
-    status: 'confirmado'
-  },
-  {
-    id: 3,
-    orderId: 'ORD-003',
-    customerName: 'Mike Johnson',
-    date: '2025-01-20',
-    status: 'pendiente'
-  }
-])
-
+const pickupOrders = ref([]) // Inicialmente vacío para cargar dinámicamente desde el endpoint
 const currentDate = ref(new Date())
 const selectedDate = ref(new Date().toISOString().split('T')[0])
+
+// Función para obtener datos desde el backend
+const fetchOrders = async () => {
+  try {
+    const response = await fetch('http://127.0.0.1:8000/api/public/fechas') // Endpoint del backend
+    if (response.ok) {
+      const data = await response.json()
+      // Supongamos que la API devuelve las órdenes directamente como un array
+      pickupOrders.value = data.ordenes
+    } else {
+      console.error('Error al obtener las órdenes:', response.statusText)
+    }
+  } catch (error) {
+    console.error('Error de conexión:', error)
+  }
+}
 
 // Obtener los días del mes actual
 const getDaysInMonth = computed(() => {
@@ -59,7 +52,7 @@ const formatDate = (dateString) => {
 }
 
 const getOrdersForDate = (date) => {
-  return pickupOrders.value.filter(order => order.date === date)
+  return pickupOrders.value.filter(order => order.fecha_entrega === date)
 }
 
 const previousMonth = () => {
@@ -75,6 +68,9 @@ const firstDayOfWeek = computed(() => {
   const firstDay = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth(), 1)
   return firstDay.getDay() === 0 ? 7 : firstDay.getDay()
 })
+
+// Cargar datos al montar el componente
+onMounted(fetchOrders)
 </script>
 
 <template>
@@ -100,11 +96,7 @@ const firstDayOfWeek = computed(() => {
         <div
           v-for="day in getDaysInMonth"
           :key="day.date"
-          :class="[
-            'calendar-day',
-            { 'has-orders': getOrdersForDate(day.date).length > 0 },
-            { 'selected': selectedDate === day.date }
-          ]"
+          :class="[ 'calendar-day', { 'has-orders': getOrdersForDate(day.date).length > 0 }, { 'selected': selectedDate === day.date }]"
           @click="selectedDate = day.date"
         >
           <span class="day-number">{{ day.dayOfMonth }}</span>
@@ -131,7 +123,8 @@ const firstDayOfWeek = computed(() => {
             <span class="order-id">{{ order.orderId }}</span>
             <span :class="['status-tag', order.status]">{{ order.status }}</span>
           </div>
-          <div class="customer-name">{{ order.customerName }}</div>
+          <div class="customer-name">Usuario: {{ order.usuario }}</div>
+          <div class="delivery-date">Fecha de Entrega: {{ formatDate(order.fecha_entrega) }}</div>
         </div>
       </div>
     </div>

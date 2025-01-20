@@ -1,6 +1,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import User from '../../apis/User';
+import { IMAGE_BASE_URL } from '@/apis/Api';
+
 
 const orders = ref([]);
 const users = ref([]);
@@ -14,10 +16,15 @@ const editForm = ref({
 const estadoOptions = ['pendiente', 'aprobada', 'rechazada', 'pagada', 'entregada'];
 const estadoPagoOptions = ['pendiente', 'completado'];
 
+const getTallas = (tallas) => tallas.map(talla => talla.nombre).join(', ');
+const getColorName = (color) => (color && color.nombre) || 'Sin color';
+
 const fetchOrders = async () => {
   try {
     const response = await fetch('http://localhost:8000/api/public/ordenes');
-    orders.value = await response.json();
+    const data = await response.json();
+    orders.value = data.ordenes || [];
+    console.log('Órdenes cargadas:', orders.value); // Para debugging
   } catch (error) {
     console.error('Error fetching orders:', error);
   }
@@ -37,18 +44,18 @@ const getUserName = (userId) => {
 };
 
 const openModal = (order) => {
+  console.log('Orden seleccionada:', order); // Para debugging
   selectedOrder.value = order;
   editForm.value = {
     estado: order.estado,
     estado_pago: order.estado_pago
   };
   showModal.value = true;
-  document.body.style.overflow = 'hidden';
 };
 
 const closeModal = () => {
   showModal.value = false;
-  document.body.style.overflow = 'auto';
+  selectedOrder.value = null;
 };
 
 const updateOrder = async () => {
@@ -81,6 +88,15 @@ const getStatusClass = (status) => {
   return `badge ${classes[status] || 'bg-secondary'} text-white`;
 };
 
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString();
+};
+
+const getTallaName = (talla_id, detalleProducto) => {
+  const talla = detalleProducto.tallas.find(t => t.id === talla_id);
+  return talla ? talla.nombre : 'N/A';
+};
+
 onMounted(() => {
   fetchOrders();
   fetchUsers();
@@ -90,7 +106,7 @@ onMounted(() => {
 <template>
   <div class="container-fluid position-relative">
     <h2 class="mb-4">Gestión de Órdenes</h2>
-    
+
     <!-- Table -->
     <div class="table-responsive">
       <table class="table table-striped table-hover">
@@ -102,6 +118,7 @@ onMounted(() => {
             <th>Fecha Entrega</th>
             <th>Estado</th>
             <th>Estado Pago</th>
+            <th>Fecha Creación</th>
             <th>Acciones</th>
           </tr>
         </thead>
@@ -110,11 +127,12 @@ onMounted(() => {
             <td>#{{ order.id }}</td>
             <td>{{ getUserName(order.usuario_id) }}</td>
             <td>${{ order.monto_total }}</td>
-            <td>{{ new Date(order.fecha_entrega).toLocaleDateString() }}</td>
+            <td>{{ formatDate(order.fecha_entrega) }}</td>
             <td><span :class="getStatusClass(order.estado)">{{ order.estado }}</span></td>
             <td><span :class="getStatusClass(order.estado_pago)">{{ order.estado_pago }}</span></td>
+            <td>{{ formatDate(order.created_at) }}</td>
             <td>
-              <button class="btn btn-sm btn-primary" @click.stop="openModal(order)">
+              <button class="btn btn-sm btn-primary" @click="openModal(order)">
                 <i class="material-icons">visibility</i>
               </button>
             </td>
@@ -124,109 +142,189 @@ onMounted(() => {
     </div>
 
     <!-- Modal -->
-    <Teleport to="body">
-      <div v-if="showModal" class="modal-wrapper">
-        <div class="custom-modal-backdrop" @click="closeModal"></div>
-        <div class="modal" tabindex="-1" role="dialog" style="display: block;">
-          <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title">Detalles de la Orden #{{ selectedOrder?.id }}</h5>
-                <button type="button" class="btn-close" @click="closeModal"></button>
-              </div>
-              <div class="modal-body">
-                <div class="row">
-                  <!-- Order Details -->
-                  <div class="col-md-6">
-                    <h6>Información de la Orden</h6>
-                    <div class="mb-3">
-                      <label class="form-label">Estado</label>
-                      <select v-model="editForm.estado" class="form-select">
-                        <option v-for="option in estadoOptions" :key="option" :value="option">
-                          {{ option }}
-                        </option>
-                      </select>
-                    </div>
-                    <div class="mb-3">
-                      <label class="form-label">Estado de Pago</label>
-                      <select v-model="editForm.estado_pago" class="form-select">
-                        <option v-for="option in estadoPagoOptions" :key="option" :value="option">
-                          {{ option }}
-                        </option>
-                      </select>
-                    </div>
-                    <div class="mb-3">
-                      <p><strong>Fecha de Entrega:</strong> {{ new Date(selectedOrder?.fecha_entrega).toLocaleDateString() }}</p>
-                      <p><strong>Fecha de Creación:</strong> {{ new Date(selectedOrder?.created_at).toLocaleString() }}</p>
-                    </div>
-                  </div>
-                  
-                  <!-- Products Details -->
-                  <div class="col-md-6">
-                    <h6>Productos</h6>
-                    <div v-for="detalle in selectedOrder?.detalles" :key="detalle.id" class="card mb-2">
-                      <div class="card-body">
-                        <h6>{{ detalle.detalle_producto.producto.nombre }}</h6>
-                        <p class="mb-1">Cantidad: {{ detalle.cantidad }}</p>
-                        <p class="mb-1">Precio: ${{ detalle.precio_unitario }}</p>
-                        <p class="mb-0">Subtotal: ${{ detalle.subtotal }}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" @click="closeModal">Cerrar</button>
-                <button type="button" class="btn btn-primary" @click="updateOrder">Guardar Cambios</button>
+    <div v-if="showModal" class="modal-overlay">
+      <div class="modal-container">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h4 class="modal-title">Detalle de la Orden #{{ selectedOrder?.id }}</h4>
+            <button type="button" class="btn-close" @click="closeModal"></button>
+          </div>
+
+          <div class="modal-body">
+            <!-- Order Summary -->
+            <div class="order-summary mb-4">
+              <h5>Información General</h5>
+              <div class="info-grid">
+                <p><strong>Cliente:</strong> {{ getUserName(selectedOrder?.usuario_id) }}</p>
+                <p><strong>Monto Total:</strong> ${{ selectedOrder?.monto_total }}</p>
+                <p><strong>Fecha de Entrega:</strong> {{ formatDate(selectedOrder?.fecha_entrega) }}</p>
+                <p><strong>Fecha de Creación:</strong> {{ formatDate(selectedOrder?.created_at) }}</p>
               </div>
             </div>
+
+            <!-- Order Items -->
+            <div class="order-items mb-4">
+              <h5>Productos</h5>
+              <div v-if="selectedOrder?.detalles_con_tallas_y_colores" class="table-responsive">
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>Imagen</th>
+                      <th>Color</th>
+                      <th>Talla</th>
+                      <th>Cantidad</th>
+                      <th>Precio Unit.</th>
+                      <th>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="detalle in selectedOrder.detalles_con_tallas_y_colores" :key="detalle.id">
+                      <td>
+                        <img 
+                          :src="`${IMAGE_BASE_URL}/${detalle.detalle_producto.imagen_url}`" 
+                          alt="Producto" 
+                          class="product-thumbnail"
+                        />
+
+                      </td>
+                      <td>{{ getColorName(detalle.detalle_producto.color) }}</td>
+                      <td>{{ getTallaName(detalle.talla_id, detalle.detalle_producto) }}</td>
+                      <td>{{ detalle.cantidad }}</td>
+                      <td>${{ detalle.precio_unitario }}</td>
+                      <td>${{ detalle.subtotal }}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Update Form -->
+            <form @submit.prevent="updateOrder" class="update-form">
+              <div class="form-group mb-3">
+                <label for="estado">Estado</label>
+                <select v-model="editForm.estado" id="estado" class="form-control">
+                  <option v-for="option in estadoOptions" :key="option" :value="option">
+                    {{ option }}
+                  </option>
+                </select>
+              </div>
+              <div class="form-group mb-3">
+                <label for="estado_pago">Estado Pago</label>
+                <select v-model="editForm.estado_pago" id="estado_pago" class="form-control">
+                  <option v-for="option in estadoPagoOptions" :key="option" :value="option">
+                    {{ option }}
+                  </option>
+                </select>
+              </div>
+              <div class="modal-footer">
+                <button type="submit" class="btn btn-success">Actualizar</button>
+                <button type="button" class="btn btn-secondary" @click="closeModal">Cerrar</button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
-    </Teleport>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.modal-wrapper {
+.modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1050;
+  z-index: 1000;
 }
 
-.custom-modal-backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 1040;
+.modal-container {
+  background-color: white;
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
 }
 
-.modal {
-  position: relative;
-  z-index: 1050;
-  width: 100%;
+.modal-content {
+  overflow-y: auto;
+  max-height: calc(90vh - 2rem);
+  padding: 1rem;
 }
 
-.modal-dialog {
-  margin: 1.75rem auto;
-  pointer-events: auto;
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #dee2e6;
+  background-color: #f8f9fa;
+}
+
+.modal-body {
+  padding: 1rem;
+}
+
+.modal-footer {
+  padding: 1rem;
+  border-top: 1px solid #dee2e6;
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.product-thumbnail {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #dee2e6;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.update-form {
+  margin-top: 1rem;
 }
 
 .badge {
-  font-size: 0.875rem;
-  padding: 0.5em 0.75em;
+  padding: 0.5em 1em;
+}
+
+table {
+  margin-bottom: 0;
 }
 
 .table-responsive {
-  z-index: 1;
+  margin-bottom: 1rem;
+}
+
+.modal-title {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.btn-close {
+  padding: 0.5rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.btn-close:hover {
+  opacity: 0.7;
 }
 </style>
