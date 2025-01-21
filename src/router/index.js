@@ -69,6 +69,11 @@ const router = createRouter({
       component: () => import('./../views/Nosotros.vue'),
     },
     {
+      path: '/Contactos',
+      name: 'Contactos',
+      component: () => import('./../views/Contactos.vue'),
+    },
+    {
       path: '/admin',
       name:AdminLayout,
       component: AdminLayout,  // 'AdminLayout' es ahora un contenedor
