@@ -94,7 +94,7 @@ const router = useRouter();
         <!-- Enlaces principales -->
         <div class="main-links d-none d-lg-flex">
           <router-link :to="{ name: 'Pedidos' }" v-if="userStore.authenticated" class="nav-link">Mis Pedidos</router-link>
-          <router-link :to="{ name: 'home' }" class="nav-link">Nosotros</router-link>
+          <router-link :to="{ name: 'Nosotros' }" class="nav-link">Nosotros</router-link>
           <router-link :to="{ name: 'home' }" class="nav-link">Contáctanos</router-link>
         </div>
       </div>
@@ -109,7 +109,7 @@ const router = useRouter();
         <!-- Enlaces para móvil -->
         <div class="d-lg-none mobile-links">
           <router-link :to="{ name: 'Pedidos' }" v-if="userStore.authenticated" class="nav-link">Mis Pedidos</router-link>
-          <router-link :to="{ name: 'home' }" class="nav-link">Nosotros</router-link>
+          <router-link :to="{ name: 'Nosotros' }" class="nav-link">Nosotros</router-link>
           <router-link :to="{ name: 'home' }" class="nav-link">Contáctanos</router-link>
         </div>
 

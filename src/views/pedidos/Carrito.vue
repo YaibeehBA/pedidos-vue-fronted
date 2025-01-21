@@ -4,6 +4,23 @@
             <!-- Panel principal -->
             <div class="col-lg-8">
                 <div class="card border-0 shadow-sm mb-4">
+                    <div class="row mb-2">
+                        <div class="col-auto">
+                            <button @click="obtenerFechaEntrega" class="btn btn-primary">
+                                Calcular Fecha de Entrega
+                            </button>
+                        </div>
+                        <div class="col-auto mt-1">
+                            <span><strong>{{ fechaEntrega }}</strong></span>
+                        </div>
+                    </div>
+
+                    <!-- Feedback dinámico -->
+                    <div v-if="mensajeFeedback" class="alert alert-info mt-2">
+                        {{ mensajeFeedback }}
+                    </div>
+
+
                     <div class="card-header bg-white border-bottom-0 py-3">
                         <div class="d-flex align-items-center">
                             <input type="checkbox" class="form-check-input me-2" v-model="todoSeleccionado" @change="seleccionarTodo">
@@ -76,54 +93,98 @@
                 </div>
             </div>
 
+                    
             <!-- Panel lateral con cálculos actualizados -->
             <div class="col-lg-4">
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="card-body">
-                        <h6 class="mb-3">Detalles del precio</h6>
-                        
-                        <!-- Subtotal original -->
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Subtotal ({{ cantidadTotalProductos }} artículos)</span>
-                            <span>${{ subtotalSinDescuento.toFixed(2) }}</span>
-                        </div>
+    <div class="d-flex flex-column">
 
-                        <!-- Descuento por mayor si aplica -->
-                        <div v-if="aplicaDescuentoPorMayor" class="d-flex justify-content-between mb-2 text-success">
-                            <span>Descuento por mayor (-$7.00 c/u)</span>
-                            <span>-${{ descuentoTotal.toFixed(2) }}</span>
-                        </div>
-
-                        <!-- Gastos de envío -->
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Gastos de envío</span>
-                            <span class="text-success">Envío gratis</span>
-                        </div>
-
-                        <hr class="my-3">
-
-                        <!-- Total con descuento aplicado -->
-                        <div class="d-flex justify-content-between fw-bold">
-                            <span>Importe total</span>
-                            <span>${{ total.toFixed(2) }}</span>
-                        </div>
-
-                        <!-- Mensaje de descuento -->
-                        <div v-if="!aplicaDescuentoPorMayor && cantidadTotalProductos > 0" 
-                             class="text-muted small mt-2">
-                            Agrega {{ 3 - cantidadTotalProductos }} productos más para obtener descuento por mayor
-                        </div>
-
-                        <button class="btn btn-dark w-100 mt-3" 
-                                @click="realizarPedido"
-                                :disabled="productosCarrito.length === 0">
-                            Realizar pedido
-                        </button>
-                    </div>
+        <!-- Detalles del precio -->
+        <div class="card border-0 shadow-sm mb-4">
+            
+            <div class="card-body">
+                <h6 class="mb-3">Detalles del precio</h6>
+                
+                <!-- Subtotal original -->
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal ({{ cantidadTotalProductos }} artículos)</span>
+                    <span>${{ subtotalSinDescuento.toFixed(2) }}</span>
                 </div>
+
+                <!-- Descuento por mayor si aplica -->
+                <div v-if="aplicaDescuentoPorMayor" class="d-flex justify-content-between mb-2 text-success">
+                    <span>Descuento por mayor (-$7.00 c/u)</span>
+                    <span>-${{ descuentoTotal.toFixed(2) }}</span>
+                </div>
+
+                <hr class="my-3">
+
+                <!-- Total con descuento aplicado -->
+                <div class="d-flex justify-content-between fw-bold">
+                    <span>Importe total</span>
+                    <span>${{ total.toFixed(2) }}</span>
+                </div>
+
+                <!-- Mensaje de descuento -->
+                <div v-if="!aplicaDescuentoPorMayor && cantidadTotalProductos > 0" 
+                     class="text-muted small mt-2">
+                    Agrega {{ 3 - cantidadTotalProductos }} productos más para obtener descuento por mayor
+                </div>
+
+                <button class="btn btn-dark w-100 mt-3" 
+                        @click="realizarPedido"
+                        :disabled="productosCarrito.length === 0">
+                    Realizar pedido
+                </button>
             </div>
         </div>
+
+        <!-- Datos del cliente -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Cliente</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <div>
+                        <h6 class="mb-0">{{ userStore.user.nombre }} {{ userStore.user.apellido }}</h6>
+                        <small class="text-muted">Cuenta creada: {{ formattedDate(userStore.user.created_at) }}</small>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="material-icons me-2 text-muted">email</i>
+                        <span>{{ userStore.user.email }}</span>
+                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="material-icons me-2 text-muted">phone</i>
+                        <span>{{ userStore.user.celular }}</span>
+                    </div>
+                </div>
+                <hr />
+                <div class="mb-3">
+                    <h6>Dirección del Local New Blessings</h6>
+                    <p class="mb-0">
+                        123 Calle Principal<br />
+                        Chimborazo, Riobamba 170504<br />
+                        Ecuador
+                    </p>
+                </div>
+                <hr />
+            </div>
+        </div>
+        
     </div>
+</div>
+
+
+        </div>
+    </div>
+
+
+    
+    
+
+
 </template>
 
 <script setup>
@@ -132,13 +193,23 @@ import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/authstore'
 import { IMAGE_BASE_URL } from "@/apis/Api"
+import { PublicApi } from "@/apis/Api";
+import Swal from "sweetalert2"; 
+
 import axios from 'axios'
 
 const router = useRouter()
 const cartStore = useCartStore()
-const userStore = useUserStore()
 const todoSeleccionado = ref(false)
 const productosData = ref([])
+
+const userStore = useUserStore();
+
+// Formatea la fecha, por ejemplo:
+const formattedDate = (dateString) => {
+  const date = new Date(dateString);
+  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+};
 
 // Fetch productos data from API
 const fetchProductosData = async () => {
@@ -258,15 +329,90 @@ const eliminarSeleccionados = () => {
         })
 }
 
+// const realizarPedido = async () => {
+//     try {
+//         await cartStore.createOrder()
+//         router.push('/Pedidos')
+//     } catch (error) {
+//         console.error('Error al crear la orden:', error)
+//         alert('Error al procesar el pedido')
+//     }
+// }
+
+
 const realizarPedido = async () => {
-    try {
-        await cartStore.createOrder()
-        router.push('/orden-completada')
-    } catch (error) {
-        console.error('Error al crear la orden:', error)
-        alert('Error al procesar el pedido')
+  try { 
+    await cartStore.createOrder();
+    // Si la creación del pedido es exitosa, se muestra el mensaje de éxito.
+    Swal.fire({
+      icon: 'success',
+      title: 'Pedido realizado con éxito',
+      text: 'Tu pedido se ha procesado correctamente',
+      confirmButtonText: 'Aceptar'
+    });
+    // Redirigir a la página de pedidos
+    router.push('/Pedidos');
+  } catch (error) {
+    console.error('Error al crear la orden:', error);
+    // Si ocurre un error, se muestra el mensaje de error.
+    Swal.fire({
+      icon: 'error',
+      title: 'Error al procesar el pedido',
+      text: 'Hubo un problema al procesar tu pedido. Intenta nuevamente.',
+      confirmButtonText: 'Aceptar'
+    });
+  }
+};
+
+const mensajeFeedback = ref("");
+const fechaEntrega = ref("");
+const cantidadPrendas = ref(0);
+const cuposActuales = ref({
+  cupo_6: 0,
+  cupo_15: 0,
+  cupo_30: 0
+});
+
+// Llamar esta función cuando se desee obtener la fecha de entrega
+const obtenerFechaEntrega = async () => {
+  mensajeFeedback.value = "";
+  fechaEntrega.value = "";
+
+  try {
+    const totalProductos = cantidadTotalProductos.value;
+
+    const response = await PublicApi.post("calcular-fecha-entrega", {
+        cantidad: totalProductos,
+    });
+
+    if (response.data.status === "success") {
+      const fechaEntregaOriginal = new Date(response.data.fecha_entrega);
+      const fechaEntregaAjustada = new Date(fechaEntregaOriginal);
+      fechaEntregaAjustada.setDate(fechaEntregaAjustada.getDate() + 1);
+
+      fechaEntrega.value = fechaEntregaAjustada.toLocaleDateString("es-ES", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+
+      cantidadPrendas.value = response.data.cantidad_prendas;
+      cuposActuales.value = response.data.cupos_actuales;
+
+      let mensajeDetallado = response.data.mensaje + `. La fecha de entrega será el ${fechaEntrega.value}.`;
+      mensajeDetallado += "\nNota: Los días hábiles no incluyen fines de semana ni festivos.";
+      mensajeFeedback.value = mensajeDetallado;
+    } else {
+      mensajeFeedback.value = response.data.mensaje || "No se pudo calcular la fecha de entrega.";
     }
-}
+  } catch (error) {
+    console.error("Error al obtener la fecha de entrega:", error);
+    mensajeFeedback.value =
+      error.response?.data?.message ||
+       "Hubo un error al consultar la fecha.";
+  }
+};
+
 
 onMounted(() => {
     fetchProductosData()
@@ -335,3 +481,4 @@ onMounted(() => {
   border-color: #ddd; /* Color visible */
 }
 </style>
+

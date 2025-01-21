@@ -111,7 +111,7 @@
               +
             </button>
           </div>
-          <small class="text-muted">Máximo 100 unidades</small>
+          <small class="text-muted">Máximo 30 unidades</small>
         </div>
 
         <!-- Botones de acción -->
@@ -236,9 +236,9 @@ const validarInput = (event) => {
     event.preventDefault();
   }
   
-  // Impedir que el valor supere 100 mientras se escribe
+  // Impedir que el valor supere 30 mientras se escribe
   let value = event.target.value + event.key;  // Simula el valor con la tecla presionada
-  if (parseInt(value) > 100) {
+  if (parseInt(value) > 30) {
     event.preventDefault(); // Evita el ingreso si el valor sería mayor que 100
   }
 };
@@ -248,9 +248,9 @@ const handleInput = (event) => {
   // Reemplaza cualquier carácter que no sea un dígito
   cantidadInput.value = event.target.value.replace(/[^\d]/g, '');
 
-  // Controla que el número no sea mayor que 100
-  if (parseInt(cantidadInput.value) > 100) {
-    cantidadInput.value = '100';  // Si es mayor a 100, lo establece a 100
+  // Controla que el número no sea mayor que 30
+  if (parseInt(cantidadInput.value) > 30) {
+    cantidadInput.value = '30';  // Si es mayor a 30, lo establece a 100
   }
 };
 
@@ -260,8 +260,8 @@ const handleBlur = () => {
   
   if (isNaN(value) || value < 1) {
     value = 1;
-  } else if (value > 100) {
-    value = 100; // Limita a 100 si es mayor
+  } else if (value > 30) {
+    value = 30; // Limita a 100 si es mayor
   }
   
   cantidad.value = value;
@@ -269,7 +269,7 @@ const handleBlur = () => {
 };
 
 const incrementarCantidad = () => {
-  if (cantidad.value < 100) {
+  if (cantidad.value < 30) {
     cantidad.value++;
     cantidadInput.value = cantidad.value.toString();
   }
@@ -289,6 +289,20 @@ onMounted(() => {
 });
 
 // ----------------------------------------------------------
+import Swal from "sweetalert2"; 
+
+const Toast = Swal.mixin({
+  toast: true,
+  position: "bottom-end",
+  showConfirmButton: false,
+  timer: 3000,
+  timerProgressBar: true,
+  didOpen: (toast) => {
+    toast.onmouseenter = Swal.stopTimer;
+    toast.onmouseleave = Swal.resumeTimer;
+  }
+});
+
 const añadirAlCarrito = () => {
   if (!userStore.authenticated) {
     alert('Por favor inicie sesión para añadir productos al carrito');
@@ -297,9 +311,12 @@ const añadirAlCarrito = () => {
   }
 
   if (!tallaSeleccionada.value) {
-    alert('Por favor seleccione una talla');
-    return;
-  }
+  Toast.fire({
+    icon: "warning",
+    title: "Por favor seleccione una talla"
+  });
+  return;
+}
 
   // Encontrar el ID de la talla seleccionada
   const tallaId = varianteSeleccionada.value.tallas.find(
@@ -318,58 +335,68 @@ const añadirAlCarrito = () => {
       tallaId                        // talla_id
     );
 
-    alert('Producto añadido al carrito exitosamente');
-    
+    Toast.fire({
+      icon: "success",
+      title: "Producto añadido al carrito exitosamente"
+    });
+        
     // Resetear selecciones
     tallaSeleccionada.value = null;
     cantidad.value = 1;
     cantidadInput.value = '1';
   } catch (error) {
     console.error('Error al añadir al carrito:', error);
-    alert('Error al añadir el producto al carrito');
+    if (!tallaSeleccionada.value) {
+    Toast.fire({
+      icon: "warning",
+      title: "Por favor seleccione una talla"
+    });
+    return;
+  }
   }
 };
 
-const realizarPedido = async () => {
-  if (!userStore.authenticated) {
-    alert('Por favor inicie sesión para realizar un pedido');
-    router.push('/login');
-    return;
-  }
+// const realizarPedido = async () => {
+//   if (!userStore.authenticated) {
+//     alert('Por favor inicie sesión para realizar un pedido');
+//     router.push('/login');
+//     return;
+//   }
 
-  if (!tallaSeleccionada.value) {
-    alert('Por favor seleccione una talla');
-    return;
-  }
+//   if (!tallaSeleccionada.value) {
+//     alert('Por favor seleccione una talla');
+//     return;
+//   }
 
-  // Encontrar el ID de la talla seleccionada
-  const tallaId = varianteSeleccionada.value.tallas.find(
-    t => t.nombre === tallaSeleccionada.value
-  )?.id;
+//   // Encontrar el ID de la talla seleccionada
+//   const tallaId = varianteSeleccionada.value.tallas.find(
+//     t => t.nombre === tallaSeleccionada.value
+//   )?.id;
 
-  if (!tallaId) {
-    alert('Error al identificar la talla seleccionada');
-    return;
-  }
+//   if (!tallaId) {
+//     alert('Error al identificar la talla seleccionada');
+//     return;
+//   }
 
-  try {
-    // Primero añadimos el producto al carrito
-    cartStore.addToCart(
-      varianteSeleccionada.value.id,
-      cantidad.value,
-      tallaId
-    );
+//   try {
+//     // Primero añadimos el producto al carrito
+//     cartStore.addToCart(
+//       varianteSeleccionada.value.id,
+//       cantidad.value,
+//       tallaId
+//     );
 
-    // Luego creamos la orden inmediatamente
-    await cartStore.createOrder();
+//     // Luego creamos la orden inmediatamente
+//     await cartStore.createOrder();
 
-    alert('¡Pedido realizado con éxito!');
-    router.push('/Pedidos'); // O la ruta donde muestres las órdenes del usuario
-  } catch (error) {
-    console.error('Error al realizar el pedido:', error);
-    alert('Error al realizar el pedido');
-  }
-};
+//     alert('¡Pedido realizado con éxito!');
+//     router.push('/Pedidos'); // O la ruta donde muestres las órdenes del usuario
+//   } catch (error) {
+//     console.error('Error al realizar el pedido:', error);
+//     alert('Error al realizar el pedido');
+//   }
+// };
+
 // const realizarPedido = () => {
 //   if (productoSeleccionado.value && varianteSeleccionada.value) {
 //     // Verificar si el usuario está autenticado
@@ -408,6 +435,48 @@ const realizarPedido = async () => {
 //     }
 //   }
 // };
+
+const realizarPedido = () => {
+  // Verificar autenticación
+  if (!userStore.authenticated) {
+    alert('Por favor inicie sesión para realizar un pedido');
+    router.push('/login');
+    return;
+  }
+
+  // Verificar que se haya seleccionado una talla
+  if (!tallaSeleccionada.value) {
+    alert('Por favor seleccione una talla');
+    return;
+  }
+
+  // Encontrar el ID de la talla seleccionada
+  const tallaId = varianteSeleccionada.value.tallas.find(
+    t => t.nombre === tallaSeleccionada.value
+  )?.id;
+
+  if (!tallaId) {
+    alert('Error al identificar la talla seleccionada');
+    return;
+  }
+
+  // Redirigir a PedidoOrden con todos los datos necesarios
+  router.push({
+    name: 'PedidoOrden',
+    query: {
+      producto_id: productoSeleccionado.value.producto_id,
+      variante_id: varianteSeleccionada.value.id,
+      talla_id: tallaId,
+      cantidad: cantidad.value,
+      nombre: productoSeleccionado.value.nombre,
+      descripcion: productoSeleccionado.value.descripcion,
+      precio: varianteSeleccionada.value.precio_base,
+      talla: tallaSeleccionada.value,
+      color: varianteSeleccionada.value.color || 'Default Color',
+      imagen_url: `${IMAGE_BASE_URL}/${varianteSeleccionada.value.imagen_url}`
+    }
+  });
+};
 
 </script>
 

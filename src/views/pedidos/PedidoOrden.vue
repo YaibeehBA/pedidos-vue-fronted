@@ -144,6 +144,7 @@ const queryParams = route.query;
   const nombre = queryParams.nombre;
   const descripcion = queryParams.descripcion;
   const precio = queryParams.precio;
+  const talla_id = queryParams.talla_id;  
   const talla = queryParams.talla;
   const color = queryParams.color || 'No Color';
   // const imagenUrl = queryParams.imagen_url || '';
@@ -159,6 +160,12 @@ const ordenCreada = ref(false);
 const currentDate = ref('');
 const router = useRouter();
 
+const cantidadPrendas = ref(0);
+const cuposActuales = ref({
+  cupo_6: 0,
+  cupo_15: 0,
+  cupo_30: 0
+});
 
 const formattedDate = (date) => {
   if (!date) return '';
@@ -230,23 +237,78 @@ const validarPrendas = () => {
 
 
 
+// const obtenerFechaEntrega = async () => {
+//   // Limpiamos el mensaje de feedback antes de hacer la solicitud
+//   mensajeFeedback.value = "";
+
+//   try {
+//     // Realiza la solicitud al servidor con la cantidad de prendas
+//     const response = await PublicApi.post("calcular-fecha-entrega", {
+//       cantidad: prendas.value, // Enviar el número de prendas al servidor
+//     });
+
+//     if (response.status === 200) {
+//       // Convertir la fecha ISO a un objeto Date
+//       const fechaEntregaOriginal = new Date(response.data.fecha_entrega);
+
+//       // Sumar un día a la fecha recibida
+//       const fechaEntregaAjustada = new Date(fechaEntregaOriginal);
+//       fechaEntregaAjustada.setDate(fechaEntregaAjustada.getDate() + 1); // Agregar un día
+
+//       // Formatear la fecha ajustada
+//       fechaEntrega.value = fechaEntregaAjustada.toLocaleDateString("es-ES", {
+//         year: "numeric",
+//         month: "long",
+//         day: "numeric",
+//       });
+
+//       // Determinar el mensaje de feedback en función de la cantidad de prendas
+//       let mensaje = "";
+//       if (prendas.value <= 6) {
+//         mensaje =
+//           "El pedido incluye hasta 6 prendas, por lo tanto, la fecha de entrega es en 3 días.";
+//       } else if (prendas.value <= 15) {
+//         mensaje =
+//           "El pedido incluye entre 7 y 15 prendas, por lo tanto, la fecha de entrega es en 6 días.";
+//       } else if (prendas.value <= 30) {
+//         mensaje =
+//           "El pedido incluye entre 16 y 30 prendas, por lo tanto, la fecha de entrega es en 12 días.";
+//       }
+
+//       // Mostrar el mensaje de feedback
+//       mensajeFeedback.value = mensaje;
+//     } else {
+//       mensajeFeedback.value = "No se pudo obtener la fecha de entrega.";
+//     }
+//   } catch (error) {
+//     console.error("Error al obtener la fecha de entrega:", error);
+//     mensajeFeedback.value =
+//       error.response?.data?.message ||
+//       "Hubo un error al consultar la fecha.";
+//   }
+// };
+
+
+
+
+
+
+// Crear una nueva orden
+
 const obtenerFechaEntrega = async () => {
-  // Limpiamos el mensaje de feedback antes de hacer la solicitud
   mensajeFeedback.value = "";
+  fechaEntrega.value = "";
 
   try {
-    // Realiza la solicitud al servidor con la cantidad de prendas
     const response = await PublicApi.post("calcular-fecha-entrega", {
-      cantidad: prendas.value, // Enviar el número de prendas al servidor
+      cantidad: prendas.value,
     });
 
-    if (response.status === 200) {
-      // Convertir la fecha ISO a un objeto Date
+    if (response.data.status === "success") {
+      // Convertir la fecha ISO a un objeto Date y sumar un día
       const fechaEntregaOriginal = new Date(response.data.fecha_entrega);
-
-      // Sumar un día a la fecha recibida
       const fechaEntregaAjustada = new Date(fechaEntregaOriginal);
-      fechaEntregaAjustada.setDate(fechaEntregaAjustada.getDate() + 1); // Agregar un día
+      fechaEntregaAjustada.setDate(fechaEntregaAjustada.getDate() + 1);
 
       // Formatear la fecha ajustada
       fechaEntrega.value = fechaEntregaAjustada.toLocaleDateString("es-ES", {
@@ -255,35 +317,29 @@ const obtenerFechaEntrega = async () => {
         day: "numeric",
       });
 
-      // Determinar el mensaje de feedback en función de la cantidad de prendas
-      let mensaje = "";
-      if (prendas.value <= 6) {
-        mensaje =
-          "El pedido incluye hasta 6 prendas, por lo tanto, la fecha de entrega es en 3 días.";
-      } else if (prendas.value <= 15) {
-        mensaje =
-          "El pedido incluye entre 7 y 15 prendas, por lo tanto, la fecha de entrega es en 5 días.";
-      } else if (prendas.value <= 30) {
-        mensaje =
-          "El pedido incluye entre 16 y 30 prendas, por lo tanto, la fecha de entrega es en 7 días.";
-      }
+      // Actualizar los valores de las refs
+      cantidadPrendas.value = response.data.cantidad_prendas;
+      cuposActuales.value = response.data.cupos_actuales;
 
-      // Mostrar el mensaje de feedback
-      mensajeFeedback.value = mensaje;
+      // Usar el mensaje de la API y agregarle información adicional
+      let mensajeDetallado = response.data.mensaje + `. La fecha de entrega será el ${fechaEntrega.value}.`;
+
+      // Agregar nota sobre días hábiles
+      mensajeDetallado += "\nNota: Los días hábiles no incluyen fines de semana ni festivos.";
+
+      mensajeFeedback.value = mensajeDetallado;
+
     } else {
-      mensajeFeedback.value = "No se pudo obtener la fecha de entrega.";
+      mensajeFeedback.value = response.data.mensaje || "No se pudo calcular la fecha de entrega.";
     }
   } catch (error) {
     console.error("Error al obtener la fecha de entrega:", error);
     mensajeFeedback.value =
       error.response?.data?.message ||
-      "Hubo un error al consultar la fecha.";
+       "Hubo un error al consultar la fecha.";
   }
 };
 
-
-
-// Crear una nueva orden
 const createOrder = async () => {
   // Validaciones
   if (!user.value || !user.value.id) {
@@ -304,16 +360,17 @@ const createOrder = async () => {
     return;
   }
 
-  // Construir datos para la solicitud
   const ordenData = {
-    usuario_id: user.value.id,
-    detalles: [
-      { variante_id: varianteId,
-        cantidad: prendas.value 
-      },
-    ],
-  };
-
+  usuario_id: user.value.id, // ID del usuario
+  productos: [
+    {
+      detalles_productos_id: varianteId, // Identificador de la variante o producto
+      cantidad: prendas.value,           // Cantidad del producto
+      talla_id: parseInt(talla_id),              // ID de la talla
+    },
+  ],
+};
+console.log(JSON.stringify(ordenData, null, 2));
   try {
     // Enviar la solicitud a la API
     const response = await PublicApi.post("orden", ordenData);
@@ -328,7 +385,7 @@ const createOrder = async () => {
       });
 
       // Redirigir al Home después del mensaje
-      router.push("/");
+      router.push('/Pedidos')
     } else {
       Swal.fire({
         icon: "error",

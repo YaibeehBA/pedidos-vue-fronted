@@ -55,10 +55,13 @@ const fetchOrders = async () => {
 
 const filteredOrders = computed(() => {
   return orders.value.filter(order => {
-    const orderDate = new Date(order.created_at).toISOString().split('T')[0];
+    const orderDate = new Date(order.fecha_entrega).toISOString().split('T')[0];
     return orderDate >= startDate.value && orderDate <= endDate.value;
   });
 });
+
+
+
 
 const generatePDF = () => {
   const doc = new jsPDF();
