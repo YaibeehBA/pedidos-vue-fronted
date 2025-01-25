@@ -95,7 +95,7 @@
             <h2>Encuéntranos aquí</h2>
             <div class="map-container">
               <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.964560146264!2d-77.03197518561798!3d-12.046654791460237!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105c8b5d35662c7%3A0x7c3c89d2641b1e49!2sPlaza%20Mayor%20de%20Lima!5e0!3m2!1ses!2spe!4v1625178241234!5m2!1ses!2spe" 
+                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15952.347911915978!2d-78.6396509248127!3d-1.687983721829089!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x91d3a9c9328fa937%3A0xa0a8dc4d5fe1914b!2sAv.%209%20de%20Octubre%2025%2C%20Riobamba%2C%20Ecuador!5e0!3m2!1sen!2sus!4v1737668623067!5m2!1sen!2sus" 
                 style="border:0;" 
                 allowfullscreen="" 
                 loading="lazy"
@@ -123,7 +123,7 @@
   
   const handleSubmit = async () => {
     try {
-      // Aquí iría tu lógica de envío del formulario
+     
       // Simularemos una espera
       await new Promise(resolve => setTimeout(resolve, 1000));
       

@@ -21,7 +21,7 @@
               {{ isPasswordVisible ? 'visibility' : 'visibility_off' }}
             </span>
           </div>
-          <div class="feedback" v-if="errors.password">{{ errors.password[0] }}</div>
+         
         </div>
 
         <div class="mb-3 position-relative">
@@ -44,6 +44,7 @@
           </div>
           <div class="feedback" v-if="errors.password_confirmation">{{ errors.password_confirmation[0] }}</div>
         </div>
+        <div class="feedback" v-if="errors.password">{{ errors.password[0] }}</div>
 
         <div class="text-end">
           <router-link to="/" class="navbar-brand fw-bold fs px-2 d-flex align-items-center justify-content-end forgot-password">
@@ -56,6 +57,7 @@
           Restablecer Contraseña
         </button>
       </form>
+      
     </div>
   </div>
 </template>
@@ -115,7 +117,7 @@ const RestablecerContrasena = async () => {
   }
 
   try {
-    const response = await RestablecerContrasena({
+    const response = await User.RestablecerContrasena({
       password: form.password,
       password_confirmation: form.password_confirmation,
       token: token,
@@ -128,10 +130,16 @@ const RestablecerContrasena = async () => {
       show_alerta('Error al procesar la solicitud.', 'error', '');
     }
   } catch (error) {
-    console.error('Error:', error);
-    show_alerta('Hubo un error inesperado. Intente nuevamente.', 'error', '');
+    if (error.response && error.response.data && error.response.data.message) {
+      // Mostrar el mensaje de error específico desde el backend
+      show_alerta(error.response.data.message, 'error', '');
+    } else {
+      // Mensaje genérico si no se obtiene uno del servidor
+      show_alerta('Hubo un error inesperado. Intente nuevamente.', 'error', '');
+    }
   }
 };
+
 </script>
 
 
@@ -162,49 +170,45 @@ const RestablecerContrasena = async () => {
     margin-bottom: 0.5rem;
 }
 
-.signup-text {
-    color: #6c757d;
-    text-align: center;
-    margin-bottom: 2rem;
-}
 
-.signup-text a {
-    color: #2869a5;
-    text-decoration: none;
-    font-weight: 500;
-}
 
 .form-control {
     padding: 0.8rem 1rem;
+    padding-left: 2.5rem; /* Espacio para evitar superposición del ícono */
     border: 1px solid #ced4da;
     border-radius: 8px;
     background-color: #f8f5f6;
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out; /* Suaviza las transiciones */
 }
-
 .form-control:focus {
-    box-shadow: none;
-    border-color: #dc8e35;
-    background-color: #ffffff;
+    border-color: #dc8e35; /* Color del borde en foco */
+    background-color: #ffffff; /* Color de fondo al hacer foco */
+    box-shadow: 0 0 0 0.25rem rgba(220, 142, 53, 0.25); /* Sombra sutil al enfocar */
 }
-
-
+.input-icon {
+    position: absolute;
+    left: 1rem; /* Separación desde el borde izquierdo */
+    top: 50%;
+    transform: translateY(-50%); /* Ajusta el ícono verticalmente */
+    color: #6c757d;
+    pointer-events: none; /* Desactiva interacciones con el ícono */
+}
+.form-control:focus + .input-icon {
+    top: 50%;
+    transform: translateY(-50%); /* Mantén el ícono centrado */
+}
 .password-field {
     position: relative;
 }
 
 .password-toggle {
     position: absolute;
-    right: 1rem;
+    right: 2rem;
+    margin-right: 05px;
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
     color: #6c757d;
-}
-
-.forgot-password {
-    color:  #2869a5;
-    text-decoration: none;
-    font-size: 0.9rem;
 }
 
 .signin-btn {
@@ -223,6 +227,11 @@ const RestablecerContrasena = async () => {
     transform: translateY(-2px);
 }
 
+.feedback {
+    color: #e74c3c; /* Rojo claro para visibilidad */
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
 /* Mostrar imagen de fondo en pantallas grandes */
 @media (min-width: 1051px) and (max-width: 1235px) {
     .container {
