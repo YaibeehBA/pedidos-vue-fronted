@@ -146,12 +146,12 @@ const toggleSidebar = () => {
             <span v-show="isExpanded">Notificaciones</span>
           </RouterLink> -->
         </li>
-        <li class="nav-item">
+        <!-- <li class="nav-item">
           <RouterLink to="/admin/payments" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
             <span class="material-icons me-3">credit_card</span>
             <span v-show="isExpanded">Pagos</span>
           </RouterLink>
-        </li>
+        </li> -->
         <li class="nav-item">
           <RouterLink to="/admin/usuarios" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
             <span class="material-icons me-3">person</span>

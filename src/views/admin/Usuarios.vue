@@ -1,177 +1,242 @@
 <template>
-    <div class="container mt-3">
-        <div class="admin-container">
-            <h3 class="text-center">Administración de Usuarios</h3>
+  <div class="container mt-3">
+    <div class="admin-container">
+      <h3 class="text-center">Administración de Usuarios</h3>
 
-            <!-- Botón para añadir usuario -->
-            <button type="button" class="btn btn-success mb-3 d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#userModal" @click="clearForm"><span class="material-icons me-2">person_add</span> Añadir Usuario</button>
+      <!-- Botón para añadir usuario -->
+      <button
+        type="button"
+        class="btn btn-primary mb-3 d-flex align-items-center gap-2"
+        data-bs-toggle="modal"
+        data-bs-target="#userModal"
+        @click="clearForm"
+      >
+        <span class="material-icons">person_add</span>
+        Añadir Usuario
+      </button>
 
-            <!-- Tabla de usuarios -->
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Nº</th>
-                        <th>Nombre</th>
-                        <th>Apellido</th>
-                        <th>Celular</th>
-                        <th>Email</th>
-                        <th>Admin</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="(user, index) in users" :key="user.id">
-                        <td>{{ index+1 }}</td>
-                        <td>{{ user.nombre }}</td>
-                        <td>{{ user.apellido }}</td>
-                        <td>{{ user.celular }}</td>
-                        <td>{{ user.email }}</td>
-                        <td>
-                            <span v-if="user.esadmin" class="badge bg-primary">Sí</span>
-                            <span v-else class="badge bg-secondary">No</span>
-                        </td>
-                        <td>
-                            <div class="btn-group">
-                                <button class="btn btn-warning me-2 d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#userModal" @click="editUser(user)">
-                                    <span class="material-icons me-2">edit</span> Editar
-                                </button>
-                                <button class="btn btn-danger d-flex align-items-center" @click="deleteUser(user.id)">
-                                    <span class="material-icons me-2">delete</span> Eliminar
-                                </button>
-                            </div>
-
-
-                        </td>
-                    </tr>
-                </tbody>
+      <!-- Tabla de usuarios -->
+      <div class="card">
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover">
+              <thead class="table-light">
+                <tr>
+                  <th class="fw-bold" style="width: 80px">Nº</th>
+                  <th class="fw-bold">Nombre</th>
+                  <th class="fw-bold">Apellido</th>
+                  <th class="fw-bold">Celular</th>
+                  <th class="fw-bold">Email</th>
+                  <th class="fw-bold">Admin</th>
+                  <th class="fw-bold" style="width: 150px">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="(user, index) in paginatedCategories" :key="user.id">
+                  
+                  <td class="bw">{{ calculateIndex(index) }}</td>
+                  <td class="bw">{{ user.nombre }}</td>
+                  <td class="bw">{{ user.apellido }}</td>
+                  <td class="bw">{{ user.celular }}</td>
+                  <td class="bw">{{ user.email }}</td>
+                  <td class="bw">
+                    <span v-if="user.esadmin" class="badge bg-primary">Sí</span>
+                    <span v-else class="badge bg-secondary">No</span>
+                  </td>
+                  <td>
+                    <div class="d-flex justify-content-start gap-2">
+                      <button
+                        class="btn btn-warning btn-sm d-flex align-items-center"
+                        data-bs-toggle="modal"
+                        data-bs-target="#userModal"
+                        @click="editUser(user)"
+                      >
+                        <span class="material-icons">edit</span>
+                      </button>
+                      <button
+                        class="btn btn-danger btn-sm d-flex align-items-center"
+                        @click="deleteUser(user.id)"
+                      >
+                        <span class="material-icons">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
             </table>
+          </div>
         </div>
-
-        <!-- Modal para añadir o editar usuario -->
-        <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">{{ currentEditId ? 'Editar Usuario' : 'Registrar Nuevo Usuario' }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form @submit.prevent="registerOrUpdate">
-                            <div class="row mb-3">
-                                <div class="col-12 col-md-6">
-                                    <div class="input-container">
-                                        <input type="text" placeholder="Ingrese su nombre" :value="form.nombre" @input="validateNombre" id="name" class="form-control" :class="{ 'is-invalid': errors.nombre }" />
-                                        <span class="input-icon material-icons">person</span>
-                                    </div>
-                                    <div class="feedback" v-if="errors.nombre">
-                                        {{ errors.nombre[0] }}
-                                    </div>
-                                </div>
-                                <div class="col-12 col-md-6">
-                                    <div class="input-container">
-                                        <input type="text" placeholder="Ingrese su apellido" :value="form.apellido" @input="validateApellido" id="apellido" class="form-control" :class="{ 'is-invalid': errors.apellido }" />
-                                        <span class="input-icon material-icons">person_outline</span>
-                                    </div>
-                                    <div class="feedback" v-if="errors.apellido">
-                                        {{ errors.apellido[0] }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <div class="input-container">
-                                        <input type="text" placeholder="Ingrese su celular" @input="validateCelular" v-model="form.celular" id="celular" class="form-control" :class="{ 'is-invalid': errors.celular }" />
-                                        <span class="input-icon material-icons">phone</span>
-                                    </div>
-                                    <div class="feedback" v-if="errors.celular">
-                                        {{ errors.celular[0] }}
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="input-container">
-                                        <input type="email" placeholder="Ingrese su correo electrónico" v-model="form.email" id="email" class="form-control" :class="{ 'is-invalid': errors.email }" />
-                                        <span class="input-icon material-icons">email</span>
-                                    </div>
-                                    <div class="feedback" v-if="errors.email">
-                                        {{ errors.email[0] }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="input-container">
-                                <input 
-                                    :type="isPasswordVisible ? 'text' : 'password'" 
-                                    placeholder="Ingrese su contraseña" 
-                                    v-model="form.password" 
-                                    id="password" 
-                                    class="form-control" 
-                                    :class="{ 'is-invalid': errors.password }" 
-                                />
-                                <span class="input-icon material-icons">lock</span>
-                                <span 
-                                    type="button" 
-                                    @click="togglePasswordVisibility('password')" 
-                                    class="password-toggle material-icons position-absolute top-50 end-0 translate-middle-y" 
-                                    :class="{'text-primary': isPasswordVisible}"
-                                >
-                                    {{ isPasswordVisible ? 'visibility' : 'visibility_off' }}
-                                </span>
-                                </div>
-                                <div class="feedback" v-if="errors.password">
-                                {{ errors.password[0] }}
-                                </div>
-                                <small class="text-muted" v-if="currentEditId">
-                                Dejar en blanco para mantener la contraseña actual
-                                </small>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="input-container">
-                                <input 
-                                    :type="isPasswordConfirmVisible ? 'text' : 'password'" 
-                                    placeholder="Confirme su contraseña" 
-                                    v-model="form.password_confirmation" 
-                                    id="password_confirmation" 
-                                    class="form-control" 
-                                    :class="{ 'is-invalid': errors.password_confirmation }" 
-                                />
-                                <span class="input-icon material-icons">lock</span>
-                                <span 
-                                    type="button" 
-                                    @click="togglePasswordVisibility('password_confirmation')" 
-                                    class="password-toggle material-icons position-absolute top-50 end-0 translate-middle-y" 
-                                    :class="{'text-primary': isPasswordConfirmVisible}"
-                                >
-                                    {{ isPasswordConfirmVisible ? 'visibility' : 'visibility_off' }}
-                                </span>
-                                </div>
-                                <div class="feedback" v-if="errors.password_confirmation">
-                                {{ errors.password_confirmation[0] }}
-                                </div>
-                            </div>
-                            </div>
-
-
-                            <div class="mb-3">
-                                <label class="form-label">¿Es Administrador?</label>
-                                <select class="form-control" v-model="form.esadmin">
-                                    <option :value="true">Sí</option>
-                                    <option :value="false">No</option>
-                                </select>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">{{ currentEditId ? 'Actualizar' : 'Registrar' }}</button>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
+      </div>
     </div>
+
+    <!-- Modal para añadir o editar usuario -->
+    <div class="modal fade" id="userModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">
+              {{ currentEditId ? 'Editar Usuario' : 'Registrar Nuevo Usuario' }}
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          </div>
+          <div class="modal-body">
+            <form @submit.prevent="registerOrUpdate">
+              <div class="row mb-3">
+                <div class="col-12 col-md-6">
+                  <div class="input-container">
+                    <input
+                      type="text"
+                      placeholder="Ingrese su nombre"
+                      :value="form.nombre"
+                      @input="validateNombre"
+                      id="name"
+                      class="form-control"
+                      :class="{ 'is-invalid': errors.nombre }"
+                    />
+                    <span class="input-icon material-icons">person</span>
+                  </div>
+                  <div class="feedback" v-if="errors.nombre">
+                    {{ errors.nombre[0] }}
+                  </div>
+                </div>
+                <div class="col-12 col-md-6">
+                  <div class="input-container">
+                    <input
+                      type="text"
+                      placeholder="Ingrese su apellido"
+                      :value="form.apellido"
+                      @input="validateApellido"
+                      id="apellido"
+                      class="form-control"
+                      :class="{ 'is-invalid': errors.apellido }"
+                    />
+                    <span class="input-icon material-icons">person_outline</span>
+                  </div>
+                  <div class="feedback" v-if="errors.apellido">
+                    {{ errors.apellido[0] }}
+                  </div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <div class="input-container">
+                    <input
+                      type="text"
+                      placeholder="Ingrese su celular"
+                      @input="validateCelular"
+                      v-model="form.celular"
+                      id="celular"
+                      class="form-control"
+                      :class="{ 'is-invalid': errors.celular }"
+                    />
+                    <span class="input-icon material-icons">phone</span>
+                  </div>
+                  <div class="feedback" v-if="errors.celular">
+                    {{ errors.celular[0] }}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="input-container">
+                    <input
+                      type="email"
+                      placeholder="Ingrese su correo electrónico"
+                      v-model="form.email"
+                      id="email"
+                      class="form-control"
+                      :class="{ 'is-invalid': errors.email }"
+                    />
+                    <span class="input-icon material-icons">email</span>
+                  </div>
+                  <div class="feedback" v-if="errors.email">
+                    {{ errors.email[0] }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <div class="input-container">
+                    <input
+                      :type="isPasswordVisible ? 'text' : 'password'"
+                      placeholder="Ingrese su contraseña"
+                      v-model="form.password"
+                      id="password"
+                      class="form-control"
+                      :class="{ 'is-invalid': errors.password }"
+                    />
+                    <span class="input-icon material-icons">lock</span>
+                    <span
+                      type="button"
+                      @click="togglePasswordVisibility('password')"
+                      class="password-toggle material-icons position-absolute top-50 end-0 translate-middle-y"
+                      :class="{ 'text-primary': isPasswordVisible }"
+                    >
+                      {{ isPasswordVisible ? 'visibility' : 'visibility_off' }}
+                    </span>
+                  </div>
+                  <div class="feedback" v-if="errors.password">
+                    {{ errors.password[0] }}
+                  </div>
+                  <small class="text-muted" v-if="currentEditId">
+                    Dejar en blanco para mantener la contraseña actual
+                  </small>
+                </div>
+                <div class="col-md-6">
+                  <div class="input-container">
+                    <input
+                      :type="isPasswordConfirmVisible ? 'text' : 'password'"
+                      placeholder="Confirme su contraseña"
+                      v-model="form.password_confirmation"
+                      id="password_confirmation"
+                      class="form-control"
+                      :class="{ 'is-invalid': errors.password_confirmation }"
+                    />
+                    <span class="input-icon material-icons">lock</span>
+                    <span
+                      type="button"
+                      @click="togglePasswordVisibility('password_confirmation')"
+                      class="password-toggle material-icons position-absolute top-50 end-0 translate-middle-y"
+                      :class="{ 'text-primary': isPasswordConfirmVisible }"
+                    >
+                      {{ isPasswordConfirmVisible ? 'visibility' : 'visibility_off' }}
+                    </span>
+                  </div>
+                  <div class="feedback" v-if="errors.password_confirmation">
+                    {{ errors.password_confirmation[0] }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">¿Es Administrador?</label>
+                <select class="form-control" v-model="form.esadmin">
+                  <option :value="true">Sí</option>
+                  <option :value="false">No</option>
+                </select>
+              </div>
+              <button type="submit" class="btn btn-primary w-100">
+                {{ currentEditId ? 'Actualizar' : 'Registrar' }}
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <Pagination 
+  :totalItems="users.length" 
+  :itemsPerPage="5" 
+  :currentPage="currentPage"
+  @update:currentPage="currentPage = $event"  
+/>
+
 </template>
 
 <script setup>
 import User from '../../apis/User';
-import { reactive, ref, onMounted } from 'vue';
+import { reactive, ref, onMounted, computed } from 'vue';
+import Pagination from '@/components/admin/Pagination.vue';
 import { show_alerta } from '../../apis/Api';
 import Swal from 'sweetalert2';
 
@@ -392,6 +457,23 @@ const editUser = (user) => {
 };
 
 onMounted(fetchUsers);
+
+const currentPage = ref(1);
+
+const startIndex = computed(() => (currentPage.value - 1) * 5);
+const endIndex = computed(() => Math.min(startIndex.value + 5, users.value.length));
+
+const paginatedCategories = computed(() => {
+  return users.value.slice(startIndex.value, endIndex.value);
+});
+
+// Calcular el índice real para la numeración de filas
+const calculateIndex = (index) => {
+  return startIndex.value + index + 1;  
+};
+
+
+
 </script>
 
 <style scoped>
@@ -475,5 +557,59 @@ onMounted(fetchUsers);
 }
 
 
+.color-preview-round {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
 
+.form-control-color {
+  width: 100px;
+  height: 100px;
+  padding: 0;
+  border: 2px solid #dee2e6;
+  border-radius: 8px;
+}
+
+.form-control-color::-webkit-color-swatch {
+  border: none;
+  border-radius: 6px;
+  padding: 0;
+}
+
+.form-control-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+  border-radius: 6px;
+}
+
+.color-cell {
+  display: flex;
+  align-items: center;
+}
+
+.table {
+  margin-bottom: 0;
+}
+
+.table > :not(caption) > * > * {
+  padding: 1rem 0.75rem;
+}
+
+.card {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.btn-sm .material-icons {
+  font-size: 18px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
 </style>

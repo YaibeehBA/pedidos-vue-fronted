@@ -1,6 +1,7 @@
 <template>
   <div class="container">
-    <!-- Navbar minimalista en fila -->
+  <h3 class="text-center">Administración de Reportes </h3>
+    
     <div class="navbar">
       <a 
         :class="['navbar-item', selectedReport === 'ordenes' ? 'active' : '']" 

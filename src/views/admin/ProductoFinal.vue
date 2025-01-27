@@ -1,5 +1,7 @@
 
 <template>
+  <h3 class="text-center">Administración de Productos </h3>
+
   <div class="container">
     <div class="mb-3 d-flex justify-content-between align-items-center">
       <button type="button" class="btn btn-primary" @click="openAddProductModal">
@@ -226,8 +228,8 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(producto, index) in products" :key="producto.id">
-            <td>{{ index + 1 }}</td>
+          <tr v-for="(producto, index) in paginatedCategories" :key="producto.id">
+            <td class="bw">{{ calculateIndex(index) }}</td>
             <td>{{ getProductoBaseName(producto.producto_id) }}</td>
             <td>
               <img :src="getImageUrl(producto.imagen_url)" alt="Imagen del Producto" style="max-width: 100px;" />
@@ -254,10 +256,18 @@
       </table>
     </div>
   </div>
+  <Pagination 
+  :totalItems="products.length" 
+  :itemsPerPage="5" 
+  :currentPage="currentPage"
+  @update:currentPage="currentPage = $event"  
+/>
+
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted ,computed} from 'vue';
+import Pagination from '@/components/admin/Pagination.vue';
 import ProductoFinal from '@/apis/ProductosFinal';
 import ProductoBase from '@/apis/ProductosBase';
 import Tallas from '@/apis/Tallas';
@@ -658,6 +668,20 @@ const deleteProduct = async (id) => {
 onMounted(async () => {
   await fetchAllData();
 });
+
+const currentPage = ref(1);
+
+const startIndex = computed(() => (currentPage.value - 1) * 5);
+const endIndex = computed(() => Math.min(startIndex.value + 5, products.value.length));
+
+const paginatedCategories = computed(() => {
+  return products.value.slice(startIndex.value, endIndex.value);
+});
+
+
+const calculateIndex = (index) => {
+  return startIndex.value + index + 1;  
+};
 </script>
 
 <style scoped>

@@ -1,7 +1,9 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import User from '../../apis/User';
 import { IMAGE_BASE_URL } from '@/apis/Api';
+import Pagination from '@/components/admin/Pagination.vue';
+
 
 
 const orders = ref([]);
@@ -101,6 +103,21 @@ onMounted(() => {
   fetchOrders();
   fetchUsers();
 });
+
+const currentPage = ref(1);
+
+const startIndex = computed(() => (currentPage.value - 1) * 5);
+const endIndex = computed(() => Math.min(startIndex.value + 5, orders.value.length));
+
+const paginatedCategories = computed(() => {
+  return orders.value.slice(startIndex.value, endIndex.value);
+});
+
+
+// const calculateIndex = (index) => {
+//   return startIndex.value + index + 1;  
+// };
+
 </script>
 
 <template>
@@ -108,37 +125,47 @@ onMounted(() => {
     <h2 class="mb-4">Gestión de Órdenes</h2>
 
     <!-- Table -->
-    <div class="table-responsive">
-      <table class="table table-striped table-hover">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Cliente</th>
-            <th>Monto Total</th>
-            <th>Fecha Entrega</th>
-            <th>Estado</th>
-            <th>Estado Pago</th>
-            <th>Fecha Creación</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="order in orders" :key="order.id">
-            <td>#{{ order.id }}</td>
-            <td>{{ getUserName(order.usuario_id) }}</td>
-            <td>${{ order.monto_total }}</td>
-            <td>{{ formatDate(order.fecha_entrega) }}</td>
-            <td><span :class="getStatusClass(order.estado)">{{ order.estado }}</span></td>
-            <td><span :class="getStatusClass(order.estado_pago)">{{ order.estado_pago }}</span></td>
-            <td>{{ formatDate(order.created_at) }}</td>
-            <td>
-              <button class="btn btn-sm btn-primary" @click="openModal(order)">
-                <i class="material-icons">visibility</i>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th class="fw-bold">ID</th>
+                <th class="fw-bold">Cliente</th>
+                <th class="fw-bold">Monto Total</th>
+                <th class="fw-bold">Fecha Entrega</th>
+                <th class="fw-bold">Estado</th>
+                <th class="fw-bold">Estado Pago</th>
+                <th class="fw-bold">Fecha Creación</th>
+                <th class="fw-bold">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="order in paginatedCategories" :key="order.id">
+                <td class="text-center">#{{ order.id }}</td>
+                <td class="text-center">{{ getUserName(order.usuario_id) }}</td>
+                <td class="text-center">${{ order.monto_total }}</td>
+                <td class="text-center">{{ formatDate(order.fecha_entrega) }}</td>
+                <td class="text-center">
+                  <span :class="getStatusClass(order.estado)">{{ order.estado }}</span>
+                </td>
+                <td class="text-center">
+                  <span :class="getStatusClass(order.estado_pago)">{{ order.estado_pago }}</span>
+                </td>
+                <td class="text-center">{{ formatDate(order.created_at) }}</td>
+                <td>
+                  <div class="d-flex justify-content-start gap-2">
+                    <button class="btn btn-primary btn-sm" @click="openModal(order)">
+                      <i class="material-icons">visibility</i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <!-- Modal -->
@@ -180,12 +207,11 @@ onMounted(() => {
                   <tbody>
                     <tr v-for="detalle in selectedOrder.detalles_con_tallas_y_colores" :key="detalle.id">
                       <td>
-                        <img 
-                          :src="`${IMAGE_BASE_URL}/${detalle.detalle_producto.imagen_url}`" 
-                          alt="Producto" 
+                        <img
+                          :src="`${IMAGE_BASE_URL}/${detalle.detalle_producto.imagen_url}`"
+                          alt="Producto"
                           class="product-thumbnail"
                         />
-
                       </td>
                       <td>{{ getColorName(detalle.detalle_producto.color) }}</td>
                       <td>{{ getTallaName(detalle.talla_id, detalle.detalle_producto) }}</td>
@@ -226,6 +252,13 @@ onMounted(() => {
       </div>
     </div>
   </div>
+  <Pagination 
+  :totalItems="orders.length" 
+  :itemsPerPage="3" 
+  :currentPage="currentPage"
+  @update:currentPage="currentPage = $event"  
+/>
+
 </template>
 
 <style scoped>
@@ -326,5 +359,21 @@ table {
 
 .btn-close:hover {
   opacity: 0.7;
+}
+
+.card {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.btn-sm .material-icons {
+  font-size: 28px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 </style>

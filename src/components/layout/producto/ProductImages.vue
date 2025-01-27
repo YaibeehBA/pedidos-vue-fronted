@@ -59,7 +59,7 @@
               v-for="(variante, index) in productoSeleccionado.variantes"
               :key="index"
               class="color-box"
-              :style="{ background: variante.color_hex }"
+              :style="{ background: variante.color_codigo_hex }"
               :class="{ 'border border-dark': variante.color === varianteSeleccionada?.color }"
               @click="actualizarProductoSeleccionado(variante)"
             ></div>
@@ -566,13 +566,13 @@ const realizarPedido = () => {
 .color-box {
   width: 30px;
   height: 30px;
-  border-radius: 50%;
   cursor: pointer;
-  transition: transform 0.2s;
+  border-radius: 50%;
+  border: 1px solid #ccc;
 }
 
-.color-box:hover {
-  transform: scale(1.1);
+.color-box.selected {
+  border: 5px solid black; /* Borde distintivo para el seleccionado */
 }
 
 /* Estilos móviles */

@@ -1,190 +1,174 @@
 <template>
-    <div class="container py-4">
-        <div class="row g-4">
-            <!-- Panel principal -->
-            <div class="col-lg-8">
-                <div class="card border-0 shadow-sm mb-4">
-                    <div class="row mb-2">
-                        <div class="col-auto">
-                            <button @click="obtenerFechaEntrega" class="btn btn-primary">
-                                Calcular Fecha de Entrega
-                            </button>
-                        </div>
-                        <div class="col-auto mt-1">
-                            <span><strong>{{ fechaEntrega }}</strong></span>
-                        </div>
-                    </div>
+  <div class="container py-4">
+      <div class="row g-4">
+          <!-- Panel principal -->
+          <div class="col-lg-8">
+              <div class="card border-0 shadow-sm mb-4">
+                  <div class="row mb-2">
+                      <div class="col-auto">
+                          <button @click="obtenerFechaEntrega" class="btn btn-primary">
+                              Calcular Fecha de Entrega
+                          </button>
+                      </div>
+                      <div class="col-auto mt-1">
+                          <span><strong>{{ fechaEntrega }}</strong></span>
+                      </div>
+                  </div>
 
-                    <!-- Feedback dinámico -->
-                    <div v-if="mensajeFeedback" class="alert alert-info mt-2">
-                        {{ mensajeFeedback }}
-                    </div>
+                  <!-- Feedback dinámico -->
+                  <div v-if="mensajeFeedback" class="alert alert-info mt-2">
+                      {{ mensajeFeedback }}
+                  </div>
 
+                  <div class="card-header bg-white border-bottom-0 py-3">
+                      <div class="d-flex align-items-center">
+                          <input type="checkbox" class="form-check-input me-2" v-model="todoSeleccionado" @change="seleccionarTodo" />
+                          <span class="text-secondary">{{ productosSeleccionados }}/{{ productosCarrito.length }} artículos seleccionados</span>
+                          <div class="ms-auto">
+                              <button class="btn btn-link text-secondary" @click="eliminarSeleccionados">
+                                  Eliminar
+                              </button>
+                          </div>
+                      </div>
+                  </div>
 
-                    <div class="card-header bg-white border-bottom-0 py-3">
-                        <div class="d-flex align-items-center">
-                            <input type="checkbox" class="form-check-input me-2" v-model="todoSeleccionado" @change="seleccionarTodo">
-                            <span class="text-secondary">{{ productosSeleccionados }}/{{ productosCarrito.length }} artículos seleccionados</span>
-                            <div class="ms-auto">
-                                <button class="btn btn-link text-secondary" @click="eliminarSeleccionados">
-                                    Eliminar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                  <div class="card-body p-0">
+                      <div v-if="productosCarrito.length === 0" class="text-center py-4">
+                          El carrito está vacío
+                      </div>
+                      <div v-else v-for="(producto, index) in productosCarrito" :key="index" class="producto-item px-3 py-3 border-bottom">
+                          <div class="d-flex align-items-center">
+                              <input type="checkbox" class="form-check-input me-3 mt-2" v-model="producto.seleccionado" />
 
-                    <div class="card-body p-0">
-                        <div v-if="productosCarrito.length === 0" class="text-center py-4">
-                            El carrito está vacío
-                        </div>
-                        <div v-else v-for="(producto, index) in productosCarrito" 
-                             :key="index" 
-                             class="producto-item px-3 py-3 border-bottom">
-                            <div class="d-flex align-items-center">
-                                <input type="checkbox" class="form-check-input me-3 mt-2" v-model="producto.seleccionado">
+                              <img
+                                  :src="`${IMAGE_BASE_URL}/${producto.detalleProducto?.imagen_url}`"
+                                  :alt="producto.detalleProducto?.producto?.nombre"
+                                  class="producto-imagen me-3 rounded"
+                                  style="width: 60px; height: 60px; object-fit: cover;"
+                              />
 
-                                <img :src="`${IMAGE_BASE_URL}/${producto.detalleProducto?.imagen_url}`" 
-                                     :alt="producto.detalleProducto?.producto?.nombre" 
-                                     class="producto-imagen me-3 rounded" 
-                                     style="width: 60px; height: 60px; object-fit: cover;">
+                              <div class="flex-grow-1">
+                                  <div class="d-flex justify-content-between align-items-start">
+                                      <div>
+                                          <h6 class="mb-2 text-truncate" style="max-width: 250px;">
+                                              {{ producto.detalleProducto?.producto?.nombre }}
+                                          </h6>
 
-                                <div class="flex-grow-1">
-                                    <div class="d-flex justify-content-between align-items-start">
-                                        <div>
-                                            <h6 class="mb-2 text-truncate" style="max-width: 250px;">
-                                                {{ producto.detalleProducto?.producto?.nombre }}
-                                            </h6>
+                                          <div class="producto-detalles mb-2 text-secondary">
+                                              <span class="me-2">Color: {{ producto.detalleProducto?.color?.nombre }}</span>
+                                              <span class="me-2">Talla: {{ producto.talla?.nombre }}</span>
+                                          </div>
+                                      </div>
 
-                                            <div class="producto-detalles mb-2 text-secondary">
-                                                <span class="me-2">Color: {{ producto.detalleProducto?.color?.nombre }}</span>
-                                                <span class="me-2">Talla: {{ producto.talla?.nombre }}</span>
-                                            </div>
-                                        </div>
+                                      <button class="btn-close" @click="eliminarProducto(producto)"></button>
+                                  </div>
 
-                                        <button class="btn-close" @click="eliminarProducto(producto)"></button>
-                                    </div>
-                                    
-                                    <div class="precio text-primary fw-bold mb-2">
-                                        <span v-if="aplicaDescuentoPorMayor" class="text-decoration-line-through text-muted me-2">
-                                            ${{ (producto.detalleProducto?.precio_base * producto.cantidad).toFixed(2) }}
-                                        </span>
-                                        ${{ calcularPrecioConDescuento(producto).toFixed(2) }}
-                                    </div>
+                                  <div class="precio text-primary fw-bold mb-2">
+                                      <span v-if="aplicaDescuentoPorMayor" class="text-decoration-line-through text-muted me-2">
+                                          ${{ (producto.detalleProducto?.precio_base * producto.cantidad).toFixed(2) }}
+                                      </span>
+                                      ${{ calcularPrecioConDescuento(producto).toFixed(2) }}
+                                  </div>
 
-                                    <div class="d-flex align-items-center justify-content-end">
-                                        <button class="btn btn-outline-secondary btn-sm" 
-                                                @click="decrementarCantidad(producto)">
-                                            −
-                                        </button>
-                                        <input type="number" 
-                                               v-model="producto.cantidad" 
-                                               class="form-control form-control-sm text-center mx-2" 
-                                               style="width: 60px;"
-                                               @change="actualizarCantidad(producto)">
-                                        <button class="btn btn-outline-secondary btn-sm" 
-                                                @click="incrementarCantidad(producto)">
-                                            +
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                                  <div class="d-flex align-items-center justify-content-end">
+                                      <button class="btn btn-outline-secondary btn-sm" @click="decrementarCantidad(producto)">
+                                          −
+                                      </button>
+                                      <input type="number" v-model="producto.cantidad" class="form-control form-control-sm text-center mx-2" style="width: 60px;" @change="actualizarCantidad(producto)" />
+                                      <button class="btn btn-outline-secondary btn-sm" @click="incrementarCantidad(producto)">
+                                          +
+                                      </button>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
 
-                    
-            <!-- Panel lateral con cálculos actualizados -->
-            <div class="col-lg-4">
-    <div class="d-flex flex-column">
+          <!-- Panel lateral con cálculos actualizados -->
+          <div class="col-lg-4">
+              <div class="d-flex flex-column">
+                  <!-- Detalles del precio -->
+                  <div class="card border-0 shadow-sm mb-4">
+                      <div class="card-body">
+                          <h6 class="mb-3">Detalles del precio</h6>
 
-        <!-- Detalles del precio -->
-        <div class="card border-0 shadow-sm mb-4">
-            
-            <div class="card-body">
-                <h6 class="mb-3">Detalles del precio</h6>
-                
-                <!-- Subtotal original -->
-                <div class="d-flex justify-content-between mb-2">
-                    <span>Subtotal ({{ cantidadTotalProductos }} artículos)</span>
-                    <span>${{ subtotalSinDescuento.toFixed(2) }}</span>
-                </div>
+                          <!-- Subtotal original -->
+                          <div class="d-flex justify-content-between mb-2">
+                              <span>Subtotal ({{ cantidadTotalProductos }} artículos)</span>
+                              <span>${{ subtotalSinDescuento.toFixed(2) }}</span>
+                          </div>
 
-                <!-- Descuento por mayor si aplica -->
-                <div v-if="aplicaDescuentoPorMayor" class="d-flex justify-content-between mb-2 text-success">
-                    <span>Descuento por mayor (-$7.00 c/u)</span>
-                    <span>-${{ descuentoTotal.toFixed(2) }}</span>
-                </div>
+                          <!-- Descuento por mayor si aplica -->
+                          <div v-if="aplicaDescuentoPorMayor" class="d-flex justify-content-between mb-2 text-success">
+                              <span>Descuento por mayor (-$7.00 c/u)</span>
+                              <span>-${{ descuentoTotal.toFixed(2) }}</span>
+                          </div>
 
-                <hr class="my-3">
+                          <hr class="my-3" />
 
-                <!-- Total con descuento aplicado -->
-                <div class="d-flex justify-content-between fw-bold">
-                    <span>Importe total</span>
-                    <span>${{ total.toFixed(2) }}</span>
-                </div>
+                          <!-- Total con descuento aplicado -->
+                          <div class="d-flex justify-content-between fw-bold">
+                              <span>Importe total</span>
+                              <span>${{ total.toFixed(2) }}</span>
+                          </div>
 
-                <!-- Mensaje de descuento -->
-                <div v-if="!aplicaDescuentoPorMayor && cantidadTotalProductos > 0" 
-                     class="text-muted small mt-2">
-                    Agrega {{ 3 - cantidadTotalProductos }} productos más para obtener descuento por mayor
-                </div>
+                          <!-- Mensaje de descuento -->
+                          <div v-if="!aplicaDescuentoPorMayor && cantidadTotalProductos > 0" class="text-muted small mt-2">
+                              Agrega {{ 3 - cantidadTotalProductos }} productos más para obtener descuento por mayor
+                          </div>
 
-                <button class="btn btn-dark w-100 mt-3" 
-                        @click="realizarPedido"
-                        :disabled="productosCarrito.length === 0">
-                    Realizar pedido
-                </button>
-            </div>
-        </div>
+                          <!-- <button class="btn btn-dark w-100 mt-3" @click="realizarPedido" :disabled="productosCarrito.length === 0">
+                              Realizar pedido
+                          </button> -->
+                          <div>
+                              <div class="mt-2" ref="paypalButtonContainer" :class="{ 'disabled': productosCarrito.length === 0 }"></div>
+                              <p v-if="loading">Cargando PayPal...</p>
+                              <p v-if="error">{{ error }}</p>
+                          </div>
 
-        <!-- Datos del cliente -->
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="mb-0">Cliente</h5>
-            </div>
-            <div class="card-body">
-                <div class="d-flex align-items-center mb-3">
-                    <div>
-                        <h6 class="mb-0">{{ userStore.user.nombre }} {{ userStore.user.apellido }}</h6>
-                        <small class="text-muted">Cuenta creada: {{ formattedDate(userStore.user.created_at) }}</small>
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="material-icons me-2 text-muted">email</i>
-                        <span>{{ userStore.user.email }}</span>
-                    </div>
-                    <div class="d-flex align-items-center mb-2">
-                        <i class="material-icons me-2 text-muted">phone</i>
-                        <span>{{ userStore.user.celular }}</span>
-                    </div>
-                </div>
-                <hr />
-                <div class="mb-3">
-                    <h6>Dirección del Local New Blessings</h6>
-                    <p class="mb-0">
-                        123 Calle Principal<br />
-                        Chimborazo, Riobamba 170504<br />
-                        Ecuador
-                    </p>
-                </div>
-                <hr />
-            </div>
-        </div>
-        
-    </div>
-</div>
+                      </div>
+                  </div>
 
-
-        </div>
-    </div>
-
-
-    
-    
-
-
+                  <!-- Datos del cliente -->
+                  <div class="card mb-4">
+                      <div class="card-header">
+                          <h5 class="mb-0">Cliente</h5>
+                      </div>
+                      <div class="card-body">
+                          <div class="d-flex align-items-center mb-3">
+                              <div>
+                                  <h6 class="mb-0">{{ userStore.user.nombre }} {{ userStore.user.apellido }}</h6>
+                                  <small class="text-muted">Cuenta creada: {{ formattedDate(userStore.user.created_at) }}</small>
+                              </div>
+                          </div>
+                          <div class="mb-3">
+                              <div class="d-flex align-items-center mb-2">
+                                  <i class="material-icons me-2 text-muted">email</i>
+                                  <span>{{ userStore.user.email }}</span>
+                              </div>
+                              <div class="d-flex align-items-center mb-2">
+                                  <i class="material-icons me-2 text-muted">phone</i>
+                                  <span>{{ userStore.user.celular }}</span>
+                              </div>
+                          </div>
+                          <hr />
+                          <div class="mb-3">
+                              <h6>Dirección del Local New Blessings</h6>
+                              <p class="mb-0">
+                                  123 Calle Principal<br />
+                                  Chimborazo, Riobamba 170504<br />
+                                  Ecuador
+                              </p>
+                          </div>
+                          <hr />
+                      </div>
+                  </div>
+              </div>
+          </div>
+      </div>
+  </div>
 </template>
 
 <script setup>
@@ -329,15 +313,6 @@ const eliminarSeleccionados = () => {
         })
 }
 
-// const realizarPedido = async () => {
-//     try {
-//         await cartStore.createOrder()
-//         router.push('/Pedidos')
-//     } catch (error) {
-//         console.error('Error al crear la orden:', error)
-//         alert('Error al procesar el pedido')
-//     }
-// }
 
 
 const realizarPedido = async () => {
@@ -417,6 +392,102 @@ const obtenerFechaEntrega = async () => {
 onMounted(() => {
     fetchProductosData()
 })
+
+
+import { loadScript } from '@paypal/paypal-js';
+
+const paypalButtonContainer = ref(null);
+
+// Estados para manejar la carga y errores
+const loading = ref(true);
+const error = ref('');
+
+// Montar el botón de PayPal cuando el componente esté listo
+onMounted(async () => {
+  try {
+    // Cargar el SDK de PayPal
+    const paypal = await loadScript({
+      'client-id':  import.meta.env.VITE_PAYPAL_CLIENT_ID_SANDBOX, 
+      currency: 'USD',
+    });
+
+    // Renderizar el botón de PayPal
+    paypal.Buttons({
+      createOrder: (data, actions) => {
+        // Lógica para crear la orden usando el total del carrito
+        return actions.order.create({
+          purchase_units: [
+            {
+              amount: {
+                value: total.value.toFixed(2), // Usar el total del carrito
+                currency_code: 'USD', // Moneda
+              },
+            },
+          ],
+        });
+      },
+      onApprove: (data, actions) => {
+        // Lógica cuando el pago es aprobado
+        return actions.order.capture().then(async (details) => {
+          // Mostrar mensaje de éxito con SweetAlert2
+          await Swal.fire({
+            icon: 'success',
+            title: 'Pago exitoso',
+            text: `Gracias por tu compra, ${details.payer.name.given_name}.`,
+            confirmButtonText: 'Aceptar',
+          });
+
+          // Ejecutar la función realizarPedido
+          try {
+            await realizarPedido(); // Llamar a la función realizarPedido
+          } catch (err) {
+            console.error('Error al procesar el pedido:', err);
+            await Swal.fire({
+              icon: 'error',
+              title: 'Error al procesar el pedido',
+              text: 'Hubo un problema al procesar tu pedido. Intenta nuevamente.',
+              confirmButtonText: 'Aceptar',
+            });
+          }
+        });
+      },
+      onCancel: (data) => {
+        // Lógica cuando el pago es cancelado
+        Swal.fire({
+          icon: 'warning',
+          title: 'Pago cancelado',
+          text: 'El pago fue cancelado por el usuario.',
+          confirmButtonText: 'Aceptar',
+        });
+      },
+      onError: (err) => {
+        // Lógica cuando ocurre un error
+        error.value = 'Error: ' + err.message;
+        Swal.fire({
+          icon: 'error',
+          title: 'Error en el pago',
+          text: 'Hubo un problema al procesar tu pago. Intenta nuevamente.',
+          confirmButtonText: 'Aceptar',
+        });
+      },
+    }).render(paypalButtonContainer.value); // Renderizar en el contenedor
+
+    // Indicar que el SDK se cargó correctamente
+    loading.value = false;
+  } catch (err) {
+    // Manejar errores al cargar el SDK
+    error.value = 'Error al cargar PayPal: ' + err.message;
+    loading.value = false;
+    Swal.fire({
+      icon: 'error',
+      title: 'Error al cargar PayPal',
+      text: 'No se pudo cargar el SDK de PayPal. Intenta recargar la página.',
+      confirmButtonText: 'Aceptar',
+    });
+  }
+});
+
+
 </script>
 
 <style scoped>
@@ -479,6 +550,11 @@ onMounted(() => {
 
 .btn-outline-secondary {
   border-color: #ddd; /* Color visible */
+}
+
+.disabled {
+  pointer-events: none; /* Desactiva clics y eventos */
+  opacity: 0.5; /* Apariencia deshabilitada */
 }
 </style>
 

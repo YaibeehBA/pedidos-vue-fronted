@@ -1,4 +1,5 @@
 <template>
+  <h3 class="text-center">Administración de Productos </h3>
   <div class="mb-3 d-flex justify-content-between align-items-center">
     <button
       type="button"

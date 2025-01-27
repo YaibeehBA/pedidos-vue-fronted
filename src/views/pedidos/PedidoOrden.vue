@@ -60,10 +60,7 @@
                         </div>
 
                         <!-- Total -->
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Total</span>
-                            <span>$ {{ precioTotal.toFixed(2) }}</span>
-                        </div>
+                        
                         <hr />
                         <div class="d-flex justify-content-between">
                             <strong>Total</strong>
@@ -112,7 +109,12 @@
 
               <div>
               <!-- Botón para enviar correo / crear orden -->
-              <button @click="createOrder" class="btn btn-dark w-100">Enviar Mi Pedido</button>
+              <!-- <button @click="createOrder" class="btn btn-dark w-100">Enviar Mi Pedido</button> -->
+              <div>
+                  <div class="mt-2" ref="paypalButtonContainer"></div>
+                  <p v-if="loading">Cargando PayPal...</p>
+                  <p v-if="error">{{ error }}</p>
+              </div>
 
             </div>
           </div>
@@ -340,70 +342,203 @@ const obtenerFechaEntrega = async () => {
   }
 };
 
-const createOrder = async () => {
-  // Validaciones
-  if (!user.value || !user.value.id) {
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "Por favor, inicie sesión para realizar el pedido.",
-    });
-    return;
-  }
+// const createOrder = async () => {
+//   // Validaciones
+//   if (!user.value || !user.value.id) {
+//     Swal.fire({
+//       icon: "error",
+//       title: "Error",
+//       text: "Por favor, inicie sesión para realizar el pedido.",
+//     });
+//     return;
+//   }
 
-  if (!prendas.value || prendas.value <= 0) {
-    Swal.fire({
-      icon: "warning",
-      title: "Advertencia",
-      text: "La cantidad de productos debe ser mayor que 0.",
-    });
-    return;
-  }
+//   if (!prendas.value || prendas.value <= 0) {
+//     Swal.fire({
+//       icon: "warning",
+//       title: "Advertencia",
+//       text: "La cantidad de productos debe ser mayor que 0.",
+//     });
+//     return;
+//   }
 
-  const ordenData = {
-  usuario_id: user.value.id, // ID del usuario
-  productos: [
-    {
-      detalles_productos_id: varianteId, // Identificador de la variante o producto
-      cantidad: prendas.value,           // Cantidad del producto
-      talla_id: parseInt(talla_id),              // ID de la talla
-    },
-  ],
-};
-console.log(JSON.stringify(ordenData, null, 2));
-  try {
-    // Enviar la solicitud a la API
-    const response = await PublicApi.post("orden", ordenData);
+//   const ordenData = {
+//   usuario_id: user.value.id, // ID del usuario
+//   productos: [
+//     {
+//       detalles_productos_id: varianteId, // Identificador de la variante o producto
+//       cantidad: prendas.value,           // Cantidad del producto
+//       talla_id: parseInt(talla_id),              // ID de la talla
+//     },
+//   ],
+// };
+// console.log(JSON.stringify(ordenData, null, 2));
+//   try {
+//     // Enviar la solicitud a la API
+//     const response = await PublicApi.post("orden", ordenData);
 
-    if (response.status === 200) {
-      // Mostrar mensaje con SweetAlert
-      await Swal.fire({
-        icon: "success",
-        title: "¡Éxito!",
-        text: "¡La orden se ha creado exitosamente!",
-        confirmButtonText: "Aceptar",
-      });
+//     if (response.status === 200) {
+//       // Mostrar mensaje con SweetAlert
+//       await Swal.fire({
+//         icon: "success",
+//         title: "¡Éxito!",
+//         text: "¡La orden se ha creado exitosamente!",
+//         confirmButtonText: "Aceptar",
+//       });
 
-      // Redirigir al Home después del mensaje
-      router.push('/Pedidos')
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Hubo un problema al crear la orden.",
-      });
-    }
-  } catch (error) {
-    console.error("Error al crear la orden:", error);
+//       // Redirigir al Home después del mensaje
+//       router.push('/Pedidos')
+//     } else {
+//       Swal.fire({
+//         icon: "error",
+//         title: "Error",
+//         text: "Hubo un problema al crear la orden.",
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Error al crear la orden:", error);
 
-    Swal.fire({
-      icon: "error",
-      title: "Error",
-      text: "Hubo un problema al realizar el pedido. Inténtelo de nuevo más tarde.",
-    });
-  }
-};
+//     Swal.fire({
+//       icon: "error",
+//       title: "Error",
+//       text: "Hubo un problema al realizar el pedido. Inténtelo de nuevo más tarde.",
+//     });
+//   }
+// };
   
+import { loadScript } from '@paypal/paypal-js';
+const paypalButtonContainer = ref(null);
+const loading = ref(true);
+const error = ref('');
+
+onMounted(async () => {
+  try {
+    // Cargar el SDK de PayPal
+    const paypal = await loadScript({
+      'client-id': import.meta.env.VITE_PAYPAL_CLIENT_ID_SANDBOX,
+      currency: 'USD',
+    });
+
+    // Renderizar el botón de PayPal
+    paypal.Buttons({
+      createOrder: async (data, actions) => {
+        // Validaciones antes de crear la orden
+        if (!user.value || !user.value.id) {
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Por favor, inicie sesión para realizar el pedido.",
+          });
+          return;
+        }
+
+        if (!prendas.value || prendas.value <= 0) {
+          Swal.fire({
+            icon: "warning",
+            title: "Advertencia",
+            text: "La cantidad de productos debe ser mayor que 0.",
+          });
+          return;
+        }
+
+        // Crear la orden en tu backend
+        const ordenData = {
+          usuario_id: user.value.id,
+          productos: [
+            {
+              detalles_productos_id: varianteId,
+              cantidad: prendas.value,
+              talla_id: parseInt(talla_id),
+            },
+          ],
+        };
+
+        try {
+          const response = await PublicApi.post("orden", ordenData);
+          if (response.status === 200) {
+            // Crear la orden de PayPal con el total del carrito
+            return actions.order.create({
+              purchase_units: [
+                {
+                  amount: {
+                    value: precioTotal.value.toFixed(2), // Usar el total del carrito
+                    currency_code: 'USD',
+                  },
+                },
+              ],
+            });
+          } else {
+            throw new Error("Error al crear la orden en el backend");
+          }
+        } catch (err) {
+          console.error("Error al crear la orden:", err);
+          Swal.fire({
+            icon: "error",
+            title: "Error",
+            text: "Hubo un problema al crear la orden. Inténtelo de nuevo más tarde.",
+          });
+          throw err; // Propagar el error para que PayPal lo maneje
+        }
+      },
+      onApprove: async (data, actions) => {
+        try {
+          // Capturar la orden de PayPal
+          const details = await actions.order.capture();
+
+          // Mostrar mensaje de éxito con SweetAlert2
+          await Swal.fire({
+            icon: 'success',
+            title: 'Pago exitoso',
+            text: `Gracias por tu compra, ${details.payer.name.given_name}.`,
+            confirmButtonText: 'Aceptar',
+          });
+
+          // Redirigir al usuario después del pago exitoso
+          router.push('/Pedidos');
+        } catch (err) {
+          console.error('Error al procesar el pago:', err);
+          await Swal.fire({
+            icon: 'error',
+            title: 'Error al procesar el pago',
+            text: 'Hubo un problema al procesar tu pago. Intenta nuevamente.',
+            confirmButtonText: 'Aceptar',
+          });
+        }
+      },
+      onCancel: (data) => {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Pago cancelado',
+          text: 'El pago fue cancelado por el usuario.',
+          confirmButtonText: 'Aceptar',
+        });
+      },
+      onError: (err) => {
+        error.value = 'Error: ' + err.message;
+        Swal.fire({
+          icon: 'error',
+          title: 'Error en el pago',
+          text: 'Hubo un problema al procesar tu pago. Intenta nuevamente.',
+          confirmButtonText: 'Aceptar',
+        });
+      },
+    }).render(paypalButtonContainer.value); // Renderizar en el contenedor
+
+    // Indicar que el SDK se cargó correctamente
+    loading.value = false;
+  } catch (err) {
+    // Manejar errores al cargar el SDK
+    error.value = 'Error al cargar PayPal: ' + err.message;
+    loading.value = false;
+    Swal.fire({
+      icon: 'error',
+      title: 'Error al cargar PayPal',
+      text: 'No se pudo cargar el SDK de PayPal. Intenta recargar la página.',
+      confirmButtonText: 'Aceptar',
+    });
+  }
+});
+
   </script>
   
   <style scoped>
