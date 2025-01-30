@@ -106,8 +106,8 @@ onMounted(() => {
 
 const currentPage = ref(1);
 
-const startIndex = computed(() => (currentPage.value - 1) * 5);
-const endIndex = computed(() => Math.min(startIndex.value + 5, orders.value.length));
+const startIndex = computed(() => (currentPage.value - 1) * 15);
+const endIndex = computed(() => Math.min(startIndex.value + 15, orders.value.length));
 
 const paginatedCategories = computed(() => {
   return orders.value.slice(startIndex.value, endIndex.value);
@@ -254,7 +254,7 @@ const paginatedCategories = computed(() => {
   </div>
   <Pagination 
   :totalItems="orders.length" 
-  :itemsPerPage="3" 
+  :itemsPerPage="15" 
   :currentPage="currentPage"
   @update:currentPage="currentPage = $event"  
 />

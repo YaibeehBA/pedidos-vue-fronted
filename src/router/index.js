@@ -4,6 +4,7 @@ import AdminLayout from '../components/admin/AdminLayout.vue';
 import Dashboard from '../views/admin/Dashboard.vue';
 import Categorias from '../views/admin/Categorias.vue';
 import Usuarios from '../views/admin/Usuarios.vue';
+import Descuentos from '../views/admin/Descuentos.vue';
 import Tallas from '@/views/admin/Tallas.vue';
 import Colores from '@/views/admin/Colores.vue';
 import ProductoBase from '@/views/admin/ProductoBase.vue';
@@ -97,6 +98,11 @@ const router = createRouter({
           path: 'colores',
           name: 'colores',
           component: Colores,
+        },
+        {
+          path: 'descuentos',
+          name: 'descuentos',
+          component: Descuentos,
         },
         {
           path: 'productobase',
