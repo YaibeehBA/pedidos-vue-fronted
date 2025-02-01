@@ -114,7 +114,7 @@ const toggleSidebar = () => {
         </li>
         <li class="nav-item">
           <RouterLink to="/admin/descuentos" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
-            <span class="material-icons me-3">receipt_long</span>
+            <span class="material-icons  me-3">savings</span>
             <span v-show="isExpanded">Descuentos</span>
           </RouterLink>
         </li>
@@ -237,5 +237,6 @@ ul.list-unstyled li span.material-icons {
   font-size: 1rem;
   color: #0a131b; /* Color gris estándar */
 }
+
 
 </style>

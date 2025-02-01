@@ -38,14 +38,12 @@ const getUserPhone = (userId) => {
   return user ? user.celular : 'Celular no encontrado';
 };
 
-
 const fetchOrders = async () => {
   try {
     isLoading.value = true;
     const response = await fetch('http://localhost:8000/api/public/ordenes');
     const data = await response.json();
     orders.value = data.ordenes || [];
-
   } catch (error) {
     console.error('Error fetching orders:', error);
   } finally {
@@ -59,9 +57,6 @@ const filteredOrders = computed(() => {
     return orderDate >= startDate.value && orderDate <= endDate.value;
   });
 });
-
-
-
 
 const generatePDF = () => {
   const doc = new jsPDF();
@@ -85,20 +80,22 @@ const generatePDF = () => {
   // Estadísticas generales
   const totalOrders = filteredOrders.value.length;
   const totalAmount = filteredOrders.value.reduce((sum, order) => sum + parseFloat(order.monto_total), 0);
+  const totalDiscount = filteredOrders.value.reduce((sum, order) => sum + parseFloat(order.descuento_total || 0), 0);
   
   doc.setFontSize(12);
   doc.text('Resumen:', 14, 40);
   doc.text(`Total de órdenes: ${totalOrders}`, 14, 47);
   doc.text(`Monto total: $${totalAmount.toFixed(2)}`, 14, 54);
+  doc.text(`Descuento total: $${totalDiscount.toFixed(2)}`, 14, 61); // Nuevo campo
 
   // Tabla de órdenes
-  const tableColumn = ['ID', 'Cliente','Estado', 'Monto', 'Fecha Entrega', 'Estado Pago'];
+  const tableColumn = ['ID', 'Cliente', 'Estado', 'Monto', 'Descuento', 'Fecha Entrega', 'Estado Pago'];
   const tableRows = filteredOrders.value.map(order => [
     order.id,
     getUserName(order.usuario_id),
     order.estado,
     `$${order.monto_total}`,
-    // new Date(order.fecha_entrega).toLocaleDateString(),
+    `$${order.descuento_total || 0}`, // Nuevo campo
     new Date(new Date(order.fecha_entrega).setDate(new Date(order.fecha_entrega).getDate() + 1)).toLocaleDateString('es-ES'),
     order.estado_pago
   ]);
@@ -127,36 +124,30 @@ const generatePDF = () => {
   let yPos = doc.lastAutoTable.finalY + 20;
 
   filteredOrders.value.forEach(order => {
-    // Verificar si necesitamos una nueva página
     if (yPos > 250) {
       doc.addPage();
       yPos = 20;
     }
 
     doc.setFontSize(11);
-    // doc.text(`Detalles de la Orden #${order.id}`, 14, yPos);
     doc.text(
-  `Detalles de la Orden #${order.id} - ${getUserName(order.usuario_id)} - Celular: ${getUserPhone(order.usuario_id)}`,
+      `Detalles de la Orden #${order.id} - ${getUserName(order.usuario_id)} - Celular: ${getUserPhone(order.usuario_id)}`,
       14,
       yPos
     );
-
-
     yPos += 7;
 
-    const detailsColumns = ['Producto', 'Color', 'Talla', 'Cantidad', 'Precio Unit.', 'Subtotal'];
+    const detailsColumns = ['Producto', 'Color', 'Talla', 'Cantidad', 'Precio Base', 'Precio Unit.', 'Descuento Unit.', 'Subtotal'];
     const detailsRows = order.detalles_con_tallas_y_colores.map(detalle => [
-      // `Producto ${detalle.detalles_productos_id}`,
       detalle.detalle_producto.producto.nombre,
       detalle.detalle_producto.color.nombre,
-      // detalle.talla_id,
-      detalle.detalle_producto.tallas
-      .find(talla => talla.id === detalle.talla_id)?.nombre,
+      detalle.detalle_producto.tallas.find(talla => talla.id === detalle.talla_id)?.nombre,
       detalle.cantidad,
+      `$${detalle.precio_base}`, // Nuevo campo
       `$${detalle.precio_unitario}`,
+      `$${detalle.descuento_unitario || 0}`, // Nuevo campo
       `$${detalle.subtotal}`
     ]);
-      
 
     doc.autoTable({
       startY: yPos,
@@ -183,7 +174,6 @@ const generatePDF = () => {
 // Cargar órdenes al montar el componente
 fetchUsers();
 fetchOrders();
-
 </script>
 
 <template>
@@ -242,6 +232,7 @@ fetchOrders();
                   <th>Cliente</th>
                   <th>Estado</th>
                   <th>Monto Total</th>
+                  <th>Descuento Total</th> 
                   <th>Fecha Entrega</th>
                   <th>Estado Pago</th>
                 </tr>
@@ -258,6 +249,7 @@ fetchOrders();
                   <td>{{ getUserName(order.usuario_id) }}</td>
                   <td>{{ order.estado }}</td>
                   <td>${{ order.monto_total }}</td>
+                  <td>${{ order.descuento_total || 0 }}</td>
                   <!-- <td>{{ new Date(order.fecha_entrega).toLocaleDateString() }}</td> -->
                   <td>{{ new Date(new Date(order.fecha_entrega).setDate(new Date(order.fecha_entrega).getDate() + 1)).toLocaleDateString() }}</td>
 

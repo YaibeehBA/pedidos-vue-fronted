@@ -106,11 +106,9 @@ const orderTotal = computed(() => {
 
 const getStatusClass = (estado) => {
   const statusClasses = {
-    'pendiente': 'bg-warning text-dark',
-    'aprobada': 'bg-success',
-    'rechazada': 'bg-danger',
-    'pagada': 'bg-info',
-    'entregada': 'bg-primary'
+    Pagado: 'bg-success',
+    Entregando: 'bg-primary',
+    Atrasado: 'bg-danger',
   };
   return statusClasses[estado] || 'bg-secondary';
 };

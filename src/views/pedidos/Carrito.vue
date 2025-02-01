@@ -101,11 +101,21 @@
                           </div>
 
                           <!-- Descuento por mayor si aplica -->
-                          <div v-if="aplicaDescuentoPorMayor" class="d-flex justify-content-between mb-2 text-success">
+                          <!-- <div v-if="aplicaDescuentoPorMayor" class="d-flex justify-content-between mb-2 text-success">
                               <span>Descuento por mayor (-$7.00 c/u)</span>
                               <span>-${{ descuentoTotal.toFixed(2) }}</span>
-                          </div>
-
+                          </div> -->
+                          <template v-if="discountData?.descuento_aplicado">
+    <div v-for="descuento in Object.values(descuentosAplicados)" 
+         :key="descuento.id" 
+         class="d-flex justify-content-between mb-2 text-success">
+        <span>
+            {{ descuento.nombre }} 
+            (-{{ formatearValorDescuento(descuento.tipo, descuento.valor) }})
+        </span>
+        <span>-${{ descuento.total.toFixed(2) }}</span>
+    </div>
+</template>
                           <hr class="my-3" />
 
                           <!-- Total con descuento aplicado -->
@@ -115,10 +125,18 @@
                           </div>
 
                           <!-- Mensaje de descuento -->
-                          <div v-if="!aplicaDescuentoPorMayor && cantidadTotalProductos > 0" class="text-muted small mt-2">
+                          <!-- <div v-if="!aplicaDescuentoPorMayor && cantidadTotalProductos > 0" class="text-muted small mt-2">
                               Agrega {{ 3 - cantidadTotalProductos }} productos más para obtener descuento por mayor
-                          </div>
-
+                          </div>  -->
+                          <div 
+  v-if="hayProductosConDescuento && 
+        !aplicaDescuentoPorMayor && 
+        cantidadTotalProductos > 0 && 
+        cantidadMinimaDescuento > cantidadTotalProductos" 
+  class="text-muted small mt-2"
+>
+  Agrega {{ cantidadMinimaDescuento - cantidadTotalProductos }} productos más para obtener descuento
+</div>
                           <!-- <button class="btn btn-dark w-100 mt-3" @click="realizarPedido" :disabled="productosCarrito.length === 0">
                               Realizar pedido
                           </button> -->
@@ -172,7 +190,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted , watch} from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/authstore'
@@ -186,6 +204,8 @@ const router = useRouter()
 const cartStore = useCartStore()
 const todoSeleccionado = ref(false)
 const productosData = ref([])
+const discountData = ref(null)
+const descuentosActivos = ref([])
 
 const userStore = useUserStore();
 
@@ -220,98 +240,98 @@ const productosCarrito = computed(() => {
     })
 })
 
-// Cantidad total de productos en el carrito
-const cantidadTotalProductos = computed(() => {
-    return productosCarrito.value.reduce((total, producto) => total + producto.cantidad, 0)
-})
+// // Cantidad total de productos en el carrito
+// const cantidadTotalProductos = computed(() => {
+//     return productosCarrito.value.reduce((total, producto) => total + producto.cantidad, 0)
+// })
 
-// Verifica si aplica descuento por mayor (más de 3 productos)
-const aplicaDescuentoPorMayor = computed(() => {
-    return cantidadTotalProductos.value >= 3
-})
+// // Verifica si aplica descuento por mayor (más de 3 productos)
+// const aplicaDescuentoPorMayor = computed(() => {
+//     return cantidadTotalProductos.value >= 3
+// })
 
-// Calcula el descuento para un producto individual
-const calcularPrecioConDescuento = (producto) => {
-    const precioBase = producto.detalleProducto?.precio_base * producto.cantidad
-    if (aplicaDescuentoPorMayor.value) {
-        return precioBase - (7 * producto.cantidad)
-    }
-    return precioBase
-}
+// // Calcula el descuento para un producto individual
+// const calcularPrecioConDescuento = (producto) => {
+//     const precioBase = producto.detalleProducto?.precio_base * producto.cantidad
+//     if (aplicaDescuentoPorMayor.value) {
+//         return precioBase - (7 * producto.cantidad)
+//     }
+//     return precioBase
+// }
 
-// Subtotal sin descuento
-const subtotalSinDescuento = computed(() => {
-    return productosCarrito.value.reduce((total, producto) => {
-        return total + (producto.detalleProducto?.precio_base * producto.cantidad)
-    }, 0)
-})
+// // Subtotal sin descuento
+// const subtotalSinDescuento = computed(() => {
+//     return productosCarrito.value.reduce((total, producto) => {
+//         return total + (producto.detalleProducto?.precio_base * producto.cantidad)
+//     }, 0)
+// })
 
-// Calcula el descuento total
-const descuentoTotal = computed(() => {
-    if (!aplicaDescuentoPorMayor.value) return 0
-    return productosCarrito.value.reduce((total, producto) => {
-        return total + (7 * producto.cantidad)
-    }, 0)
-})
+// // Calcula el descuento total
+// const descuentoTotal = computed(() => {
+//     if (!aplicaDescuentoPorMayor.value) return 0
+//     return productosCarrito.value.reduce((total, producto) => {
+//         return total + (7 * producto.cantidad)
+//     }, 0)
+// })
 
-// Total final con descuento aplicado
-const total = computed(() => {
-    return subtotalSinDescuento.value - descuentoTotal.value
-})
+// // Total final con descuento aplicado
+// const total = computed(() => {
+//     return subtotalSinDescuento.value - descuentoTotal.value
+// })
 
-const productosSeleccionados = computed(() => {
-    return productosCarrito.value.filter(p => p.seleccionado).length
-})
+// const productosSeleccionados = computed(() => {
+//     return productosCarrito.value.filter(p => p.seleccionado).length
+// })
 
-const seleccionarTodo = () => {
-    productosCarrito.value.forEach(producto => {
-        producto.seleccionado = todoSeleccionado.value
-    })
-}
+// const seleccionarTodo = () => {
+//     productosCarrito.value.forEach(producto => {
+//         producto.seleccionado = todoSeleccionado.value
+//     })
+// }
 
-const incrementarCantidad = (producto) => {
-    if (producto.cantidad < 100) {
-        cartStore.updateQuantity(
-            producto.detalles_productos_id,
-            producto.talla_id,
-            producto.cantidad + 1
-        )
-    }
-}
+// const incrementarCantidad = (producto) => {
+//     if (producto.cantidad < 100) {
+//         cartStore.updateQuantity(
+//             producto.detalles_productos_id,
+//             producto.talla_id,
+//             producto.cantidad + 1
+//         )
+//     }
+// }
 
-const decrementarCantidad = (producto) => {
-    if (producto.cantidad > 1) {
-        cartStore.updateQuantity(
-            producto.detalles_productos_id,
-            producto.talla_id,
-            producto.cantidad - 1
-        )
-    }
-}
+// const decrementarCantidad = (producto) => {
+//     if (producto.cantidad > 1) {
+//         cartStore.updateQuantity(
+//             producto.detalles_productos_id,
+//             producto.talla_id,
+//             producto.cantidad - 1
+//         )
+//     }
+// }
 
-const actualizarCantidad = (producto) => {
-    let cantidad = parseInt(producto.cantidad)
-    if (isNaN(cantidad) || cantidad < 1) cantidad = 1
-    if (cantidad > 100) cantidad = 100
+// const actualizarCantidad = (producto) => {
+//     let cantidad = parseInt(producto.cantidad)
+//     if (isNaN(cantidad) || cantidad < 1) cantidad = 1
+//     if (cantidad > 100) cantidad = 100
 
-    cartStore.updateQuantity(
-        producto.detalles_productos_id,
-        producto.talla_id,
-        cantidad
-    )
-}
+//     cartStore.updateQuantity(
+//         producto.detalles_productos_id,
+//         producto.talla_id,
+//         cantidad
+//     )
+// }
 
-const eliminarProducto = (producto) => {
-    cartStore.removeFromCart(producto.detalles_productos_id, producto.talla_id)
-}
+// const eliminarProducto = (producto) => {
+//     cartStore.removeFromCart(producto.detalles_productos_id, producto.talla_id)
+// }
 
-const eliminarSeleccionados = () => {
-    productosCarrito.value
-        .filter(producto => producto.seleccionado)
-        .forEach(producto => {
-            cartStore.removeFromCart(producto.detalles_productos_id, producto.talla_id)
-        })
-}
+// const eliminarSeleccionados = () => {
+//     productosCarrito.value
+//         .filter(producto => producto.seleccionado)
+//         .forEach(producto => {
+//             cartStore.removeFromCart(producto.detalles_productos_id, producto.talla_id)
+//         })
+// }
 
 
 
@@ -389,10 +409,16 @@ const obtenerFechaEntrega = async () => {
 };
 
 
-onMounted(() => {
-    fetchProductosData()
-})
+// onMounted(() => {
+//     fetchProductosData()
+// })
 
+onMounted(async () => {
+    await Promise.all([
+        fetchProductosData(),
+        fetchDescuentos()
+    ])
+})
 
 import { loadScript } from '@paypal/paypal-js';
 
@@ -487,7 +513,217 @@ onMounted(async () => {
   }
 });
 
+// Obtener la cantidad mínima más baja entre los descuentos activos
+const cantidadMinimaDescuento = computed(() => {
+    if (!descuentosActivos.value.length) return 0;
 
+    // Filtra los descuentos activos y obtén la cantidad máxima
+    const cantidadesMinimas = descuentosActivos.value
+        .filter(descuento => descuento.activo)
+        .map(descuento => descuento.cantidad_minima);
+
+    // Si no hay descuentos activos, retorna 0
+    if (cantidadesMinimas.length === 0) return 0;
+
+    // Retorna la cantidad máxima
+    return Math.max(...cantidadesMinimas);
+});
+
+const fetchDescuentos = async () => {
+    try {
+        const response = await axios.get('http://localhost:8000/api/descuentos')
+        descuentosActivos.value = response.data.data
+    } catch (error) {
+        console.error('Error obteniendo descuentos:', error)
+    }
+}
+const fetchDiscountData = async () => {
+    try {
+        const productos = productosCarrito.value.map(item => ({
+            id: item.detalles_productos_id,
+            cantidad: item.cantidad
+        }))
+
+        const response = await axios.post('http://localhost:8000/api/aplicar-descuento', {
+            productos
+        })
+        discountData.value = response.data
+    } catch (error) {
+        console.error('Error fetching discount:', error)
+    }
+}
+const cantidadTotalProductos = computed(() => {
+    return discountData.value?.cantidad_total || 0
+})
+
+const aplicaDescuentoPorMayor = computed(() => {
+    return discountData.value?.descuento_aplicado || false
+})
+
+const calcularPrecioConDescuento = (producto) => {
+    if (!discountData.value) return producto.detalleProducto?.precio_base * producto.cantidad
+    
+    const productoDescuento = discountData.value.productos.find(
+        p => p.producto_id === producto.detalles_productos_id
+    )
+    
+    return productoDescuento?.precio_final || (producto.detalleProducto?.precio_base * producto.cantidad)
+}
+
+const subtotalSinDescuento = computed(() => {
+    return productosCarrito.value.reduce((total, producto) => {
+        return total + (producto.detalleProducto?.precio_base * producto.cantidad)
+    }, 0)
+})
+
+const descuentoTotal = computed(() => {
+    return discountData.value?.descuento_total || 0
+})
+
+const total = computed(() => {
+    return subtotalSinDescuento.value - descuentoTotal.value
+})
+
+const productosSeleccionados = computed(() => {
+    return productosCarrito.value.filter(p => p.seleccionado).length
+})
+
+const seleccionarTodo = () => {
+    productosCarrito.value.forEach(producto => {
+        producto.seleccionado = todoSeleccionado.value
+    })
+}
+
+const incrementarCantidad = (producto) => {
+    if (producto.cantidad < 100) {
+        cartStore.updateQuantity(
+            producto.detalles_productos_id,
+            producto.talla_id,
+            producto.cantidad + 1
+        )
+    }
+}
+
+const decrementarCantidad = (producto) => {
+    if (producto.cantidad > 1) {
+        cartStore.updateQuantity(
+            producto.detalles_productos_id,
+            producto.talla_id,
+            producto.cantidad - 1
+        )
+    }
+}
+
+const actualizarCantidad = (producto) => {
+    let cantidad = parseInt(producto.cantidad)
+    if (isNaN(cantidad) || cantidad < 1) cantidad = 1
+    if (cantidad > 100) cantidad = 100
+
+    cartStore.updateQuantity(
+        producto.detalles_productos_id,
+        producto.talla_id,
+        cantidad
+    )
+}
+
+const eliminarProducto = (producto) => {
+    cartStore.removeFromCart(producto.detalles_productos_id, producto.talla_id)
+}
+
+const eliminarSeleccionados = () => {
+    productosCarrito.value
+        .filter(producto => producto.seleccionado)
+        .forEach(producto => {
+            cartStore.removeFromCart(producto.detalles_productos_id, producto.talla_id)
+        })
+}
+
+const descuentosAplicados = computed(() => {
+    if (!discountData.value?.productos || !descuentosActivos.value) return []
+    
+    console.log('=== Debug Descuentos ===');
+    console.log('Descuentos Activos:', descuentosActivos.value.filter(d => d.activo));
+    console.log('Datos del Descuento (API):', discountData.value);
+    
+    // Obtener todos los descuentos activos que aplican a cada producto
+    const descuentosPorProducto = discountData.value.productos
+        .filter(p => p.descuento > 0)
+        .flatMap(producto => {
+            console.log('Procesando producto:', producto);
+            
+            // Encontrar todos los descuentos activos que aplican a este producto
+            const descuentosParaProducto = descuentosActivos.value.filter(descuento => {
+                const aplica = descuento.activo && 
+                    (descuento.aplica_todos_productos || 
+                     descuento.detalles_productos.some(dp => dp.id === producto.producto_id));
+                
+                console.log('Descuento', descuento.nombre, 'aplica al producto?', aplica);
+                return aplica;
+            });
+
+            console.log('Descuentos encontrados para el producto:', descuentosParaProducto);
+
+            return descuentosParaProducto.map(descuento => {
+                const descuentoInfo = {
+                    id: descuento.id,
+                    nombre: descuento.nombre,
+                    tipo: descuento.tipo,
+                    valor: descuento.valor,
+                    descuento: producto.descuento / descuentosParaProducto.length,
+                    producto_id: producto.producto_id
+                };
+                console.log('Creando entrada de descuento:', descuentoInfo);
+                return descuentoInfo;
+            });
+        });
+
+    console.log('Descuentos por producto (sin agrupar):', descuentosPorProducto);
+
+    // Agrupar los descuentos por ID y sumar sus totales
+    const descuentosAgrupados = descuentosPorProducto.reduce((acc, curr) => {
+        if (!acc[curr.id]) {
+            acc[curr.id] = {
+                ...curr,
+                total: curr.descuento
+            }
+        } else {
+            acc[curr.id].total += curr.descuento
+        }
+        return acc;
+    }, {});
+
+    console.log('Descuentos agrupados (resultado final):', descuentosAgrupados);
+    return descuentosAgrupados;
+})
+
+const formatearValorDescuento = (tipo, valor) => {
+    if (tipo === 'porcentaje') {
+        return `${parseFloat(valor).toFixed(2)}%`
+    } else {
+        return `$${parseFloat(valor).toFixed(2)}`
+    }
+}
+
+watch(
+    () => productosCarrito.value,
+    () => {
+        if (productosCarrito.value.length > 0) {
+            fetchDiscountData()
+        } else {
+            discountData.value = null
+        }
+    },
+    { deep: true }
+)
+const hayProductosConDescuento = computed(() => {
+  return productosCarrito.value.some(producto => {
+    return descuentosActivos.value.some(descuento => {
+      return descuento.activo && 
+             (descuento.aplica_todos_productos || 
+              descuento.detalles_productos.some(dp => dp.id === producto.detalles_productos_id));
+    });
+  });
+});
 </script>
 
 <style scoped>

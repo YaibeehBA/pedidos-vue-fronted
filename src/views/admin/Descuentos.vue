@@ -26,6 +26,7 @@
                   <th class="fw-bold">Nombre</th>
                   <th class="fw-bold">Tipo</th>
                   <th class="fw-bold">Valor</th>
+                  <th class="fw-bold">Aplica desde</th>
                   <th class="fw-bold">Estado</th>
                   <th class="fw-bold">Fecha Inicio</th>
                   <th class="fw-bold">Fecha Fin</th>
@@ -37,7 +38,9 @@
                   <td>{{ calculateIndex(index) }}</td>
                   <td>{{ descuento.nombre }}</td>
                   <td>{{ descuento.tipo }}</td>
+                  
                   <td>{{ formatValue(descuento.valor, descuento.tipo) }}</td>
+                  <td>{{ descuento.cantidad_minima }} unidades</td>
                   <td>
                     <span :class="getStatusClass(descuento.activo)">
                       {{ descuento.activo ? 'Activo' : 'Inactivo' }}

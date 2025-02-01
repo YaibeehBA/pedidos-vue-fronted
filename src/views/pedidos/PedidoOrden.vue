@@ -37,38 +37,65 @@
               </div>
 
             <!-- Resumen del pedido -->
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="mb-0">Resumen del Pedido</h5>
-                    </div>
-                    <div class="card-body">
-                        <!-- Entrada para número de prendas -->
-                        <div class="mb-3">
-                            <label for="prendas" class="form-label">Cantidad de Prendas</label>
-                            <input id="prendas" type="number" v-model.number="prendas" @input="validarPrendas" class="form-control" placeholder="Ingrese el número de prendas" :max="30" :min="1" />
-                        </div>
+            <div class="card">
+      <div class="card-header">
+        <h5 class="mb-0">Resumen del Pedido</h5>
+      </div>
+      <div class="card-body">
+        <!-- Entrada para número de prendas -->
+        <div class="mb-3">
+          <label for="prendas" class="form-label">Cantidad de Prendas</label>
+          <input
+            id="prendas"
+            type="number"
+            v-model.number="prendas"
+            @input="validarPrendas"
+            class="form-control"
+            placeholder="Ingrese el número de prendas"
+            :max="30"
+            :min="1"
+          />
+        </div>
 
-                        <!-- Fecha de entrega -->
-                        <div class="d-flex justify-content-between mb-2">
-                            <span>Fecha de Entrega</span>
-                            <span><strong>{{ fechaEntrega }}</strong></span>
-                        </div>
+        <!-- Mensaje de descuento -->
+        <div
+          v-if="hayDescuentosAplicables && !aplicaDescuentoPorMayor && cantidadMinimaDescuento > prendas"
+          class="text-muted small mt-2"
+        >
+          Agrega {{ cantidadMinimaDescuento - prendas }} productos más para obtener descuento.
+        </div>
 
-                        <!-- Feedback dinámico -->
-                        <div v-if="mensajeFeedback" class="alert alert-info mt-2">
-                            {{ mensajeFeedback }}
-                        </div>
+        <!-- Fecha de entrega -->
+        <div class="d-flex justify-content-between mb-2">
+          <span>Fecha de Entrega</span>
+          <span><strong>{{ fechaEntrega }}</strong></span>
+        </div>
 
-                        <!-- Total -->
-                        
-                        <hr />
-                        <div class="d-flex justify-content-between">
-                            <strong>Total</strong>
-                            <strong>$ {{ precioTotal.toFixed(2) }}</strong>
-                        </div>
-                    </div>
-                </div>
+        <!-- Feedback dinámico -->
+        <div v-if="mensajeFeedback" class="alert alert-info mt-2">
+          {{ mensajeFeedback }}
+        </div>
+
+        <!-- Precio con descuento -->
+        <div class="d-flex justify-content-between">
+          <span>Precio</span>
+          <div>
+            <span v-if="aplicaDescuentoPorMayor" class="text-decoration-line-through text-muted me-2">
+              ${{ precioTotal.toFixed(2) }}
+            </span>
+            <strong>${{ precioConDescuento.toFixed(2) }}</strong>
           </div>
+        </div>
+
+        <hr />
+        <div class="d-flex justify-content-between">
+          <strong>Total </strong>
+          <strong>${{ precioConDescuento.toFixed(2) }}</strong>
+        </div>
+      </div>
+    </div>
+          </div>
+      
 
           <!-- Cliente -->
           <div class="col-md-4">
@@ -134,6 +161,7 @@
   import User from '@/apis/User';
 import { PublicApi } from "@/apis/Api";
 import { useRouter } from "vue-router";
+import axios from "axios";
 
 
 // Obtener los query params de la URL
@@ -190,6 +218,7 @@ const loadUser = async () => {
 };
 onMounted(() => {
   loadUser();
+  fetchDescuentos();
   const now = new Date();
 
   const options = {
@@ -461,7 +490,7 @@ onMounted(async () => {
               purchase_units: [
                 {
                   amount: {
-                    value: precioTotal.value.toFixed(2), // Usar el total del carrito
+                    value: precioConDescuento.value.toFixed(2), // Usar el total del carrito
                     currency_code: 'USD',
                   },
                 },
@@ -538,6 +567,81 @@ onMounted(async () => {
     });
   }
 });
+
+// Variables para manejar descuentos
+const descuentosActivos = ref([]);
+
+// Obtener descuentos activos desde la API
+const fetchDescuentos = async () => {
+  try {
+    const response = await axios.get('http://localhost:8000/api/descuentos');
+    descuentosActivos.value = response.data.data;
+  } catch (error) {
+    console.error('Error obteniendo descuentos:', error);
+  }
+};
+
+// Verificar si el producto actual es elegible para algún descuento
+const hayDescuentosAplicables = computed(() => {
+  return descuentosActivos.value.some(
+    (descuento) =>
+      descuento.activo && // Solo descuentos activos
+      (descuento.aplica_todos_productos || // Aplica a todos los productos
+        descuento.detalles_productos.some(
+          (dp) => dp.id === parseInt(varianteId) // O aplica al producto actual
+        ))
+  );
+});
+
+// Obtener la cantidad mínima máxima de los descuentos activos aplicables
+const cantidadMinimaDescuento = computed(() => {
+  if (!descuentosActivos.value.length) return 0;
+
+  // Filtra los descuentos activos que aplican al producto actual
+  const descuentosAplicables = descuentosActivos.value.filter(
+    (descuento) =>
+      descuento.activo &&
+      (descuento.aplica_todos_productos ||
+        descuento.detalles_productos.some((dp) => dp.id === parseInt(varianteId)))
+  );
+
+  // Si no hay descuentos aplicables, retorna 0
+  if (descuentosAplicables.length === 0) return 0;
+
+  // Retorna la cantidad mínima máxima
+  return Math.max(...descuentosAplicables.map((d) => d.cantidad_minima));
+});
+
+// Verificar si se aplica el descuento por mayor
+const aplicaDescuentoPorMayor = computed(() => {
+  return hayDescuentosAplicables.value && prendas.value >= cantidadMinimaDescuento.value;
+});
+
+// Calcular el precio con descuento
+const precioConDescuento = computed(() => {
+  if (!aplicaDescuentoPorMayor.value) return precioTotal.value;
+
+  // Encuentra el descuento aplicable
+  const descuentoAplicable = descuentosActivos.value.find(
+    (descuento) =>
+      descuento.activo &&
+      (descuento.aplica_todos_productos ||
+        descuento.detalles_productos.some((dp) => dp.id === parseInt(varianteId)))
+  );
+
+  if (!descuentoAplicable) return precioTotal.value;
+
+  // Aplicar el descuento
+  if (descuentoAplicable.tipo === "porcentaje") {
+    const descuento = (precioTotal.value * parseFloat(descuentoAplicable.valor)) / 100;
+    return precioTotal.value - descuento;
+  } else if (descuentoAplicable.tipo === "monto_fijo") {
+    return precioTotal.value - parseFloat(descuentoAplicable.valor);
+  }
+
+  return precioTotal.value;
+});
+
 
   </script>
   

@@ -15,7 +15,7 @@ const editForm = ref({
   estado_pago: ''
 });
 
-const estadoOptions = ['pendiente', 'aprobada', 'rechazada', 'pagada', 'entregada'];
+const estadoOptions = ['Pagado', 'Entregando', 'Atrasado'];
 const estadoPagoOptions = ['pendiente', 'completado'];
 
 const getTallas = (tallas) => tallas.map(talla => talla.nombre).join(', ');
@@ -81,11 +81,10 @@ const updateOrder = async () => {
 
 const getStatusClass = (status) => {
   const classes = {
-    pendiente: 'bg-warning',
-    aprobada: 'bg-success',
-    rechazada: 'bg-danger',
-    pagada: 'bg-info',
-    entregada: 'bg-primary'
+  Pagado: 'bg-success',
+  Entregando: 'bg-primary',
+  Atrasado: 'bg-danger',
+    
   };
   return `badge ${classes[status] || 'bg-secondary'} text-white`;
 };
