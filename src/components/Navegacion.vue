@@ -79,6 +79,8 @@ const router = useRouter();
 
 
 
+import NotificationComponent from '@/components/layout/Noiticacion/Notificacion.vue';
+
 </script>
 
 <template>
@@ -112,9 +114,13 @@ const router = useRouter();
           <router-link :to="{ name: 'Nosotros' }" class="nav-link">Nosotros</router-link>
           <router-link :to="{ name: 'Contactos' }" class="nav-link">Contáctanos</router-link>
         </div>
+    
 
         <!-- Sección derecha: Carrito y Usuario -->
-        <div class="ms-lg-auto d-flex align-items-center user-section " >
+          <div class="ms-lg-auto d-flex align-items-center user-section " >
+            
+            <NotificationComponent v-if="userStore.authenticated" />
+  
           <!-- Carrito -->
           <div v-if="userStore.authenticated" class="cart-section me-3">
             <router-link :to="{ name: 'Carrito' }" class="cart-link">
@@ -124,10 +130,10 @@ const router = useRouter();
               </span>
             </router-link>
           </div>
-
+          
           <!-- Separador vertical -->
           <div v-if="userStore.authenticated" class="vertical-divider "></div>
-
+         
           <!-- Sección de autenticación -->
           <div v-if="!userStore.authenticated" class="auth-section">
             <router-link :to="{ name: 'Login' }" class="login-button">
@@ -169,6 +175,7 @@ const router = useRouter();
               </li>
             </ul>
           </div>
+          
         </div>
       </div>
     </div>
@@ -240,17 +247,18 @@ const router = useRouter();
   position: absolute;
   top: -5px;
   right: -5px;
-  background-color: #e74c3c;
+  background-color: red;
   color: white;
   border-radius: 50%;
   padding: 0.25rem;
   font-size: 0.75rem;
   min-width: 1.25rem;
-  height: 1.25rem;
+  height: 1.08rem;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+
 
 .vertical-divider {
   width: 1px;

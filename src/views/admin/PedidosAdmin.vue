@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import User from '../../apis/User';
 import { IMAGE_BASE_URL } from '@/apis/Api';
 import Pagination from '@/components/admin/Pagination.vue';
-
+import Swal from 'sweetalert2';
 
 
 const orders = ref([]);
@@ -60,6 +60,8 @@ const closeModal = () => {
   selectedOrder.value = null;
 };
 
+
+
 const updateOrder = async () => {
   try {
     const response = await fetch(`http://localhost:8000/api/public/ordenes/${selectedOrder.value.id}`, {
@@ -71,13 +73,37 @@ const updateOrder = async () => {
     });
     
     if (response.ok) {
-      await fetchOrders();
-      closeModal();
+      // Mostrar alerta de éxito
+      Swal.fire({
+        title: '¡Éxito!',
+        text: 'La orden se actualizó correctamente.',
+        icon: 'success',
+        confirmButtonText: 'Aceptar'
+      });
+      
+      await fetchOrders(); // Actualizar la lista de órdenes
+      closeModal(); // Cerrar el modal
+    } else {
+      // Mostrar alerta de error en caso de que la respuesta no sea OK
+      Swal.fire({
+        title: 'Error',
+        text: 'Hubo un problema al actualizar la orden.',
+        icon: 'error',
+        confirmButtonText: 'Aceptar'
+      });
     }
   } catch (error) {
+    // Mostrar alerta de error en caso de error al realizar la solicitud
     console.error('Error updating order:', error);
+    Swal.fire({
+      title: 'Error',
+      text: 'Hubo un problema al realizar la solicitud.',
+      icon: 'error',
+      confirmButtonText: 'Aceptar'
+    });
   }
 };
+
 
 const getStatusClass = (status) => {
   const classes = {
