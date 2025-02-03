@@ -90,8 +90,23 @@ const getStatusClass = (status) => {
 };
 
 const formatDate = (dateString) => {
-  return new Date(dateString).toLocaleDateString();
+  if (!dateString) return '';
+
+  // Crear un objeto de fecha a partir de la cadena de fecha
+  let date = new Date(dateString);
+
+  // Sumar un día
+  date.setDate(date.getDate() + 1);
+
+  // Formatear la fecha con el ajuste de zona horaria adecuado
+  return new Intl.DateTimeFormat('es-ES', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    timeZone: 'America/Guayaquil',  // Zona horaria explícita
+  }).format(date);
 };
+
 
 const getTallaName = (talla_id, detalleProducto) => {
   const talla = detalleProducto.tallas.find(t => t.id === talla_id);

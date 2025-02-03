@@ -1,15 +1,73 @@
-
 <template>
-  <h3 class="text-center">Administración de Productos </h3>
+  <div class="container mt-3">
+    <h3 class="text-center">Administración de Productos</h3>
 
-  <div class="container">
-    <div class="mb-3 d-flex justify-content-between align-items-center">
-      <button type="button" class="btn btn-primary" @click="openAddProductModal">
-        Añadir Nuevo Producto Final
-      </button>
+    <!-- Botón para añadir producto final -->
+    <button
+      type="button"
+      class="btn btn-primary mb-3 d-flex align-items-center gap-2"
+      @click="openAddProductModal"
+    >
+      <span class="material-icons">add</span>
+      Añadir Nuevo Producto Final
+    </button>
+
+    <!-- Tabla de productos finales -->
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th class="fw-bold">Nº</th>
+                <th class="fw-bold">Producto Base</th>
+                <th class="fw-bold">Imagen</th>
+                <th class="fw-bold">Precio Base</th>
+                <th class="fw-bold">Color</th>
+                <th class="fw-bold">Tallas</th>
+                <th class="fw-bold">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(producto, index) in paginatedCategories" :key="producto.id">
+                <td>{{ calculateIndex(index) }}</td>
+                <td>{{ getProductoBaseName(producto.producto_id) }}</td>
+                <td>
+                  <img :src="getImageUrl(producto.imagen_url)" alt="Imagen del Producto" class="img-thumbnail" style="max-width: 100px;" />
+                </td>
+                <td>{{ producto.precio_base }}</td>
+                <td>{{ getColorName(producto.color_id) }}</td>
+                <td>
+                  <span v-for="talla in producto.tallas" :key="talla.id" class="badge bg-primary me-1">
+                    {{ talla.nombre }}
+                  </span>
+                </td>
+                <td>
+                  <div class="d-flex justify-content-start gap-2">
+                    <!-- Botón para editar -->
+                    <button
+                      class="btn btn-warning btn-sm d-flex align-items-center"
+                      @click="openEditModal(producto)"
+                    >
+                      <span class="material-icons">edit</span>
+                    </button>
+                    <!-- Botón para eliminar -->
+                    <button
+                      class="btn btn-danger btn-sm d-flex align-items-center"
+                      @click="deleteProduct(producto.id)"
+                    >
+                      <span class="material-icons">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    
-    <!-- Modal para agregar producto -->
+
+    <!-- Modal para añadir producto final -->
     <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
@@ -48,7 +106,7 @@
                 required 
               />
               <div v-if="productData.imagePreview" class="mt-2">
-                <img :src="productData.imagePreview" alt="Preview" class="image-preview" style="max-width: 200px;" />
+                <img :src="productData.imagePreview" alt="Preview" class="img-thumbnail" style="max-width: 200px;" />
               </div>
             </div>
 
@@ -110,160 +168,119 @@
       </div>
     </div>
 
-<!-- Modal para editar producto -->
-<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editProductModalLabel">Editar Producto Final</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="editBaseProductSelect" class="form-label">Producto Base</label>
-            <select
-              id="editBaseProductSelect"
-              v-model="editData.producto_id"
-              class="form-select"
-              required
-            >
-              <option value="" disabled>Seleccione un producto base</option>
-              <option
-                v-for="producto in baseProducts"
-                :key="producto.id"
-                :value="producto.id"
+    <!-- Modal para editar producto final -->
+    <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editProductModalLabel">Editar Producto Final</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="editBaseProductSelect" class="form-label">Producto Base</label>
+              <select
+                id="editBaseProductSelect"
+                v-model="editData.producto_id"
+                class="form-select"
+                required
               >
-                {{ producto.nombre }}
-              </option>
-            </select>
-          </div>
-
-          <div class="mb-3">
-            <label for="editProductImage" class="form-label">Imagen</label>
-            <input 
-              type="file" 
-              id="editProductImage" 
-              @change="handleEditImageUpload" 
-              class="form-control" 
-              accept="image/*"
-            />
-            <div v-if="editData.imagePreview" class="mt-2">
-              <img :src="editData.imagePreview" alt="Preview" class="image-preview" style="max-width: 200px;" />
+                <option value="" disabled>Seleccione un producto base</option>
+                <option
+                  v-for="producto in baseProducts"
+                  :key="producto.id"
+                  :value="producto.id"
+                >
+                  {{ producto.nombre }}
+                </option>
+              </select>
             </div>
-            <div v-else-if="editData.imagen_url" class="mt-2">
-              <img :src="getImageUrl(editData.imagen_url)" alt="Current" class="image-preview" style="max-width: 200px;" />
+
+            <div class="mb-3">
+              <label for="editProductImage" class="form-label">Imagen</label>
+              <input 
+                type="file" 
+                id="editProductImage" 
+                @change="handleEditImageUpload" 
+                class="form-control" 
+                accept="image/*"
+              />
+              <div v-if="editData.imagePreview" class="mt-2">
+                <img :src="editData.imagePreview" alt="Preview" class="img-thumbnail" style="max-width: 200px;" />
+              </div>
+              <div v-else-if="editData.imagen_url" class="mt-2">
+                <img :src="getImageUrl(editData.imagen_url)" alt="Current" class="img-thumbnail" style="max-width: 200px;" />
+              </div>
             </div>
-          </div>
 
-          <div class="mb-3">
-            <label for="editProductPrice" class="form-label">Precio Base</label>
-            <input 
-              type="number" 
-              step="0.01" 
-              id="editProductPrice" 
-              v-model="editData.precio_base" 
-              class="form-control" 
-              required 
-            />
-          </div>
+            <div class="mb-3">
+              <label for="editProductPrice" class="form-label">Precio Base</label>
+              <input 
+                type="number" 
+                step="0.01" 
+                id="editProductPrice" 
+                v-model="editData.precio_base" 
+                class="form-control" 
+                required 
+              />
+            </div>
 
-          <div class="mb-3">
-            <label for="editColorSelect" class="form-label">Color</label>
-            <select
-              id="editColorSelect"
-              v-model="editData.color_id"
-              class="form-select"
-              required
-            >
-              <option value="" disabled>Seleccione un color</option>
-              <option
-                v-for="color in colors"
-                :key="color.id"
-                :value="color.id"
+            <div class="mb-3">
+              <label for="editColorSelect" class="form-label">Color</label>
+              <select
+                id="editColorSelect"
+                v-model="editData.color_id"
+                class="form-select"
+                required
               >
-                {{ color.nombre }}
-              </option>
-            </select>
-          </div>
+                <option value="" disabled>Seleccione un color</option>
+                <option
+                  v-for="color in colors"
+                  :key="color.id"
+                  :value="color.id"
+                >
+                  {{ color.nombre }}
+                </option>
+              </select>
+            </div>
 
-          <div class="mb-3">
-            <label class="form-label">Tallas</label>
-            <div class="d-flex flex-wrap gap-2">
-              <div v-for="talla in sizes" :key="talla.id" class="form-check">
-                <input
-                  type="checkbox"
-                  class="form-check-input"
-                  :id="'edit_talla_' + talla.id"
-                  :value="talla.id"
-                  v-model="editData.tallas"
-                />
-                <label class="form-check-label" :for="'edit_talla_' + talla.id">
-                  {{ talla.nombre }}
-                </label>
+            <div class="mb-3">
+              <label class="form-label">Tallas</label>
+              <div class="d-flex flex-wrap gap-2">
+                <div v-for="talla in sizes" :key="talla.id" class="form-check">
+                  <input
+                    type="checkbox"
+                    class="form-check-input"
+                    :id="'edit_talla_' + talla.id"
+                    :value="talla.id"
+                    v-model="editData.tallas"
+                  />
+                  <label class="form-check-label" :for="'edit_talla_' + talla.id">
+                    {{ talla.nombre }}
+                  </label>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-          <button type="button" @click="updateProduct" class="btn btn-primary">Actualizar</button>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <button type="button" @click="updateProduct" class="btn btn-primary">Actualizar</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-    <!-- Lista de productos -->
-    <div class="table-responsive">
-      <table class="table table-striped table-bordered">
-        <thead>
-          <tr>
-            <th>Nº</th>
-            <th>Producto Base</th>
-            <th>Imagen</th>
-            <th>Precio Base</th>
-            <th>Color</th>
-            <th>Tallas</th>
-            <th>Acciones</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(producto, index) in paginatedCategories" :key="producto.id">
-            <td class="bw">{{ calculateIndex(index) }}</td>
-            <td>{{ getProductoBaseName(producto.producto_id) }}</td>
-            <td>
-              <img :src="getImageUrl(producto.imagen_url)" alt="Imagen del Producto" style="max-width: 100px;" />
-            </td>
-            <td>{{ producto.precio_base }}</td>
-            <td>{{ getColorName(producto.color_id) }}</td>
-            <td>
-              <span v-for="talla in producto.tallas" :key="talla.id" class="badge bg-primary me-1">
-                {{ talla.nombre }}
-              </span>
-            </td>
-            <td>
-              <div class="btn-group">
-                <button @click="openEditModal(producto)" class="btn btn-warning">
-                  <span class="material-icons">edit</span>
-                </button>
-                <button @click="deleteProduct(producto.id)" class="btn btn-danger">
-                  <span class="material-icons">delete</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <!-- Paginación -->
+    <Pagination 
+      :totalItems="products.length" 
+      :itemsPerPage="15" 
+      :currentPage="currentPage"
+      @update:currentPage="currentPage = $event"  
+    />
   </div>
-  <Pagination 
-  :totalItems="products.length" 
-  :itemsPerPage="5" 
-  :currentPage="currentPage"
-  @update:currentPage="currentPage = $event"  
-/>
-
 </template>
+
 
 <script setup>
 import { ref, onMounted ,computed} from 'vue';
@@ -671,8 +688,8 @@ onMounted(async () => {
 
 const currentPage = ref(1);
 
-const startIndex = computed(() => (currentPage.value - 1) * 5);
-const endIndex = computed(() => Math.min(startIndex.value + 5, products.value.length));
+const startIndex = computed(() => (currentPage.value - 1) * 15);
+const endIndex = computed(() => Math.min(startIndex.value + 15, products.value.length));
 
 const paginatedCategories = computed(() => {
   return products.value.slice(startIndex.value, endIndex.value);

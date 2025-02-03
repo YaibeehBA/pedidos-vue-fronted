@@ -1,80 +1,125 @@
 <template>
-  <h3 class="text-center">Administración de Productos </h3>
-  <div class="mb-3 d-flex justify-content-between align-items-center">
+  <div class="container mt-3">
+    <h3 class="text-center">Administración de Productos</h3>
+
+    <!-- Botón para añadir producto base -->
     <button
       type="button"
-      class="btn btn-primary"
+      class="btn btn-primary mb-3 d-flex align-items-center gap-2"
       @click="openAddCategoryModal"
     >
+      <span class="material-icons">add</span>
       Añadir Nuevo Producto Base
     </button>
-  </div>
-  
-  <!-- Modal para agregar producto -->
-  <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="addCategoryModalLabel">Añadir Producto Base</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="categoryName" class="form-label">Nombre</label>
-            <input type="text" id="categoryName" v-model="categoryName" class="form-control" />
-          </div>
-          <div class="mb-3">
-            <label for="categoryDescription" class="form-label">Descripción</label>
-            <input type="text" id="categoryDescription" v-model="categoryDescription" class="form-control" />
-          </div>
-       
-          <div class="mb-3">
-            <label for="categorySelect" class="form-label">Categoría</label>
-            <select 
-              id="categorySelect" 
-              v-model="selectedCategory" 
-              class="form-select"
-              required
-            >
-              <option value="" disabled selected>Seleccione una categoría</option>
-              <option 
-                v-for="categoria in allCategories" 
-                :key="categoria.id" 
-                :value="categoria.id"
-              >
-                {{ categoria.nombre }}
-              </option>
-            </select>
-          </div>
-        </div>
-        
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-          <button type="button" @click="addCategory" class="btn btn-primary">Guardar</button>
+
+    <!-- Tabla de productos base -->
+    <div class="card">
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead class="table-light">
+              <tr>
+                <th class="fw-bold">Nº</th>
+                <th class="fw-bold">Nombre</th>
+                <th class="fw-bold">Descripción</th>
+                <th class="fw-bold">Categoría</th>
+                <th class="fw-bold">Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(producto, index) in categories" :key="producto.id">
+                <td>{{ index + 1 }}</td>
+                <td>{{ producto.nombre }}</td>
+                <td>{{ producto.descripcion }}</td>
+                <td>{{ producto.categoria.nombre }}</td>
+                <td>
+                  <div class="d-flex justify-content-start gap-2">
+                    <!-- Botón para editar -->
+                    <button
+                      class="btn btn-warning btn-sm d-flex align-items-center"
+                      @click="openEditModal(producto)"
+                    >
+                      <span class="material-icons">edit</span>
+                    </button>
+                    <!-- Botón para eliminar -->
+                    <button
+                      class="btn btn-danger btn-sm d-flex align-items-center"
+                      @click="deleteCategory(producto.id)"
+                    >
+                      <span class="material-icons">delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- Modal para actualizar categoría -->
-  <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editCategoryModalLabel">Actualizar Categoría</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Modal para añadir producto base -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="addCategoryModalLabel">Añadir Producto Base</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="categoryName" class="form-label">Nombre</label>
+              <input type="text" id="categoryName" v-model="categoryName" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="categoryDescription" class="form-label">Descripción</label>
+              <input type="text" id="categoryDescription" v-model="categoryDescription" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="categorySelect" class="form-label">Categoría</label>
+              <select 
+                id="categorySelect" 
+                v-model="selectedCategory" 
+                class="form-select"
+                required
+              >
+                <option value="" disabled selected>Seleccione una categoría</option>
+                <option 
+                  v-for="categoria in allCategories" 
+                  :key="categoria.id" 
+                  :value="categoria.id"
+                >
+                  {{ categoria.nombre }}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <button type="button" @click="addCategory" class="btn btn-primary">Guardar</button>
+          </div>
         </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label for="editCategoryName" class="form-label">Nombre</label>
-            <input type="text" id="editCategoryName" v-model="categoryName" class="form-control" />
+      </div>
+    </div>
+
+    <!-- Modal para editar producto base -->
+    <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="editCategoryModalLabel">Actualizar Producto Base</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="mb-3">
-            <label for="editCategoryDescription" class="form-label">Descripción</label>
-            <input type="text" id="editCategoryDescription" v-model="categoryDescription" class="form-control" />
-          </div>
-          <div class="mb-3">
-            <label for="editCategorySelect" class="form-label">Categoría</label>
+          <div class="modal-body">
+            <div class="mb-3">
+              <label for="editCategoryName" class="form-label">Nombre</label>
+              <input type="text" id="editCategoryName" v-model="categoryName" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="editCategoryDescription" class="form-label">Descripción</label>
+              <input type="text" id="editCategoryDescription" v-model="categoryDescription" class="form-control" />
+            </div>
+            <div class="mb-3">
+              <label for="editCategorySelect" class="form-label">Categoría</label>
               <select 
                 id="editCategorySelect" 
                 v-model="selectedCategory" 
@@ -90,51 +135,15 @@
                   {{ categoria.nombre }}
                 </option>
               </select>
+            </div>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
-          <button type="button" @click="updateCategory" class="btn btn-primary">Actualizar</button>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <button type="button" @click="updateCategory" class="btn btn-primary">Actualizar</button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Lista de categorías con botones de editar y eliminar -->
-  <div>
-    <table id="tabla" class="table table-striped table-bordered">
-      <thead>
-        <tr>
-          <th>Nº</th>
-          <th>Nombre</th>
-          <th>Descripción</th>
-          <th>Categoría</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="(producto, index) in categories" :key="producto.id">
-          <td>{{ index+1 }}</td>
-          <td>{{ producto.nombre }}</td>
-          <td>{{ producto.descripcion }}</td>
-          <td>{{ producto.categoria.nombre }}</td>
-          <td >
-            <div class="btn-group">
-
-              <button @click="openEditModal(producto)" class="btn btn-warning ">
-                <span class="material-icons">edit</span>
-                
-              </button>
-              <button @click="deleteCategory(producto.id)" class="btn btn-danger">
-                  <span class="material-icons">delete</span>
-                </button>
-            </div>
-            
-          </td>
-        </tr>
-
-      </tbody>
-    </table>
   </div>
 </template>
 
@@ -143,20 +152,16 @@ import { ref, onMounted } from 'vue';
 import ProductoBase from '@/apis/ProductosBase';
 import Producto from '@/apis/Productos';
 import { show_alerta } from '@/apis/Api';
-import { initializeDataTable } from '@/apis/utils';
+import Swal from 'sweetalert2';
 
 const categories = ref([]);
 const categoryName = ref("");
 const categoryDescription = ref("");
-const isEditMode = ref(false);
-let currentCategoryId = ref(null);
-const selectedCategory = ref(null); // Para almacenar la categoría seleccionada
-const allCategories = ref([]); // Para listar todas las categorías disponibles
+const selectedCategory = ref(null);
+const allCategories = ref([]);
+const currentCategoryId = ref(null);
 
-
-
-initializeDataTable();
-
+// Cargar productos base y categorías
 const fetchCategories = async () => {
   try {
     const data = await ProductoBase.fetchCategories();
@@ -168,32 +173,21 @@ const fetchCategories = async () => {
 
 const fetchAllCategories = async () => {
   try {
-    // Asumiendo que fetchCategories devuelve directamente el array
     const response = await Producto.fetchCategories();
     allCategories.value = Array.isArray(response) ? response : [];
-    console.log('Categorías cargadas:', allCategories.value);
   } catch (error) {
     console.error("Error al cargar todas las categorías:", error);
     show_alerta('Error al cargar las categorías', 'error');
   }
 };
 
-
-
-
-// abrir modal para añadir categoría
+// Abrir modal para añadir producto base
 const openAddCategoryModal = async () => {
   try {
-    // Recargar las categorías antes de abrir el modal
     await fetchAllCategories();
-    
-    // Resetear los valores
     categoryName.value = "";
     categoryDescription.value = "";
     selectedCategory.value = null;
-    isEditMode.value = false;
-
-    // Abrir el modal
     const modalElement = document.getElementById('addCategoryModal');
     const modalInstance = new bootstrap.Modal(modalElement);
     modalInstance.show();
@@ -203,17 +197,14 @@ const openAddCategoryModal = async () => {
   }
 };
 
-// abrir modal para editar categoría
+// Abrir modal para editar producto base
 const openEditModal = async (producto) => {
   try {
-    // Recargar las categorías antes de abrir el modal
     await fetchAllCategories();
-    
     categoryName.value = producto.nombre;
     categoryDescription.value = producto.descripcion;
     selectedCategory.value = producto.categoria?.id;
     currentCategoryId.value = producto.id;
-
     const modalElement = document.getElementById('editCategoryModal');
     const modalInstance = new bootstrap.Modal(modalElement);
     modalInstance.show();
@@ -222,17 +213,8 @@ const openEditModal = async (producto) => {
     show_alerta('Error al cargar las categorías', 'error');
   }
 };
-onMounted(async () => {
-  try {
-    await Promise.all([fetchCategories(), fetchAllCategories()]);
-    initializeDataTable();
-  } catch (error) {
-    console.error("Error en la inicialización:", error);
-    show_alerta('Error al cargar los datos', 'error');
-  }
-});
 
-// Add a new categoría
+// Añadir producto base
 const addCategory = async () => {
   if (!categoryName.value || !categoryDescription.value || !selectedCategory.value) {
     show_alerta("Por favor completa todos los campos", "warning");
@@ -247,34 +229,26 @@ const addCategory = async () => {
     };
 
     const response = await ProductoBase.createCategory(categoryData);
-    show_alerta('Categoría creada correctamente', 'success');
+    show_alerta('Producto base creado correctamente', 'success');
 
     if (response && response.data) {
-      categories.value.push(response.data); // Add new category to the array
+      categories.value.push(response.data);
       categoryName.value = "";
       categoryDescription.value = "";
       selectedCategory.value = null;
-
-
-      // Close modal
       const modalElement = document.getElementById('addCategoryModal');
       const modalInstance = bootstrap.Modal.getInstance(modalElement);
       if (modalInstance) {
         modalInstance.hide();
       }
-
-      // Re-initialize the data table
-      
-        initializeDataTable();
-      
     }
   } catch (error) {
-    console.error("Error al crear la categoría:", error);
-    show_alerta('Error al crear la categoría', 'error');
+    console.error("Error al crear el producto base:", error);
+    show_alerta('Error al crear el producto base', 'error');
   }
 };
 
-// Update category
+// Actualizar producto base
 const updateCategory = async () => {
   if (!categoryName.value || !categoryDescription.value || !selectedCategory.value) {
     show_alerta("Por favor completa todos los campos", "warning");
@@ -289,78 +263,75 @@ const updateCategory = async () => {
     };
 
     const response = await ProductoBase.updateCategory(currentCategoryId.value, categoryData);
-    show_alerta('Categoría actualizada correctamente', 'success');
+    show_alerta('Producto base actualizado correctamente', 'success');
 
     if (response && response.data) {
       const index = categories.value.findIndex(category => category.id === currentCategoryId.value);
-      categories.value[index] = response.data;  // Update the existing category
-
+      categories.value[index] = response.data;
       categoryName.value = "";
       categoryDescription.value = "";
       selectedCategory.value = null;
-
       const modalElement = document.getElementById('editCategoryModal');
       const modalInstance = bootstrap.Modal.getInstance(modalElement);
       if (modalInstance) {
         modalInstance.hide();
       }
-
-      // Re-initialize the data table
-      setTimeout(() => {
-        initializeDataTable();
-      }, 0);
     }
   } catch (error) {
-    console.error("Error al actualizar la categoría:", error);
-    show_alerta('Error al actualizar la categoría', 'error');
+    console.error("Error al actualizar el producto base:", error);
+    show_alerta('Error al actualizar el producto base', 'error');
   }
 };
 
-
-
-import Swal from 'sweetalert2'; 
-
+// Eliminar producto base
 const deleteCategory = async (id) => {
   try {
-    // Mostrar la alerta de confirmación de eliminación
     const result = await Swal.fire({
-      title: '¿Estás seguro de eliminar esta categoría?',
+      title: '¿Estás seguro de eliminar este producto base?',
       text: 'Esta acción no se puede deshacer.',
       icon: 'warning',
-      showCancelButton: true,  // Mostrar botón "No" (cancelar)
-      confirmButtonText: 'Sí', // Botón "Sí"
-      cancelButtonText: 'No',  // Botón "No"
-      buttonsStyling: true,     // Estilo de los botones
+      showCancelButton: true,
+      confirmButtonText: 'Sí',
+      cancelButtonText: 'No',
     });
 
-    // Si el usuario confirma la eliminación
     if (result.isConfirmed) {
       const response = await ProductoBase.deleteCategory(id);
       if (response) {
-        // Si la categoría es eliminada, actualizamos el listado
         categories.value = categories.value.filter(category => category.id !== id);
-        show_alerta('Categoría eliminada correctamente', 'success');
+        show_alerta('Producto base eliminado correctamente', 'success');
       }
     } else {
-      // Si el usuario cancela, mostrar un mensaje
       show_alerta('Eliminación cancelada', 'info');
     }
   } catch (error) {
-    console.error("Error al eliminar la categoría:", error);
-    show_alerta('Error al eliminar la categoría', 'error');
+    console.error("Error al eliminar el producto base:", error);
+    show_alerta('Error al eliminar el producto base', 'error');
   }
 };
 
-
+// Cargar datos al montar el componente
+onMounted(async () => {
+  await Promise.all([fetchCategories(), fetchAllCategories()]);
+});
 </script>
- 
-
-
-
-
 
 <style scoped>
-.btn-group {
-  gap: 10px; /* Espaciado entre botones */
+.badge {
+  padding: 0.5em 1em;
+  border-radius: 0.25em;
+}
+
+.color-box {
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border: 1px solid #ccc;
+  border-radius: 3px;
+}
+
+.card-img-top {
+  height: 150px;
+  object-fit: cover;
 }
 </style>
