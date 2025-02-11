@@ -68,6 +68,10 @@ const router = createRouter({
       path: '/Nosotros',
       name: 'Nosotros',
       component: () => import('./../views/Nosotros.vue'),
+    },{
+      path: '/Perfil',
+      name: 'Perfil',
+      component: () => import('./../views/Perfil.vue'),
     },
     {
       path: '/Contactos',

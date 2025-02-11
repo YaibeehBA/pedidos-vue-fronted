@@ -1,40 +1,4 @@
 
-
-<!-- <script setup>
-import User from '../apis/User';
-import { reactive, ref } from 'vue';
-import { useRouter } from 'vue-router';
-import {show_alerta} from '../apis/Api';
-import { useUserStore } from '@/stores/user'
-
-const userStore = useUserStore()
-userStore.checkAuth()  // Revisa si el usuario está autenticado
-const router = useRouter();
-
-
-const logout = async () => {
-  try {
-    // Realizamos la petición al backend para cerrar sesión
-    const response = await User.logout();
-    
-    // Verificamos la respuesta
-    if (response.data) {
-      // Eliminamos el token de la sesión
-      localStorage.removeItem('auth');
-      
-      // Redirigimos al usuario al Login
-      router.push({ name: 'Login' });
-
-      // Mostramos el mensaje de éxito
-      show_alerta('Cierre de sesión con éxito', 'success', '');
-    }
-  } catch (error) {
-    // En caso de error mostramos un alerta
-    show_alerta('Error al cerrar sesión', 'error', '');
-    console.error('Error:', error);
-  }
-};
-</script> -->
 <script setup>
 import User from '../apis/User';
 import { useRouter } from 'vue-router';
@@ -155,7 +119,7 @@ import NotificationComponent from '@/components/layout/Noiticacion/Notificacion.
             </button>
             <ul class="dropdown-menu dropdown-menu-end custom-dropdown" aria-labelledby="userDropdown">
               <li>
-                <router-link class="dropdown-item" :to="{ name: 'home' }">
+                <router-link class="dropdown-item" :to="{ name: 'Perfil' }">
                   <span class="material-icons">person</span>
                   <span>Mi Perfil</span>
                 </router-link>
