@@ -1,5 +1,6 @@
 <script setup>
 import AdminSidebar from './BarraLateral.vue';
+import TopBar from './TopBar.vue';
 import { ref } from 'vue'
 
 const isSidebarOpen = ref(true)
@@ -11,19 +12,21 @@ const toggleSidebar = () => {
 </script>
 
 <template>
-  <div class="d-flex">
+  <div class="d-flex min-vh-100">
+    <!-- Sidebar -->
     <AdminSidebar />
-    <main class="flex-grow-1 bg-light min-vh-100 p-4">
 
-      <RouterView />
+    <div class="d-flex flex-column flex-grow-1">
+      <!-- Barra superior -->
+      <TopBar />
 
-    </main>
-    
-    
+      <!-- Contenido principal -->
+      <main class="flex-grow-1 bg-light p-4">
+        <RouterView />
+      </main>
+    </div>
   </div>
-  
 </template>
-
 <style scoped>
 .sidebar {
   width: 250px;
@@ -47,4 +50,5 @@ const toggleSidebar = () => {
 .material-icons {
   vertical-align: middle;
 }
+
 </style>

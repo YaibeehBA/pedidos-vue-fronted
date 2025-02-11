@@ -149,157 +149,305 @@ const currentPage = ref(1);
 const startIndex = computed(() => (currentPage.value - 1) * 15);
 const endIndex = computed(() => Math.min(startIndex.value + 15, orders.value.length));
 
-const paginatedCategories = computed(() => {
-  return orders.value.slice(startIndex.value, endIndex.value);
-});
 
 
 // const calculateIndex = (index) => {
 //   return startIndex.value + index + 1;  
 // };
 
+const searchQuery = ref('');
+const sortBy = ref('id');
+const sortOrder = ref('asc');
+
+const filteredOrders = computed(() => {
+  let filtered = orders.value;
+
+  // Filtrado por búsqueda
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase();
+    filtered = filtered.filter(order => {
+      const userName = getUserName(order.usuario_id).toLowerCase();
+      return userName.includes(query) || order.id.toString().includes(query);
+    });
+  }
+
+  // Ordenamiento
+  if (sortBy.value) {
+    filtered = filtered.sort((a, b) => {
+      let valueA, valueB;
+      if (sortBy.value === 'id') {
+        valueA = a.id;
+        valueB = b.id;
+      } else if (sortBy.value === 'monto_total') {
+        valueA = parseFloat(a.monto_total); // Convertir a número
+        valueB = parseFloat(b.monto_total); // Convertir a número
+      } else if (sortBy.value === 'fecha_entrega') {
+        valueA = new Date(a.fecha_entrega);
+        valueB = new Date(b.fecha_entrega);
+      }
+
+      if (sortOrder.value === 'asc') {
+        return valueA > valueB ? 1 : -1;
+      } else {
+        return valueA < valueB ? 1 : -1;
+      }
+    });
+  }
+
+  return filtered;
+});
+
+const paginatedCategories = computed(() => {
+  return filteredOrders.value.slice(startIndex.value, endIndex.value);
+});
+
+
+const addOneDay = (dateString) => {
+  const date = new Date(dateString);
+  date.setDate(date.getDate() + 1); 
+  return date;
+};
+
+// Función para verificar si la fecha de entrega es hoy
+const isDeliveryToday = (deliveryDate) => {
+  const today = new Date();
+  const delivery = addOneDay(deliveryDate); 
+
+  const isToday =
+    today.getFullYear() === delivery.getFullYear() &&
+    today.getMonth() === delivery.getMonth() &&
+    today.getDate() === delivery.getDate();
+
+  return isToday;
+};
+
+// Computed property para deshabilitar el botón de actualización
+const isUpdateDisabled = computed(() => {
+  if (!selectedOrder.value) {
+    console.log('No hay orden seleccionada. Botón deshabilitado.');
+    return true; // Si no hay orden seleccionada, deshabilitar
+  }
+
+  const isEntregado = selectedOrder.value.estado === 'Entregado';
+  const isEntregando = selectedOrder.value.estado === 'Entregando'; 
+  
+  // Deshabilitar si el estado es "Entregado" o "Entregando"
+  if (isEntregado || isEntregando) {
+    return true;
+  }
+
+  // Si no es "Entregado" ni "Entregando", habilitar solo si la fecha de entrega es hoy
+  const isToday = isDeliveryToday(selectedOrder.value.fecha_entrega);
+ 
+  if (!isToday) {
+    console.log('La fecha de entrega no es hoy. Botón deshabilitado.');
+  } else {
+    console.log('La fecha de entrega es hoy. Botón habilitado.');
+  }
+
+  return !isToday;
+});
+
+// Computed property para deshabilitar los inputs de Estado y Estado de pago
+const areInputsDisabled = computed(() => {
+  if (!selectedOrder.value) return true; // Si no hay orden seleccionada, deshabilitar
+
+  const isEntregado = selectedOrder.value.estado === 'Entregado';
+  const isEntregando = selectedOrder.value.estado === 'Entregando';
+
+  // Deshabilitar inputs si el estado es "Entregado" o "Entregando"
+  return isEntregado || isEntregando;
+});
 </script>
 
 <template>
   <div class="container-fluid position-relative">
-    <h2 class="mb-4">Gestión de Órdenes</h2>
+      <div class="container-fluid position-relative">
+          <h2 class="mb-4">Gestión de Órdenes</h2>
 
-    <!-- Table -->
-    <div class="card">
-      <div class="card-body">
-        <div class="table-responsive">
-          <table class="table table-hover">
-            <thead class="table-light">
-              <tr>
-                <th class="fw-bold">ID</th>
-                <th class="fw-bold">Cliente</th>
-                <th class="fw-bold">Monto Total</th>
-                <th class="fw-bold">Fecha Entrega</th>
-                <th class="fw-bold">Estado</th>
-                <th class="fw-bold">Estado Pago</th>
-                <th class="fw-bold">Fecha Creación</th>
-                <th class="fw-bold">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="order in paginatedCategories" :key="order.id">
-                <td class="text-center">#{{ order.id }}</td>
-                <td class="text-center">{{ getUserName(order.usuario_id) }}</td>
-                <td class="text-center">${{ order.monto_total }}</td>
-                <td class="text-center">{{ formatDate(order.fecha_entrega) }}</td>
-                <td class="text-center">
-                  <span :class="getStatusClass(order.estado)">{{ order.estado }}</span>
-                </td>
-                <td class="text-center">
-                  <span :class="getStatusClass(order.estado_pago)">{{ order.estado_pago }}</span>
-                </td>
-                <td class="text-center">{{ formatDate(order.created_at) }}</td>
-                <td>
-                  <div class="d-flex justify-content-start gap-2">
-                    <button class="btn btn-primary btn-sm" @click="openModal(order)">
-                      <i class="material-icons">visibility</i>
-                    </button>
+          <!-- Filtros y ordenamiento -->
+          <div class="row mb-3">
+              <div class="col-md-6">
+                  <input type="text" class="form-control" placeholder="Buscar por cliente o ID..." v-model="searchQuery" />
+              </div>
+              <div class="col-md-3">
+                  <select class="form-control" v-model="sortBy">
+                      <option value="id">Ordenar por ID</option>
+                      <option value="monto_total">Ordenar por Monto</option>
+                      <option value="fecha_entrega">Ordenar por Fecha de Entrega</option>
+                  </select>
+              </div>
+              <div class="col-md-3">
+                  <select class="form-control" v-model="sortOrder">
+                      <option value="asc">Ascendente</option>
+                      <option value="desc">Descendente</option>
+                  </select>
+              </div>
+          </div>
+
+          
+      </div>
+      <!-- Table -->
+      <div class="card">
+          <div class="card-body">
+              <div class="table-responsive">
+                  <table class="table table-hover">
+                      <thead class="table-light">
+                          <tr>
+                              <th class="fw-bold">Nº</th>
+                              <!-- Cambiado de "ID" a "Nº" -->
+                              <th class="fw-bold">Cliente</th>
+                              <th class="fw-bold">Monto Total</th>
+                              <th class="fw-bold">Fecha Entrega</th>
+                              <th class="fw-bold">Estado</th>
+                              <th class="fw-bold">Estado Pago</th>
+                              <th class="fw-bold">Fecha Creación</th>
+                              <th class="fw-bold">Acciones</th>
+                          </tr>
+                      </thead>
+                      <tbody>
+                          <!-- Mensaje cuando no hay resultados -->
+                          <tr v-if="paginatedCategories.length === 0">
+                              <td colspan="8" class="text-center text-muted py-4">
+                                  No se encontraron órdenes que coincidan con la búsqueda.
+                              </td>
+                          </tr>
+
+                          <!-- Filas de órdenes -->
+                          <tr v-for="(order, index) in paginatedCategories" :key="order.id">
+                              <!-- Numeración secuencial -->
+                              <td class="text-center">{{ startIndex + index + 1 }}</td>
+                              <td class="text-center">{{ getUserName(order.usuario_id) }}</td>
+                              <td class="text-center">${{ order.monto_total }}</td>
+                              <td class="text-center">{{ formatDate(order.fecha_entrega) }}</td>
+                              <td class="text-center">
+                                  <span :class="getStatusClass(order.estado)">{{ order.estado }}</span>
+                              </td>
+                              <td class="text-center">
+                                  <span :class="getStatusClass(order.estado_pago)">{{ order.estado_pago }}</span>
+                              </td>
+                              <td class="text-center">{{ formatDate(order.created_at) }}</td>
+                              <td>
+                                  <div class="d-flex justify-content-start gap-2">
+                                      <button class="btn btn-primary btn-sm" @click="openModal(order)">
+                                          <i class="material-icons">visibility</i>
+                                      </button>
+                                  </div>
+                              </td>
+                          </tr>
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+      </div>
+
+      <!-- Modal -->
+      <div v-if="showModal" class="modal-overlay">
+          <div class="modal-container">
+              <div class="modal-content">
+                  <div class="modal-header">
+                      <h4 class="modal-title">Detalle de la Orden #{{ selectedOrder?.id }}</h4>
+                      <button type="button" class="btn-close" @click="closeModal"></button>
                   </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
 
-    <!-- Modal -->
-    <div v-if="showModal" class="modal-overlay">
-      <div class="modal-container">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h4 class="modal-title">Detalle de la Orden #{{ selectedOrder?.id }}</h4>
-            <button type="button" class="btn-close" @click="closeModal"></button>
+                  <div class="modal-body">
+                      <!-- Order Summary -->
+                      <div class="order-summary mb-4">
+                          <h5>Información General</h5>
+                          <div class="info-grid">
+                              <p><strong>Cliente:</strong> {{ getUserName(selectedOrder?.usuario_id) }}</p>
+                              <p><strong>Monto Total:</strong> ${{ selectedOrder?.monto_total }}</p>
+                              <p><strong>Fecha de Entrega:</strong> {{ formatDate(selectedOrder?.fecha_entrega) }}</p>
+                              <p><strong>Fecha de Creación:</strong> {{ formatDate(selectedOrder?.created_at) }}</p>
+                          </div>
+                      </div>
+
+                      <!-- Order Items -->
+                      <div class="order-items mb-4">
+                          <h5>Productos</h5>
+                          <div v-if="selectedOrder?.detalles_con_tallas_y_colores" class="table-responsive">
+                              <table class="table table-bordered">
+                                  <thead>
+                                      <tr>
+                                          <th>Imagen</th>
+                                          <th>Color</th>
+                                          <th>Talla</th>
+                                          <th>Cantidad</th>
+                                          <th>Precio Unit.</th>
+                                          <th>Subtotal</th>
+                                      </tr>
+                                  </thead>
+                                  <tbody>
+                                      <tr v-for="detalle in selectedOrder.detalles_con_tallas_y_colores" :key="detalle.id">
+                                          <td>
+                                              <img :src="`${IMAGE_BASE_URL}/${detalle.detalle_producto.imagen_url}`" alt="Producto" class="product-thumbnail" />
+                                          </td>
+                                          <td>{{ getColorName(detalle.detalle_producto.color) }}</td>
+                                          <td>{{ getTallaName(detalle.talla_id, detalle.detalle_producto) }}</td>
+                                          <td>{{ detalle.cantidad }}</td>
+                                          <td>${{ detalle.precio_unitario }}</td>
+                                          <td>${{ detalle.subtotal }}</td>
+                                      </tr>
+                                  </tbody>
+                              </table>
+                          </div>
+                      </div>
+                      <!-- Update Form -->
+                      <form @submit.prevent="updateOrder" class="update-form">
+                          <div class="form-group mb-3">
+                            <label for="estado">Estado</label>
+                            <select
+                              v-model="editForm.estado"
+                              id="estado"
+                              class="form-control"
+                              :disabled="areInputsDisabled" 
+                            >
+                              <option v-for="option in estadoOptions" :key="option" :value="option">
+                                {{ option }}
+                              </option>
+                            </select>
+                          </div>
+                          <div class="form-group mb-3">
+                            <label for="estado_pago">Estado Pago</label>
+                            <select
+                              v-model="editForm.estado_pago"
+                              id="estado_pago"
+                              class="form-control"
+                              :disabled="areInputsDisabled"
+                            >
+                              <option v-for="option in estadoPagoOptions" :key="option" :value="option">
+                                {{ option }}
+                              </option>
+                            </select>
+                          </div>
+                          <div class="modal-footer">
+                            <button
+                              type="submit"
+                              class="btn btn-success"
+                              :disabled="isUpdateDisabled"
+                            >
+                              Actualizar
+                            </button>
+                            <button type="button" class="btn btn-secondary" @click="closeModal">Cerrar</button>
+                          </div>
+                          <div v-if="isUpdateDisabled" class="text-muted mt-2">
+                            <small>
+                              {{
+                                editForm.estado === 'Entregado' || editForm.estado === 'Entregando'
+                                  ? 'La orden ya fue entregada o está en proceso de entrega. Ya no se puede modificar.'
+                                  : 'El botón de actualización estará disponible el día de la entrega.'
+                              }}
+                            </small>
+                          </div>
+                        </form>
+                  </div>
+              </div>
           </div>
-
-          <div class="modal-body">
-            <!-- Order Summary -->
-            <div class="order-summary mb-4">
-              <h5>Información General</h5>
-              <div class="info-grid">
-                <p><strong>Cliente:</strong> {{ getUserName(selectedOrder?.usuario_id) }}</p>
-                <p><strong>Monto Total:</strong> ${{ selectedOrder?.monto_total }}</p>
-                <p><strong>Fecha de Entrega:</strong> {{ formatDate(selectedOrder?.fecha_entrega) }}</p>
-                <p><strong>Fecha de Creación:</strong> {{ formatDate(selectedOrder?.created_at) }}</p>
-              </div>
-            </div>
-
-            <!-- Order Items -->
-            <div class="order-items mb-4">
-              <h5>Productos</h5>
-              <div v-if="selectedOrder?.detalles_con_tallas_y_colores" class="table-responsive">
-                <table class="table table-bordered">
-                  <thead>
-                    <tr>
-                      <th>Imagen</th>
-                      <th>Color</th>
-                      <th>Talla</th>
-                      <th>Cantidad</th>
-                      <th>Precio Unit.</th>
-                      <th>Subtotal</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="detalle in selectedOrder.detalles_con_tallas_y_colores" :key="detalle.id">
-                      <td>
-                        <img
-                          :src="`${IMAGE_BASE_URL}/${detalle.detalle_producto.imagen_url}`"
-                          alt="Producto"
-                          class="product-thumbnail"
-                        />
-                      </td>
-                      <td>{{ getColorName(detalle.detalle_producto.color) }}</td>
-                      <td>{{ getTallaName(detalle.talla_id, detalle.detalle_producto) }}</td>
-                      <td>{{ detalle.cantidad }}</td>
-                      <td>${{ detalle.precio_unitario }}</td>
-                      <td>${{ detalle.subtotal }}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <!-- Update Form -->
-            <form @submit.prevent="updateOrder" class="update-form">
-              <div class="form-group mb-3">
-                <label for="estado">Estado</label>
-                <select v-model="editForm.estado" id="estado" class="form-control">
-                  <option v-for="option in estadoOptions" :key="option" :value="option">
-                    {{ option }}
-                  </option>
-                </select>
-              </div>
-              <div class="form-group mb-3">
-                <label for="estado_pago">Estado Pago</label>
-                <select v-model="editForm.estado_pago" id="estado_pago" class="form-control">
-                  <option v-for="option in estadoPagoOptions" :key="option" :value="option">
-                    {{ option }}
-                  </option>
-                </select>
-              </div>
-              <div class="modal-footer">
-                <button type="submit" class="btn btn-success">Actualizar</button>
-                <button type="button" class="btn btn-secondary" @click="closeModal">Cerrar</button>
-              </div>
-            </form>
-          </div>
-        </div>
       </div>
-    </div>
   </div>
-  <Pagination 
-  :totalItems="orders.length" 
-  :itemsPerPage="15" 
-  :currentPage="currentPage"
-  @update:currentPage="currentPage = $event"  
-/>
-
+  <Pagination :totalItems="orders.length" :itemsPerPage="15" :currentPage="currentPage" @update:currentPage="currentPage = $event" />
 </template>
+
 
 <style scoped>
 .modal-overlay {
