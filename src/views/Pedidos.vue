@@ -170,7 +170,9 @@ onMounted(() => {
                   <p><strong>Monto Total:</strong> ${{ selectedOrder?.monto_total }}</p>
                 </div>
                 <div class="col-md-6">
-                  <p><strong>Fecha de Entrega:</strong> {{ formatDate(selectedOrder?.fecha_entrega) }}</p>
+                  <!-- <p><strong>Fecha de Entrega:</strong> {{ formatDate(selectedOrder?.fecha_entrega) }}</p> -->
+                  <p><strong>Fecha de Entrega:</strong> {{ formatDate(new Date(selectedOrder?.fecha_entrega).setDate(new Date(selectedOrder?.fecha_entrega).getDate() + 1)) }}</p>
+
                   <p><strong>Fecha de Creación:</strong> {{ formatDate(selectedOrder?.created_at) }}</p>
                 </div>
               </div>
@@ -246,7 +248,9 @@ onMounted(() => {
             <td>#{{ order.id }}</td>
             <td>{{ user.nombre }} {{ user.apellido }}</td>
             <td>${{ order.monto_total }}</td>
-            <td>{{ formatDate(order.fecha_entrega) }}</td>
+            <!-- <td>{{ formatDate(order.fecha_entrega) }}</td> -->
+            <td>{{ formatDate(new Date(order.fecha_entrega).setDate(new Date(order.fecha_entrega).getDate() + 1)) }}</td>
+
             <td>
               <span :class="'badge ' + getStatusClass(order.estado)">
                 {{ order.estado }}

@@ -121,7 +121,8 @@ const formatDate = (dateString) => {
   // Crear un objeto de fecha a partir de la cadena de fecha
   let date = new Date(dateString);
 
- 
+  // Sumar un día
+  date.setDate(date.getDate() + 1);
 
   // Formatear la fecha con el ajuste de zona horaria adecuado
   return new Intl.DateTimeFormat('es-ES', {
@@ -325,7 +326,9 @@ const areInputsDisabled = computed(() => {
                               <td class="text-center">
                                   <span :class="getStatusClass(order.estado_pago)">{{ order.estado_pago }}</span>
                               </td>
-                              <td class="text-center">{{ formatDate(order.created_at) }}</td>
+                              <!-- <td class="text-center">{{ formatDate(order.created_at) }}</td> -->
+                              <td class="text-center">{{ formatDate(new Date(order.created_at).setDate(new Date(order.created_at).getDate() - 1)) }}</td>
+
                               <td>
                                   <div class="d-flex justify-content-start gap-2">
                                       <button class="btn btn-primary btn-sm" @click="openModal(order)">
@@ -357,7 +360,10 @@ const areInputsDisabled = computed(() => {
                               <p><strong>Cliente:</strong> {{ getUserName(selectedOrder?.usuario_id) }}</p>
                               <p><strong>Monto Total:</strong> ${{ selectedOrder?.monto_total }}</p>
                               <p><strong>Fecha de Entrega:</strong> {{ formatDate(selectedOrder?.fecha_entrega) }}</p>
-                              <p><strong>Fecha de Creación:</strong> {{ formatDate(selectedOrder?.created_at) }}</p>
+                              <!-- <p><strong>Fecha de Creación:</strong> {{ formatDate(selectedOrder?.created_at) }}</p> -->
+                              <p><strong>Fecha de Creación:</strong> {{ formatDate(new Date(selectedOrder?.created_at).setDate(new Date(selectedOrder?.created_at).getDate() - 1)) }}</p>
+
+                              
                           </div>
                       </div>
 
