@@ -121,8 +121,7 @@ const formatDate = (dateString) => {
   // Crear un objeto de fecha a partir de la cadena de fecha
   let date = new Date(dateString);
 
-  // Sumar un día
-  date.setDate(date.getDate() + 1);
+ 
 
   // Formatear la fecha con el ajuste de zona horaria adecuado
   return new Intl.DateTimeFormat('es-ES', {
