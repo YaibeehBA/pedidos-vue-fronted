@@ -114,9 +114,9 @@ const login = async () => {
 
       // Actualizar autenticación global si es necesario
       userStore.syncAuthentication();
-
+      const esAdmin = Boolean(response.data.user.esadmin);
       // Redirigir según el contexto
-      if (response.data.user.esadmin === 1) {
+      if (esAdmin) {
         router.replace({ name: 'Dashboard' });
       } else if (route.query.returnTo === 'PedidoOrden') {
         router.replace({
