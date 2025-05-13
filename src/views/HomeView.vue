@@ -5,7 +5,7 @@ import BarraFiltro from '@/components/layout/BarraFiltro.vue';
 import ProductoGrid from '@/components/layout/ProductoGrid.vue';
 </script>
 
-<template>
+<template >
   <Slider></Slider>
     <div class="main-content">
     <BarraFiltro></BarraFiltro>

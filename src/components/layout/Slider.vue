@@ -26,14 +26,17 @@
   
   <script>
   import { onMounted, ref } from 'vue';
+  import fondo1 from '@/assets/slider/fondo1.jpg'
+  import fondo2 from '@/assets/slider/fondo2.jpg'
+  import fondo3 from '@/assets/slider/fondo3.jpg'
   
   export default {
     setup() {
       const images = [
-        'https://scontent.fatf2-1.fna.fbcdn.net/v/t39.30808-6/458396693_1034109468408718_2666466109178469465_n.jpg?stp=dst-jpg_s960x960_tt6&_nc_cat=111&ccb=1-7&_nc_sid=cc71e4&_nc_ohc=fx--a6nR2LoQ7kNvgHechmI&_nc_zt=23&_nc_ht=scontent.fatf2-1.fna&_nc_gid=AF3dJmbhB6z3b_s0Wpv9KKI&oh=00_AYCjgteVZIVzYhnfEofUyFGk3kUI1EDeptsDGdGhhvwQIQ&oe=679DD3CB',
-        'https://scontent.fuio6-3.fna.fbcdn.net/v/t1.6435-9/130557848_2793424360906312_483053812293563513_n.jpg?_nc_cat=111&ccb=1-7&_nc_sid=cc71e4&_nc_eui2=AeGUTewp25baNMbJhF4aNZIja5Uww3cMSclrlTDDdwxJyesNZX1nQ83ed8EJXutxlSdWAMAyvyF2zC3gohJcWwt5&_nc_ohc=6ffkdlB_2tQQ7kNvgGiRyXe&_nc_zt=23&_nc_ht=scontent.fuio6-3.fna&_nc_gid=ANVxfx99TIfMCWggDO9q5Pu&oh=00_AYDFr4Mmk8OX63KJMyJl3FmhhWGXolAwqC_9cZ8I3Iss7g&oe=67ACEBC7',
-        'https://scontent.fatf2-1.fna.fbcdn.net/v/t39.30808-6/277742726_493588815794122_6984467798098462731_n.jpg?_nc_cat=109&ccb=1-7&_nc_sid=86c6b0&_nc_ohc=48BQifGdrwYQ7kNvgHRQFVm&_nc_zt=23&_nc_ht=scontent.fatf2-1.fna&_nc_gid=AGCTnotJ-DnsZOQOtksMZXx&oh=00_AYBwFfpwRI-9tOTjCSCryz2v6D_MSsgIJiw0o9TuPELL7w&oe=679DCEE8'
-      ];
+      fondo1,
+      fondo2,
+      fondo3
+    ]
       const currentIndex = ref(0); // El índice actual de la imagen visible.
   
       // Función para ir a la imagen siguiente

@@ -86,23 +86,25 @@ onMounted(async () => {
 const token = localStorage.getItem('auth');
 const loadNotifications = async () => {
   try {
+    const token = localStorage.getItem('auth');
     const response = await axios.get('http://localhost:8000/api/admin/notificaciones', {
       headers: {
         'Accept': 'application/json',
         Authorization: `Bearer ${token}`,
-
       }
     });
 
-    console.log("Respuesta de la API:", response.data);
-    notifications.value = response.data.notificaciones;
+    // Si hay respuesta, actualiza las notificaciones (aunque estén vacías)
+    notifications.value = response.data?.notificaciones || [];
+    
   } catch (error) {
-    console.error('Error al obtener notificaciones:', error);
-    show_alerta('Error al cargar notificaciones', 'error', '');
+    // Solo muestra error si NO es un 500 (Internal Server Error)
+    if (error.response?.status !== 500) {
+      show_alerta('Error al cargar notificaciones', 'error', '');
+    }
+    notifications.value = []; // Asegura un array vacío
   }
 };
-
-
 
 // Función para mostrar/ocultar notificaciones
 const toggleNotifications = () => {

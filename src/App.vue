@@ -8,7 +8,7 @@ const isAdminRoute = () => route.path.startsWith('/admin')
 
 </script>
 
-<template>
+<template >
   <NavegacionVue   v-if="!isAdminRoute()"/>
   
   
