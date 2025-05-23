@@ -8,36 +8,65 @@ import ProductoGrid from '@/components/layout/ProductoGrid.vue';
 <template >
   <Slider></Slider>
     <div class="main-content">
-    <BarraFiltro></BarraFiltro>
+     <!-- <BarraFiltro></BarraFiltro>  -->
     <ProductoGrid> </ProductoGrid>
         
 
     </div>
+<footer class="simple-black-footer">
+    <div class="footer-content">
+      <div class="copyright">
+        &copy; {{ new Date().getFullYear() }} New Blessings. Todos los derechos reservados.
+      </div>
+      <div class="made-with">
+        Diseñado con <i class="material-icons">favorite</i> por New Blessings
+      </div>
+    </div>
+  </footer>
+  
 </template>
 
-<style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+<style scoped>
+.simple-black-footer {
+  background-color: #212327;
+  color: #ffffff;
+  padding: 20px 0;
+  font-family: 'Roboto', sans-serif;
+  width: 100%;
 }
 
-body {
-    font-family: Arial, sans-serif;
+.footer-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.main-content {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 2rem;
-    padding: 2rem;
-    max-width: 1400px;
-    margin: 0 auto;
+.copyright, .made-with {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.8);
 }
 
-@media (max-width: 768px) {
-    .main-content {
-        grid-template-columns: 1fr;
-    }
+.made-with i {
+  color: #E53935;
+  font-size: 0.9rem;
+  vertical-align: middle;
+  margin: 0 3px;
+}
+
+@media (max-width: 480px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 5px;
+  }
+  
+  .copyright, .made-with {
+    font-size: 0.8rem;
+  }
 }
 </style>

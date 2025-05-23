@@ -1,53 +1,55 @@
 <template>
-   <main class="product-section">
-    <div class="product-header">
-        <span><i class=""></i> 64 resultados para ropa</span>
-        <select class="sort-select">
-            <option>Popular</option>
-            <option>Precio: Menor a Mayor</option>
-            <option>Precio: Mayor a Menor</option>
-        </select>
+  <div class="catalog-container">
+    <!-- Encabezado minimalista -->
+    <div class="catalog-header text-center mb-5">
+      <h2 class="title">NUESTRAS CAMISAS</h2>
+      <p class="subtitle">Elige tu favorita y realiza tu pedido</p>
     </div>
 
-    <div class="products-grid">
-    <!-- Product Card -->
-    <div
-      v-for="category in categoriesWithImages"
-      :key="category.id"
-      class="product-card"
-    >
-      <div class="product-image-wrap">
-        <img
-          :src="category.imagenUrl"
-          alt="Imagen del producto"
-          class="product-image"
-        />
-        <button class="wishlist-btn">
-          <span class="material-icons">favorite_border</span>
-        </button>
-      </div>
-      <div class="product-info">
-        <h3>{{ category.nombre }}</h3>
-        <p class="price">
-           <router-link 
-                :to="{ 
-                    name: 'DetalleProducto', 
-                    params: { id: category.id } 
-                }"
-               
-                >
-                <span class="material-icons">local_shipping</span>
-                Realizar Pedido
-            </router-link>
-        </p>
+    <!-- Grid de productos optimizado -->
+    <div class="product-grid">
+      <div 
+        v-for="category in categoriesWithImages" 
+        :key="category.id"
+        class="product-card"
+      >
+        <!-- Contenedor de imagen cuadrada -->
+        <div class="image-container">
+          <img
+            :src="category.imagenUrl"
+            :alt="'Camisa ' + category.nombre"
+            class="product-image"
+            loading="lazy"
+          >
+        </div>
+
+        <!-- Información del producto -->
+        <div class="product-info">
+          <h3 class="product-name">{{ formatName(category.nombre) }}</h3>
+          
+          <div class="price-section">
+            <span class="price">${{ category.precio_base }}</span>
+            <span class="price-label">Precio unitario</span>
+          </div>
+
+          <!-- Botón de acción principal -->
+          <router-link 
+            :to="{ name: 'DetalleProducto', params: { id: category.id } }"
+            custom
+            v-slot="{ navigate, href }"
+          >
+            <button class="order-button" @click="navigate" :href="href">
+              <span class="material-icons">shopping_cart</span>
+              REALIZAR PEDIDO
+            </button>
+          </router-link>
+
+        </div>
       </div>
     </div>
   </div>
-</main>
-
-  </template>
-  
-  <script setup>
+</template>
+<script setup>
 import { ref, onMounted, computed } from "vue";
 import Producto from "@/apis/Productos";
 import { PublicApi } from "@/apis/Api";
@@ -56,6 +58,13 @@ import { IMAGE_BASE_URL } from "@/apis/Api";
 const categories = ref([]);
 const productosConImagenes = ref([]);
 
+function formatName(name) {
+  return name.split(' ').map(word =>
+    word.length > 3
+      ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+      : word
+  ).join(' ');
+}
 // Obtener las categorías
 const fetchCategories = async () => {
   try {
@@ -96,6 +105,7 @@ const categoriesWithImages = computed(() =>
           id: category.id,
           nombre: category.nombre,
           imagenUrl,
+          precio_base: primeraVariante.precio_base,
         };
       }
 
@@ -112,130 +122,196 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-
-.product-section {
-    width: 100%;
-    padding: 0 15px;
+/* Variables de color modernas */
+:root {
+  --primary: #2C3E50; /* Azul oscuro profesional */
+  --secondary: #3498DB; /* Azul brillante */
+  --accent: #E74C3C; /* Rojo solo para elementos importantes */
+  --light: #FFFFFF;
+  --light-gray: #ECF0F1;
+  --text: #333333;
+  --text-light: #7F8C8D;
 }
 
-.product-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
+.catalog-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
-.sort-select {
-    padding: 0.5rem;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+.catalog-header {
+  padding: 0 15px;
 }
 
-.products-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+.title {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--primary);
+  letter-spacing: 1.5px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
 }
 
+.subtitle {
+  font-size: 1.1rem;
+  color: var(--text-light);
+  font-weight: 400;
+}
+
+/* Grid de productos optimizado para más elementos */
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+  padding: 10px;
+}
+
+/* Tarjeta de producto cuadrada */
 .product-card {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: box-shadow 0.3s ease;
-    width: 100%;
+  background: var(--light);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .product-card:hover {
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
-    transition: all 0.3s ease;
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
 }
 
-.product-image-wrap {
-    position: relative;
-    width: 100%;
-    height: 447px;
-    overflow: hidden;
+/* Contenedor de imagen cuadrada */
+.image-container {
+  width: 100%;
+  aspect-ratio: 1/1;
+  overflow: hidden;
 }
 
 .product-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    transition: transform 0.3s ease;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
 }
 
 .product-card:hover .product-image {
-    transform: scale(1.05);
+  transform: scale(1.05);
 }
 
-.wishlist-btn {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    background: white;
-    border: none;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: all 0.3s ease;
-}
-
-.wishlist-btn:hover {
-    background: #fc0137;
-    transform: scale(1.1);
-}
-
+/* Información del producto */
 .product-info {
-    padding: 1rem;
+  padding: 18px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
 }
 
-.product-info h3 {
-    margin-bottom: 0.5rem;
-    font-size: 1rem;
-    color: #333;
+.product-name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin-bottom: 12px;
+  text-align: center;
+  line-height: 1.3;
+  flex-grow: 1;
+}
+
+.price-section {
+  margin: 10px 0 15px;
+  text-align: center;
 }
 
 .price {
-    color: #0066cc;
-    font-weight: bold;
-    font-size: 1.1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--secondary);
+  display: block;
+  line-height: 1;
 }
 
+.price-label {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Botón de pedido atractivo */
+.order-button {
+  background: var(--secondary);
+  color: var(--light);
+  border: none;
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.order-button:hover {
+  background: var(--primary);
+  box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+}
+
+.order-button .material-icons {
+  font-size: 1.2rem;
+}
+
+/* Responsive para más productos por fila */
 @media (max-width: 1200px) {
-    .products-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  }
 }
 
 @media (max-width: 992px) {
-    .products-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 15px;
+  }
+  
+  .product-name {
+    font-size: 1rem;
+  }
+  
+  .price {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  }
+  
+  .title {
+    font-size: 1.8rem;
+  }
+  
+  .order-button {
+    padding: 10px;
+    font-size: 0.8rem;
+  }
 }
 
 @media (max-width: 576px) {
-    .products-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .product-section {
-        padding: 0 10px;
-    }
-    
-    .product-header {
-        flex-direction: column;
-        gap: 1rem;
-    }
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+  
+  .product-info {
+    padding: 12px;
+  }
 }
 </style>
-  
