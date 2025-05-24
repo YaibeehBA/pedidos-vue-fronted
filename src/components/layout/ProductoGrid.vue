@@ -32,6 +32,19 @@
             <span class="price-label">Precio unitario</span>
           </div>
 
+          <!-- Selector de tallas -->
+         <div class="size-selector" v-if="category.tallas && category.tallas.length">
+          <span class="size-label">Tallas:</span>
+          <div class="size-options">
+            <span 
+              v-for="talla in category.tallas" 
+              :key="talla.id"
+              class="size-option"
+            >
+              {{ talla.nombre.toUpperCase() }}
+            </span>
+          </div>
+        </div>
           <!-- Botón de acción principal -->
           <router-link 
             :to="{ name: 'DetalleProducto', params: { id: category.id } }"
@@ -43,7 +56,6 @@
               REALIZAR PEDIDO
             </button>
           </router-link>
-
         </div>
       </div>
     </div>
@@ -85,7 +97,6 @@ const fetchProductosConImagenes = async () => {
   }
 };
 
-// Combinar categorías con imágenes
 const categoriesWithImages = computed(() =>
   categories.value
     .map((category) => {
@@ -99,13 +110,20 @@ const categoriesWithImages = computed(() =>
 
       if (primeraVariante) {
         const imagenUrl = `${IMAGE_BASE_URL}/${primeraVariante.imagen_url}`;
-        // const imagenUrl = `http://localhost:8000/storage/${primeraVariante.imagen_url}`;
         console.log(`Imagen para la categoría "${category.nombre}": ${imagenUrl}`);
+        
+        // Extraer las tallas disponibles de la primera variante
+        const tallasDisponibles = primeraVariante.tallas.map(talla => ({
+          id: talla.id,
+          nombre: talla.nombre
+        }));
+
         return {
           id: category.id,
           nombre: category.nombre,
           imagenUrl,
           precio_base: primeraVariante.precio_base,
+          tallas: tallasDisponibles // Añadir las tallas al objeto de categoría
         };
       }
 
@@ -114,7 +132,6 @@ const categoriesWithImages = computed(() =>
     })
     .filter(Boolean) // Eliminar categorías sin imagen
 );
-
 onMounted(async () => {
   await fetchCategories(); // Obtener categorías
   await fetchProductosConImagenes(); // Obtener imágenes
@@ -267,6 +284,37 @@ onMounted(async () => {
   font-size: 1.2rem;
 }
 
+/* Estilos para el selector de tallas */
+.size-selector {
+  margin: 10px 0;
+  display: flex;
+  align-items: flex-start; /* Alinea al inicio por si hay múltiples líneas */
+  gap: 8px;
+  font-size: 0.9rem;
+  width: 100%;
+}
+
+.size-label {
+  white-space: nowrap; /* Evita que "Tallas:" se parta en dos líneas */
+  color: #666;
+  padding-top: 2px; /* Alinea verticalmente con la primera línea de tallas */
+}
+
+.size-options {
+  display: flex;
+  flex-wrap: wrap; /* Esto permite el salto de línea */
+  gap: 6px;
+  flex: 1; /* Ocupa todo el espacio restante */
+}
+
+.size-option {
+  padding: 4px 8px;
+  background-color: #f5f5f5;
+  border-radius: 3px;
+  font-size: 0.8rem;
+  color: #333;
+  white-space: nowrap;
+}
 /* Responsive para más productos por fila */
 @media (max-width: 1200px) {
   .product-grid {
