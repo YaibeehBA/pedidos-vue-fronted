@@ -13,6 +13,7 @@ import { useUserStore } from '@/stores/authstore';
 import Reportes from '@/views/admin/Reportes.vue';
 import Pedidos from '../views/Pedidos.vue';
 import PedidosAdmin from '@/views/admin/PedidosAdmin.vue';
+import Carrusel from '@/views/admin/Carrusel.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -127,6 +128,11 @@ const router = createRouter({
           path: 'reportes',
           name: 'reportes',
           component: Reportes,
+        },
+        {
+          path: 'carrusel',
+          name: 'carrusel',
+          component: Carrusel,
         },
         {
           path: 'pedidosadmin',

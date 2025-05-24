@@ -12,7 +12,12 @@ const router = useRouter();
 
 
 const isExpanded = ref(true);
-const isDropdownOpen = ref({ products: false });
+const isDropdownOpen = ref({ 
+  products: false,
+  settings: false    // 👈 Añadido
+});
+
+
 
 const toggleSidebar = () => {
   isExpanded.value = !isExpanded.value;
@@ -105,6 +110,29 @@ const toggleDropdown = (menu) => {
             <span v-show="isExpanded">Usuarios</span>
           </RouterLink>
         </li>
+             <li class="nav-item">
+              <div class="nav-link d-flex align-items-center px-4 py-2 text-dark" @click="toggleDropdown('settings')">
+                <span class="material-icons me-3">settings</span>
+                <span v-show="isExpanded">Ajustes</span>
+                <span class="material-icons ms-auto" :class="{ 'icon-fixed': isExpanded }" v-if="isDropdownOpen.settings">expand_less</span>
+                <span class="material-icons ms-auto" :class="{ 'icon-fixed': isExpanded }" v-else>expand_more</span>
+              </div>
+              <ul v-if="isDropdownOpen.settings" class="list-unstyled ps-4">
+                <li class="nav-item">
+                  <RouterLink to="/admin/empresa" class="nav-link d-flex align-items-center py-2 text-dark">
+                    <span class="material-icons me-2">business</span>
+                    Empresa
+                  </RouterLink>
+                </li>
+                <li class="nav-item">
+                  <RouterLink to="/admin/carrusel" class="nav-link d-flex align-items-center py-2 text-dark">
+                    <span class="material-icons me-2">photo_library</span>
+                    Imagenes
+                  </RouterLink>
+                </li>
+              </ul>
+            </li>
+
       </ul>
     </nav>
   </aside>

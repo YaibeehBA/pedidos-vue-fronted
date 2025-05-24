@@ -64,26 +64,42 @@
   </div>
 </template>
 
+
+
 <script>
 import { ref, onMounted } from 'vue';
-import fondo1 from '@/assets/slider/fondo1.jpg';
-import fondo2 from '@/assets/slider/fondo2.jpg';
-import fondo3 from '@/assets/slider/fondo3.jpg';
-import fondo4 from '@/assets/slider/fondo4.jpg';
-import fondo5 from '@/assets/slider/fondo5.jpg';
+import Carrusel from '@/apis/Carrusel';
+import { IMAGE_BASE_URL } from '@/apis/Api';
 
 export default {
   setup() {
-    const images = [fondo1, fondo2, fondo3, fondo4, fondo5];
+    const images = ref([]);
     const currentIndex = ref(0);
 
+    const getFullImageUrl = (path) => {
+      if (!path) return '';
+      if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path;
+      }
+      return `${IMAGE_BASE_URL}/${path}`;
+    };
+
+    const fetchImages = async () => {
+      try {
+        const response = await Carrusel.fetchImagesPublica();
+        images.value = (response || []).map(img => getFullImageUrl(img.imagen));
+      } catch (error) {
+        console.error('Error al obtener imágenes del carrusel:', error);
+      }
+    };
+
     const nextSlide = () => {
-      currentIndex.value = (currentIndex.value + 1) % images.length;
+      currentIndex.value = (currentIndex.value + 1) % images.value.length;
       resetAutoRotation();
     };
 
     const prevSlide = () => {
-      currentIndex.value = (currentIndex.value - 1 + images.length) % images.length;
+      currentIndex.value = (currentIndex.value - 1 + images.value.length) % images.value.length;
       resetAutoRotation();
     };
 
@@ -93,9 +109,9 @@ export default {
     };
 
     const getSideImages = () => {
-      const nextIndex = (currentIndex.value + 1) % images.length;
-      const nextNextIndex = (currentIndex.value + 2) % images.length;
-      return [images[nextIndex], images[nextNextIndex]];
+      const nextIndex = (currentIndex.value + 1) % images.value.length;
+      const nextNextIndex = (currentIndex.value + 2) % images.value.length;
+      return [images.value[nextIndex], images.value[nextNextIndex]];
     };
 
     let autoRotateInterval;
@@ -105,6 +121,7 @@ export default {
     };
 
     onMounted(() => {
+      fetchImages();
       resetAutoRotation();
       return () => clearInterval(autoRotateInterval);
     });
