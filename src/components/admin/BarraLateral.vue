@@ -97,7 +97,9 @@ const toggleDropdown = (menu) => {
             <span class="material-icons me-3">checkroom</span>
             <span v-show="isExpanded">Tallas</span>
           </RouterLink>
+        
         </li>
+        
         <li class="nav-item">
           <RouterLink to="/admin/colores" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
             <span class="material-icons me-3">palette</span>
@@ -121,15 +123,22 @@ const toggleDropdown = (menu) => {
                 <li class="nav-item">
                   <RouterLink to="/admin/empresa" class="nav-link d-flex align-items-center py-2 text-dark">
                     <span class="material-icons me-2">business</span>
-                    Empresa
+                    Datos de la Empresa
                   </RouterLink>
                 </li>
                 <li class="nav-item">
                   <RouterLink to="/admin/carrusel" class="nav-link d-flex align-items-center py-2 text-dark">
                     <span class="material-icons me-2">photo_library</span>
-                    Imagenes
+                    Imagenes del Carrusel
                   </RouterLink>
                 </li>
+                <li class="nav-item">
+                <RouterLink to="/admin/ConfiguracionEnvio" class="nav-link d-flex align-items-center  py-2 text-dark">
+                  <span class="material-icons align-middle me-2">local_shipping</span>
+                  <span v-show="isExpanded"> Preció de Envió</span>
+                </RouterLink>
+              
+              </li>
               </ul>
             </li>
 

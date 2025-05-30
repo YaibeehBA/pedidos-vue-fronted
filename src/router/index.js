@@ -15,6 +15,7 @@ import Pedidos from '../views/Pedidos.vue';
 import PedidosAdmin from '@/views/admin/PedidosAdmin.vue';
 import Carrusel from '@/views/admin/Carrusel.vue';
 import Empresa from '@/views/admin/Empresa.vue';
+import ConfiguracionEnvio from '@/views/admin/ConfiguracionEnvio.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -134,7 +135,21 @@ const router = createRouter({
           path: 'carrusel',
           name: 'carrusel',
           component: Carrusel,
-        },{
+        }
+        ,
+        {
+          path: 'ConfiguracionEnvio',
+          name: 'ConfiguracionEnvio',
+          component: ConfiguracionEnvio,
+        },
+      // {
+      //     path: 'ciudades-envio/crear',
+      //     name: 'CrearCiudadEnvio',
+      //     component: CrearCiudadEnvio,
+      //     meta: { requiresAuth: true }
+      //   },
+         
+         {
           path: 'empresa',
           name: 'empresa',
           component: Empresa,

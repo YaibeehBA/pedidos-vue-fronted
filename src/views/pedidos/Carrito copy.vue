@@ -149,7 +149,40 @@
                       </div>
                   </div>
 
-               
+                  <!-- Datos del cliente -->
+                  <div class="card mb-4">
+                      <div class="card-header">
+                          <h5 class="mb-0">Cliente</h5>
+                      </div>
+                      <div class="card-body">
+                          <div class="d-flex align-items-center mb-3">
+                              <div>
+                                  <h6 class="mb-0">{{ userStore.user.nombre }} {{ userStore.user.apellido }}</h6>
+                                  <small class="text-muted">Cuenta creada: {{ formattedDate(userStore.user.created_at) }}</small>
+                              </div>
+                          </div>
+                          <div class="mb-3">
+                              <div class="d-flex align-items-center mb-2">
+                                  <i class="material-icons me-2 text-muted">email</i>
+                                  <span>{{ userStore.user.email }}</span>
+                              </div>
+                              <div class="d-flex align-items-center mb-2">
+                                  <i class="material-icons me-2 text-muted">phone</i>
+                                  <span>{{ userStore.user.celular }}</span>
+                              </div>
+                          </div>
+                          <hr />
+                          <div class="mb-3">
+                              <h6>Dirección del Local New Blessings</h6>
+                              <p class="mb-0">
+                                  123 Calle Principal<br />
+                                  Chimborazo, Riobamba 170504<br />
+                                  Ecuador
+                              </p>
+                          </div>
+                          <hr />
+                      </div>
+                  </div>
               </div>
           </div>
       </div>
