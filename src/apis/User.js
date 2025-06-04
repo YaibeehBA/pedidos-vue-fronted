@@ -183,7 +183,7 @@ const User = {
     const token = localStorage.getItem('auth')
     if (!token) return Promise.reject('No token found')
 
-    return axios.get('/api/user/profile', {
+    return Api.get('user', {
       headers: {
         'Authorization': `Bearer ${token}`
       }

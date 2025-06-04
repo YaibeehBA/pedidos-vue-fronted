@@ -52,51 +52,6 @@ const validateForm = () => {
 };
 
 
-
-// const login = async () => {
-//   try {
-//     // Validar antes de enviar
-//     if (!validateForm()) {
-//       return;
-//     }
-
-    
-//     const response = await User.login(form);
-    
-//     if (response.data) {
-//       if (response.data.token) {
-//          localStorage.setItem('auth', response.data.token);
-//          userStore.authenticated = true;
-
-//          userStore.token = response.data.token;
-//          userStore.user = response.data.user;
-        
-        
-//         // userStore.setUserData(response.data.token, response.data.user || null); 
-//         // show_alerta('Inicio de sesión exitoso', 'success', '');
-//         if (response.data.user.esadmin === 1) {
-//           router.push({ name: 'Dashboard' }); // Ruta para administradores
-//         } else {
-//           // router.push({ name: 'home' }); // Ruta para usuarios normales
-//           handleLoginSuccess();
-//         }
-
-//         // router.push({ name: 'home' })
-
-//       }
-    
-//     }
-//   } catch (error) {
-//     if (error.response && error.response.data.errors) {
-//       Object.assign(errors, error.response.data.errors);
-//     } else {
-//       // Manejar otros tipos de errores
-//       show_alerta('Usuario o contraseña incorrecta', 'error', '');
-//       console.error('Error:', error);
-//     }
-//   }
-// };
-
 const login = async () => {
   try {
     if (!validateForm()) {

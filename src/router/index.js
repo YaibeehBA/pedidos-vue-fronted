@@ -16,6 +16,7 @@ import PedidosAdmin from '@/views/admin/PedidosAdmin.vue';
 import Carrusel from '@/views/admin/Carrusel.vue';
 import Empresa from '@/views/admin/Empresa.vue';
 import ConfiguracionEnvio from '@/views/admin/ConfiguracionEnvio.vue';
+import EnviosAdmin from '@/views/admin/EnviosAdmin.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -45,6 +46,12 @@ const router = createRouter({
       path: '/PedidoOrden',
       name: 'PedidoOrden',
       component: () => import('../views/pedidos/PedidoOrden.vue'),
+      
+    },
+    {
+      path: '/finalizar-pago',	
+      name: 'finalizar-pago',
+      component: () => import('@/views/pedidos/FinalizarPago.vue'),
       
     },
     {
@@ -153,6 +160,11 @@ const router = createRouter({
           path: 'empresa',
           name: 'empresa',
           component: Empresa,
+        },
+         {
+          path: 'envios',
+          name: 'envios',
+          component: EnviosAdmin,
         },
         {
           path: 'pedidosadmin',

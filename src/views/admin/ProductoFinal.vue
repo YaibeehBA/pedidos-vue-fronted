@@ -23,6 +23,7 @@
                 <th class="fw-bold">Producto Base</th>
                 <th class="fw-bold">Imagen</th>
                 <th class="fw-bold">Precio Base</th>
+                <th class="fw-bold">Peso (kg)</th> 
                 <th class="fw-bold">Color</th>
                 <th class="fw-bold">Tallas</th>
                 <th class="fw-bold">Acciones</th>
@@ -36,6 +37,7 @@
                   <img :src="getImageUrl(producto.imagen_url)" alt="Imagen del Producto" class="img-thumbnail" style="max-width: 100px;" />
                 </td>
                 <td>{{ producto.precio_base }}</td>
+                <td>{{ producto.peso_kg }}</td> 
                 <td>{{ getColorName(producto.color_id) }}</td>
                 <td>
                   <span v-for="talla in producto.tallas" :key="talla.id" class="badge bg-primary me-1">
@@ -121,7 +123,18 @@
                 required 
               />
             </div>
-
+              <div class="mb-3">
+                <label for="productWeight" class="form-label">Peso (kg)</label>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  id="productWeight" 
+                  v-model="productData.peso_kg" 
+                  class="form-control" 
+                  required 
+                  min="0.01"
+                />
+              </div>
             <div class="mb-3">
               <label for="colorSelect" class="form-label">Color</label>
               <select
@@ -226,6 +239,18 @@
             </div>
 
             <div class="mb-3">
+              <label for="editProductWeight" class="form-label">Peso (kg)</label>
+              <input 
+                type="number" 
+                step="0.01" 
+                id="editProductWeight" 
+                v-model="editData.peso_kg" 
+                class="form-control" 
+                required 
+                min="0.01"
+              />
+            </div>
+            <div class="mb-3">
               <label for="editColorSelect" class="form-label">Color</label>
               <select
                 id="editColorSelect"
@@ -301,6 +326,7 @@ const productData = ref({
   producto_id: '',
   imagen_url: null,
   precio_base: '',
+  peso_kg: '', 
   color_id: '',
   tallas: [], // Ahora es un array para múltiples tallas
   imagePreview: null
@@ -315,6 +341,10 @@ const validateForm = () => {
     show_alerta("Ingrese un precio base", "warning");
     return false;
   }
+  if (!productData.value.peso_kg) {
+  show_alerta("Ingrese el peso del producto", "warning");
+  return false;
+}
   if (!productData.value.color_id) {
     show_alerta("Seleccione un color", "warning");
     return false;
@@ -358,12 +388,7 @@ const handleImageUpload = (event) => {
   reader.readAsDataURL(file);
 };
 
-// const getImageUrl = (imagePath) => {
-//   if (!imagePath) return '';
-//   if (imagePath.startsWith('http')) return imagePath;
-//   const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
-//   return `${baseUrl}/storage/${imagePath}`;
-// };
+
 const getImageUrl = (imagePath) => {
   if (!imagePath) return ''; // Si no hay imagen
   if (typeof imagePath === 'string' && imagePath.startsWith('http')) {
@@ -417,6 +442,8 @@ const openAddProductModal = () => {
     producto_id: '',
     imagen_url: null,
     precio_base: '',
+    peso_kg: '', 
+
     color_id: '',
     tallas: [],
     imagePreview: null
@@ -435,6 +462,7 @@ const addProduct = async () => {
     
     formData.append('producto_id', String(productData.value.producto_id));
     formData.append('precio_base', String(productData.value.precio_base));
+    formData.append('peso_kg', String(productData.value.peso_kg));
     formData.append('color_id', String(productData.value.color_id));
     
     // Agregar cada talla seleccionada al FormData
@@ -462,6 +490,7 @@ const addProduct = async () => {
         producto_id: '',
         imagen_url: null,
         precio_base: '',
+        peso_kg: '', 
         color_id: '',
         tallas: [],
         imagePreview: null
@@ -479,6 +508,7 @@ const editData = ref({
   producto_id: '',
   imagen_url: null,
   precio_base: '',
+  peso_kg: '', 
   color_id: '',
   tallas: [],
   imagePreview: null
@@ -491,6 +521,7 @@ const openEditModal = (producto) => {
     producto_id: producto.producto_id,
     imagen_url: producto.imagen_url,
     precio_base: producto.precio_base,
+    peso_kg: producto.peso_kg, // Asegurarse de incluir el peso
     color_id: producto.color_id,
     tallas: producto.tallas.map(t => t.id), // Extraer solo los IDs de las tallas
     imagePreview: null
@@ -540,6 +571,10 @@ const validateEditForm = () => {
     show_alerta("Ingrese un precio base", "warning");
     return false;
   }
+  if (!editData.value.peso_kg) {
+  show_alerta("Ingrese el peso del producto", "warning");
+  return false;
+}
   if (!editData.value.color_id) {
     show_alerta("Seleccione un color", "warning");
     return false;
@@ -551,47 +586,6 @@ const validateEditForm = () => {
   return true;
 };
 
-// // Función para actualizar el producto
-// const updateProduct = async () => {
-//   if (!validateEditForm()) return;
-
-//   try {
-//     const formData = new FormData();
-    
-//     formData.append('producto_id', String(editData.value.producto_id));
-//     formData.append('precio_base', String(editData.value.precio_base));
-//     formData.append('color_id', String(editData.value.color_id));
-    
-//     // Agregar las tallas seleccionadas
-//     editData.value.tallas.forEach((tallaId, index) => {
-//       formData.append(`tallas[${index}]`, tallaId);
-//     });
-    
-//     // Solo agregar la imagen si se seleccionó una nueva
-//     if (editData.value.imagen_url instanceof File) {
-      
-//       formData.append('imagen_url', editData.value.imagen_url);
-//     }
-
-      
-
-//     const response = await ProductoFinal.updateCategory(editData.value.id, formData);
-    
-//     if (response && response.data) {
-//       show_alerta('Producto actualizado correctamente', 'success');
-//       await fetchAllData();
-      
-//       const modalElement = document.getElementById('editProductModal');
-//       const modalInstance = bootstrap.Modal.getInstance(modalElement);
-//       if (modalInstance) {
-//         modalInstance.hide();
-//       }
-//     }
-//   } catch (error) {
-//     console.error("Error al actualizar el producto:", error);
-//     show_alerta(error.response?.data?.message || 'Error al actualizar el producto', 'error');
-//   }
-// };
 
 const updateProduct = async () => {
   if (!validateEditForm()) return;
@@ -606,6 +600,9 @@ const updateProduct = async () => {
     
     if (editData.value.precio_base) {
       formData.append('precio_base', String(editData.value.precio_base));
+    }
+    if (editData.value.peso_kg) {
+      formData.append('peso_kg', String(editData.value.peso_kg));
     }
     
     if (editData.value.color_id) {
@@ -643,6 +640,7 @@ const updateProduct = async () => {
         producto_id: '',
         imagen_url: null,
         precio_base: '',
+        peso_kg: '',
         color_id: '',
         tallas: [],
         imagePreview: null

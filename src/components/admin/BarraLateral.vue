@@ -14,7 +14,8 @@ const router = useRouter();
 const isExpanded = ref(true);
 const isDropdownOpen = ref({ 
   products: false,
-  settings: false    // 👈 Añadido
+  settings: false ,   
+  pedidos: false ,   
 });
 
 
@@ -37,7 +38,7 @@ const toggleDropdown = (menu) => {
         <span class="material-icons px-3 text-secondary">{{ isExpanded ? 'menu_open' : 'menu' }}</span>
       </button>
     </div>
-    
+
     <nav class="mt-4 flex-grow-1">
       <ul class="nav flex-column list-unstyled">
         <li class="nav-item">
@@ -46,20 +47,36 @@ const toggleDropdown = (menu) => {
             <span v-show="isExpanded">Dashboard</span>
           </RouterLink>
         </li>
-        <li class="nav-item">
-          <RouterLink to="/admin/reportes" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
-            <span class="material-icons me-3">summarize</span>
-            <span v-show="isExpanded">Reportes</span>
-          </RouterLink>
-        </li>
+
         <li class="nav-item">
           <div class="nav-link d-flex align-items-center px-4 py-2 text-dark" @click="toggleDropdown('products')">
             <span class="material-icons me-3">shopping_bag</span>
-            <span v-show="isExpanded">Productos</span>
+            <span v-show="isExpanded">Producto</span>
             <span class="material-icons ms-auto" :class="{ 'icon-fixed': isExpanded }" v-if="isDropdownOpen.products">expand_less</span>
             <span class="material-icons ms-auto" :class="{ 'icon-fixed': isExpanded }" v-else>expand_more</span>
           </div>
           <ul v-if="isDropdownOpen.products" class="list-unstyled ps-4">
+            <li class="nav-item">
+              <RouterLink to="/admin/categorias" class="nav-link d-flex align-items-center text-dark">
+                <span class="material-icons me-3">category</span>
+                <span v-show="isExpanded">Categorías</span>
+              </RouterLink>
+            </li>
+
+            <li class="nav-item">
+              <RouterLink to="/admin/colores" class="nav-link d-flex align-items-center text-dark">
+                <span class="material-icons me-3">palette</span>
+                <span v-show="isExpanded">Colores</span>
+              </RouterLink>
+            </li>
+
+            <li class="nav-item">
+              <RouterLink to="/admin/tallas" class="nav-link d-flex align-items-center text-dark">
+                <span class="material-icons me-3">checkroom</span>
+                <span v-show="isExpanded">Tallas</span>
+              </RouterLink>
+            </li>
+
             <li class="nav-item">
               <RouterLink to="/admin/productobase" class="nav-link d-flex align-items-center py-2 text-dark">
                 <span class="material-icons me-2">layers</span>
@@ -75,9 +92,31 @@ const toggleDropdown = (menu) => {
           </ul>
         </li>
         <li class="nav-item">
-          <RouterLink to="/admin/pedidosadmin" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
-            <span class="material-icons me-3">receipt_long</span>
+          <div class="nav-link d-flex align-items-center px-4 py-2 text-dark" @click="toggleDropdown('pedidos')">
+            <span class="material-icons me-3">assignment</span>
             <span v-show="isExpanded">Pedidos</span>
+            <span class="material-icons ms-auto" :class="{ 'icon-fixed': isExpanded }" v-if="isDropdownOpen.settings">expand_less</span>
+            <span class="material-icons ms-auto" :class="{ 'icon-fixed': isExpanded }" v-else>expand_more</span>
+          </div>
+          <ul v-if="isDropdownOpen.pedidos" class="list-unstyled ps-4">
+            <li class="nav-item">
+              <RouterLink to="/admin/pedidosadmin" class="nav-link d-flex align-items-center text-dark">
+                <span class="material-icons me-3">receipt_long</span>
+                <span v-show="isExpanded">Ordenes</span>
+              </RouterLink>
+            </li>
+            <li class="nav-item">
+              <RouterLink to="/admin/envios" class="nav-link d-flex align-items-center text-dark">
+                <span class="material-icons me-3">local_shipping</span>
+                <span v-show="isExpanded">Envios</span>
+              </RouterLink>
+            </li>
+          </ul>
+        </li>
+        <li class="nav-item">
+          <RouterLink to="/admin/usuarios" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
+            <span class="material-icons me-3">person</span>
+            <span v-show="isExpanded">Usuarios</span>
           </RouterLink>
         </li>
         <li class="nav-item">
@@ -86,66 +125,47 @@ const toggleDropdown = (menu) => {
             <span v-show="isExpanded">Descuentos</span>
           </RouterLink>
         </li>
-        <li class="nav-item">
-          <RouterLink to="/admin/categorias" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
-            <span class="material-icons me-3">category</span>
-            <span v-show="isExpanded">Categorías</span>
-          </RouterLink>
-        </li>
-        <li class="nav-item">
-          <RouterLink to="/admin/tallas" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
-            <span class="material-icons me-3">checkroom</span>
-            <span v-show="isExpanded">Tallas</span>
-          </RouterLink>
-        
-        </li>
-        
-        <li class="nav-item">
-          <RouterLink to="/admin/colores" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
-            <span class="material-icons me-3">palette</span>
-            <span v-show="isExpanded">Colores</span>
-          </RouterLink>
-        </li>
-        <li class="nav-item">
-          <RouterLink to="/admin/usuarios" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
-            <span class="material-icons me-3">person</span>
-            <span v-show="isExpanded">Usuarios</span>
-          </RouterLink>
-        </li>
-             <li class="nav-item">
-              <div class="nav-link d-flex align-items-center px-4 py-2 text-dark" @click="toggleDropdown('settings')">
-                <span class="material-icons me-3">settings</span>
-                <span v-show="isExpanded">Ajustes</span>
-                <span class="material-icons ms-auto" :class="{ 'icon-fixed': isExpanded }" v-if="isDropdownOpen.settings">expand_less</span>
-                <span class="material-icons ms-auto" :class="{ 'icon-fixed': isExpanded }" v-else>expand_more</span>
-              </div>
-              <ul v-if="isDropdownOpen.settings" class="list-unstyled ps-4">
-                <li class="nav-item">
-                  <RouterLink to="/admin/empresa" class="nav-link d-flex align-items-center py-2 text-dark">
-                    <span class="material-icons me-2">business</span>
-                    Datos de la Empresa
-                  </RouterLink>
-                </li>
-                <li class="nav-item">
-                  <RouterLink to="/admin/carrusel" class="nav-link d-flex align-items-center py-2 text-dark">
-                    <span class="material-icons me-2">photo_library</span>
-                    Imagenes del Carrusel
-                  </RouterLink>
-                </li>
-                <li class="nav-item">
-                <RouterLink to="/admin/ConfiguracionEnvio" class="nav-link d-flex align-items-center  py-2 text-dark">
-                  <span class="material-icons align-middle me-2">local_shipping</span>
-                  <span v-show="isExpanded"> Preció de Envió</span>
-                </RouterLink>
-              
-              </li>
-              </ul>
-            </li>
 
+        <li class="nav-item">
+          <RouterLink to="/admin/reportes" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
+            <span class="material-icons me-3">summarize</span>
+            <span v-show="isExpanded">Informes</span>
+          </RouterLink>
+        </li>
+        <li class="nav-item">
+          <div class="nav-link d-flex align-items-center px-4 py-2 text-dark" @click="toggleDropdown('settings')">
+            <span class="material-icons me-3">settings</span>
+            <span v-show="isExpanded">Ajustes</span>
+            <span class="material-icons ms-auto" :class="{ 'icon-fixed': isExpanded }" v-if="isDropdownOpen.settings">expand_less</span>
+            <span class="material-icons ms-auto" :class="{ 'icon-fixed': isExpanded }" v-else>expand_more</span>
+          </div>
+          <ul v-if="isDropdownOpen.settings" class="list-unstyled ps-4">
+            <li class="nav-item">
+              <RouterLink to="/admin/empresa" class="nav-link d-flex align-items-center text-dark">
+                <span class="material-icons me-2">business</span>
+                Datos de la Empresa
+              </RouterLink>
+            </li>
+            <li class="nav-item">
+              <RouterLink to="/admin/carrusel" class="nav-link d-flex align-items-center text-dark">
+                <span class="material-icons me-2">photo_library</span>
+                Imagenes del Carrusel
+              </RouterLink>
+            </li>
+            <li class="nav-item">
+              <RouterLink to="/admin/ConfiguracionEnvio" class="nav-link d-flex align-items-center text-dark">
+                <span class="material-icons align-middle me-2">local_shipping</span>
+                <span v-show="isExpanded"> Preció de Envió</span>
+              </RouterLink>
+            </li>
+          </ul>
+        </li>
       </ul>
     </nav>
   </aside>
 </template>
+
+
 <style scoped>
 
 .sidebar {
