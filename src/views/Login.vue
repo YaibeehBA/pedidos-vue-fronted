@@ -88,6 +88,7 @@ const login = async () => {
   }
 };
 
+const isLoading = ref(false);
 
 </script>
 
@@ -149,9 +150,9 @@ const login = async () => {
                 </div>
 
                 <!-- Botón de iniciar sesión -->
-                <button class="btn btn-primary w-100 signin-btn" @click="login">
-                  
-                    Iniciar sesión
+                 <button type="submit" class="btn btn-primary w-100 signin-btn" :disabled="isLoading">
+                  <span v-if="isLoading">Iniciando sesión...</span>
+                  <span v-else>Iniciar sesión</span>
                 </button>
             </form>
         </div>

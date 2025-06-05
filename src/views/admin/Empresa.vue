@@ -87,7 +87,7 @@
             </div>
             
             <button 
-              class="edit-btn"
+              class="edit-btn "
               data-bs-toggle="modal" 
               data-bs-target="#companyModal"
               @click="prepareEdit"
@@ -588,7 +588,7 @@ onMounted(fetchCompanyProfile);
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background-color: #3498db;
+  background-color: #297aa0;
   color: white;
   border: none;
   border-radius: 8px;

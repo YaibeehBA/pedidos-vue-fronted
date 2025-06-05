@@ -4,7 +4,7 @@ import User from '@/apis/User'
 export const useUserStore = defineStore('user', {
   state: () => ({
     authenticated: false,
-    token: localStorage.getItem('auth') || null,
+    token: null,
     user: null,
   }),
 
@@ -12,14 +12,11 @@ export const useUserStore = defineStore('user', {
     async login(form) {
       try {
         const response = await User.login(form)
-        if (response.data && response.data.token) {
-          this.token = response.data.token
-          localStorage.setItem('auth', this.token)
-          this.authenticated = true
-          this.user = response.data.user || null
+        if (response.data?.token) {
+          this.setSession(response.data.token, response.data.user)
         }
       } catch (error) {
-        console.error('Error en login:', error)
+        if (import.meta.env.DEV) console.error('Error en login:', error)
         throw error
       }
     },
@@ -28,53 +25,34 @@ export const useUserStore = defineStore('user', {
       try {
         await User.logout()
       } catch (error) {
-        console.warn('Error en logout del servidor. Continuando con logout local.')
+        if (import.meta.env.DEV) console.warn('Error en logout del servidor.')
       } finally {
-        this.authenticated = false
-        this.token = null
-        this.user = null
-        localStorage.removeItem('auth')
+        this.resetState()
       }
     },
 
     async syncAuthentication() {
-      const token = localStorage.getItem('auth')
-      if (!token) {
-        this.authenticated = false
-        this.token = null
-        this.user = null
+      if (!this.token) {
+        this.resetState()
         return
       }
-
       try {
-        // Si tienes el método getProfile implementado:
         if (typeof User.getProfile === 'function') {
           const response = await User.getProfile()
           if (response.data) {
-            this.token = token
             this.authenticated = true
             this.user = response.data
           }
         } else {
-          // Si no tienes getProfile, mantén la sesión basada en el token
-          this.token = token
           this.authenticated = true
-          // Mantener los datos del usuario si ya existen
-          if (!this.user) {
-            this.user = {} // O establece los datos mínimos necesarios
-          }
+          if (!this.user) this.user = {}
         }
       } catch (error) {
-        // Manejo más específico del error
-        if (error.response && error.response.status === 401) {
-          // Token inválido o expirado
+        if (error.response?.status === 401) {
           this.logout()
         } else {
-          // Otros errores: mantener la sesión si ya existe
-          console.warn('Error al sincronizar la autenticación:', error)
-          if (this.token) {
-            this.authenticated = true
-          }
+          if (import.meta.env.DEV) console.warn('Error al sincronizar la autenticación:', error)
+          if (this.token) this.authenticated = true
         }
       }
     },
@@ -86,10 +64,22 @@ export const useUserStore = defineStore('user', {
         this.authenticated = true
         this.syncAuthentication()
       } else {
-        this.authenticated = false
-        this.token = null
-        this.user = null
+        this.resetState()
       }
+    },
+
+    setSession(token, user) {
+      this.token = token
+      this.authenticated = true
+      this.user = user || null
+      localStorage.setItem('auth', token)
+    },
+
+    resetState() {
+      this.authenticated = false
+      this.token = null
+      this.user = null
+      localStorage.removeItem('auth')
     },
   },
 

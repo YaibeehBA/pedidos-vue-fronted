@@ -16,6 +16,7 @@ const isDropdownOpen = ref({
   products: false,
   settings: false ,   
   pedidos: false ,   
+  informes: false ,   
 });
 
 
@@ -126,11 +127,35 @@ const toggleDropdown = (menu) => {
           </RouterLink>
         </li>
 
-        <li class="nav-item">
-          <RouterLink to="/admin/reportes" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
-            <span class="material-icons me-3">summarize</span>
+        
+         <li class="nav-item">
+          <div class="nav-link d-flex align-items-center px-4 py-2 text-dark" @click="toggleDropdown('informes')">
+            <span class="material-icons me-3">bar_chart</span>
             <span v-show="isExpanded">Informes</span>
-          </RouterLink>
+            <span class="material-icons ms-auto" :class="{ 'icon-fixed': isExpanded }" v-if="isDropdownOpen.settings">expand_less</span>
+            <span class="material-icons ms-auto" :class="{ 'icon-fixed': isExpanded }" v-else>expand_more</span>
+          </div>
+          <ul v-if="isDropdownOpen.informes" class="list-unstyled ps-4">
+            <li class="nav-item">
+              <RouterLink to="/admin/reporteingresos" class="nav-link d-flex align-items-center text-dark">
+                <span class="material-icons me-3">trending_up</span>
+                <span v-show="isExpanded">Ganancias</span>
+              </RouterLink>
+            </li>
+            <li class="nav-item">
+              <RouterLink to="/admin/reporteordenes" class="nav-link d-flex align-items-center text-dark">
+                <span class="material-icons me-3 ">local_library</span>
+     
+                <span v-show="isExpanded">Pedidos</span>
+              </RouterLink>
+            </li>
+            <li class="nav-item">
+              <RouterLink to="/admin/reporteusuarios" class="nav-link d-flex align-items-center text-dark">
+                <span class="material-icons me-3">account_box</span>
+                <span v-show="isExpanded">Usuarios</span>
+              </RouterLink>
+            </li>
+          </ul>
         </li>
         <li class="nav-item">
           <div class="nav-link d-flex align-items-center px-4 py-2 text-dark" @click="toggleDropdown('settings')">
@@ -167,6 +192,8 @@ const toggleDropdown = (menu) => {
 
 
 <style scoped>
+
+
 
 .sidebar {
   width: 250px; /* Ancho del sidebar */

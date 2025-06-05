@@ -10,13 +10,16 @@ import Colores from '@/views/admin/Colores.vue';
 import ProductoBase from '@/views/admin/ProductoBase.vue';
 import ProductoFinal from '@/views/admin/ProductoFinal.vue';
 import { useUserStore } from '@/stores/authstore';
-import Reportes from '@/views/admin/Reportes.vue';
 import Pedidos from '../views/Pedidos.vue';
 import PedidosAdmin from '@/views/admin/PedidosAdmin.vue';
 import Carrusel from '@/views/admin/Carrusel.vue';
 import Empresa from '@/views/admin/Empresa.vue';
 import ConfiguracionEnvio from '@/views/admin/ConfiguracionEnvio.vue';
 import EnviosAdmin from '@/views/admin/EnviosAdmin.vue';
+
+import ReporteIngresos from '@/views/admin/Reportes/ReporteIngresos.vue';
+import ReporteOrdenes from '@/views/admin/Reportes/ReporteOrdenes.vue';
+import ReporteUsuarios from '@/views/admin/Reportes/ReporteUsuarios.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -134,9 +137,19 @@ const router = createRouter({
           component: Usuarios,
         },
         {
-          path: 'reportes',
-          name: 'reportes',
-          component: Reportes,
+          path: 'reporteingresos',
+          name: 'reporteingresos',
+          component: ReporteIngresos,
+        },
+        {
+          path: 'reporteordenes',
+          name: 'reporteordenes',
+          component: ReporteOrdenes,
+        },
+        {
+          path: 'reporteusuarios',
+          name: 'reporteusuarios',
+          component: ReporteUsuarios,
         },
         {
           path: 'carrusel',

@@ -23,6 +23,8 @@ const isAdminRoute = () => route.path.startsWith('/admin')
 html, body {
   height: 100%;
   margin: 0;
+  background-color: white !important;
+  color: black !important;
 }
 
 .app-container {
