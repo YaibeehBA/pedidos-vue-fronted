@@ -120,6 +120,7 @@ const toggleDropdown = (menu) => {
             <span v-show="isExpanded">Usuarios</span>
           </RouterLink>
         </li>
+        
         <li class="nav-item">
           <RouterLink to="/admin/descuentos" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
             <span class="material-icons me-3">savings</span>
@@ -185,6 +186,13 @@ const toggleDropdown = (menu) => {
             </li>
           </ul>
         </li>
+        <li class="nav-item">
+          <RouterLink to="/admin/consultas" class="nav-link d-flex align-items-center px-4 py-2 text-dark">
+            <span class="material-icons me-3">question_answer</span>
+            <span v-show="isExpanded">Consultas</span>
+          </RouterLink>
+        </li>
+
       </ul>
     </nav>
   </aside>
@@ -196,19 +204,19 @@ const toggleDropdown = (menu) => {
 
 
 .sidebar {
-  width: 250px; /* Ancho del sidebar */
-  min-height: 100vh; /* Ocupa toda la altura de la pantalla */
+  width: 250px; 
+  min-height: 100vh; 
   transition: width 0.3s;
 }
 
 .sidebar.collapsed {
-  width: 80px; /* Ancho del sidebar colapsado */
+  width: 80px; 
 }
 
 /* Estilo para fijar el ancho del ícono de expansión */
 .icon-fixed {
-  width: 24px; /* Ancho fijo para el ícono */
-  text-align: center; /* Centrar el ícono */
+  width: 24px; 
+  text-align: center; 
 }
 
 .nav-link {
@@ -236,7 +244,7 @@ ul.list-unstyled li a {
 
 ul.list-unstyled li span.material-icons {
   font-size: 1rem;
-  color: #0a131b; /* Color gris estándar */
+  color: #0a131b; 
 }
 
 

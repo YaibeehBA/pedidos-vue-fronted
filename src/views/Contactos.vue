@@ -66,36 +66,67 @@
         <div class="form-card">
           <h2><span class="material-icons">send</span> Envíanos un mensaje</h2>
           
-          <form @submit.prevent="sendMessage">
-            <div class="form-group">
-              <span class="material-icons form-icon">person</span>
-              <input type="text" v-model="form.name" required>
-              <label>Nombre completo</label>
-            </div>
-            
-            <div class="form-group">
-              <span class="material-icons form-icon">alternate_email</span>
-              <input type="email" v-model="form.email" required>
-              <label>Correo electrónico</label>
-            </div>
-            
-            <div class="form-group">
-              <span class="material-icons form-icon">phone</span>
-              <input type="tel" v-model="form.phone">
-              <label>Teléfono (opcional)</label>
-            </div>
-            
-            <div class="form-group">
-              <span class="material-icons form-icon">notes</span>
-              <textarea v-model="form.message" required></textarea>
-              <label>Tu mensaje</label>
-            </div>
-            
-            <button type="submit" class="submit-btn">
-              <span class="material-icons">arrow_forward</span>
-              Enviar mensaje
-            </button>
-          </form>
+           <form @submit.prevent="validateAndSend">
+    <div class="form-group">
+      <span class="material-icons form-icon">person</span>
+      <input 
+        type="text" 
+        v-model="form.nombre_completo" 
+        @input="validateName"
+        :class="{ 'invalid': errors.nombre_completo }"
+        required
+      >
+      <label>Nombre completo</label>
+      <span class="error-message" v-if="errors.nombre_completo">{{ errors.nombre_completo }}</span>
+    </div>
+    
+    <div class="form-group">
+      <span class="material-icons form-icon">alternate_email</span>
+      <input 
+        type="email" 
+        v-model="form.correo_electronico" 
+        @input="validateEmail"
+        :class="{ 'invalid': errors.correo_electronico }"
+        required
+      >
+      <label>Correo electrónico</label>
+      <span class="error-message" v-if="errors.correo_electronico">{{ errors.correo_electronico }}</span>
+    </div>
+    
+    <div class="form-group">
+      <span class="material-icons form-icon">phone</span>
+      <input 
+        type="tel" 
+        v-model="form.telefono" 
+        @input="validatePhone"
+        :class="{ 'invalid': errors.telefono }"
+        required
+        maxlength="10"
+      >
+      <label>Teléfono / Celular</label>
+      <span class="error-message" v-if="errors.telefono">{{ errors.telefono }}</span>
+    </div>
+    
+    <div class="form-group">
+      <span class="material-icons form-icon">notes</span>
+      <textarea 
+        v-model="form.mensaje" 
+        @input="validateMessage"
+        :class="{ 'invalid': errors.mensaje }"
+        required
+      ></textarea>
+      <label>Tu mensaje</label>
+      <span class="error-message" v-if="errors.mensaje">{{ errors.mensaje }}</span>
+    </div>
+    
+    <button type="submit" class="submit-btn" :disabled="loading">
+      <span v-if="!loading" class="material-icons">arrow_forward</span>
+      <span v-else class="material-icons rotating">autorenew</span>
+      {{ loading ? 'Enviando...' : 'Enviar mensaje' }}
+    </button>
+  </form>
+  
+
         </div>
       </div>
     </div>
@@ -121,12 +152,101 @@ import { show_alerta } from '@/apis/Api.js';
 import Empresa from '@/apis/Empresa.js';
 
 const empresa = ref({});
+const loading = ref(false);
+const formValid = ref(false);
+
 const form = reactive({
-  name: '',
-  email: '',
-  phone: '',
-  message: ''
+  nombre_completo: '',
+  correo_electronico: '',
+  telefono: '',
+  mensaje: ''
 });
+
+const errors = reactive({
+  nombre_completo: '',
+  correo_electronico: '',
+  telefono: '',
+  mensaje: ''
+});
+
+// Validaciones
+const validateName = () => {
+  if (!form.nombre_completo.trim()) {
+    errors.nombre_completo = 'El nombre es obligatorio';
+    return false;
+  }
+  if (form.nombre_completo.length < 3) {
+    errors.nombre_completo = 'Mínimo 3 caracteres';
+    return false;
+  }
+  errors.nombre_completo = '';
+  return true;
+};
+
+const validateEmail = () => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!form.correo_electronico.trim()) {
+    errors.correo_electronico = 'El correo es obligatorio';
+    return false;
+  }
+  if (!emailRegex.test(form.correo_electronico)) {
+    errors.correo_electronico = 'Correo electrónico inválido';
+    return false;
+  }
+  errors.correo_electronico = '';
+  return true;
+};
+
+const validatePhone = () => {
+  // Solo permite números
+  form.telefono = form.telefono.replace(/\D/g, '');
+  
+  if (!form.telefono.trim()) {
+    errors.telefono = 'El teléfono es obligatorio';
+    return false;
+  }
+  if (form.telefono.length < 7) {
+    errors.telefono = 'Mínimo 7 dígitos';
+    return false;
+  }
+  if (form.telefono.length > 15) {
+    errors.telefono = 'Máximo 15 dígitos';
+    return false;
+  }
+  errors.telefono = '';
+  return true;
+};
+
+const validateMessage = () => {
+  if (!form.mensaje.trim()) {
+    errors.mensaje = 'El mensaje es obligatorio';
+    return false;
+  }
+  if (form.mensaje.length < 10) {
+    errors.mensaje = 'Mínimo 10 caracteres';
+    return false;
+  }
+  errors.mensaje = '';
+  return true;
+};
+
+const validateForm = () => {
+  const isNameValid = validateName();
+  const isEmailValid = validateEmail();
+  const isPhoneValid = validatePhone();
+  const isMessageValid = validateMessage();
+  
+  return isNameValid && isEmailValid && isPhoneValid && isMessageValid;
+};
+
+const validateAndSend = async () => {
+  if (!validateForm()) {
+    show_alerta('Por favor complete todos los campos correctamente', 'error');
+    return;
+  }
+  
+  await sendMessage();
+};
 
 const fetchEmpresaData = async () => {
   try {
@@ -141,22 +261,44 @@ const fetchEmpresaData = async () => {
 };
 
 const sendMessage = async () => {
+  if (loading.value) return;
+  
+  loading.value = true;
+  
   try {
-    // Lógica para enviar mensaje
+    const response = await fetch('http://localhost:8000/api/consultas', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(form)
+    });
+
+    if (!response.ok) {
+      throw new Error('Error en la respuesta del servidor');
+    }
+
+    const data = await response.json();
+    
     show_alerta('Mensaje enviado con éxito', 'success');
-    form.name = '';
-    form.email = '';
-    form.phone = '';
-    form.message = '';
+    
+    // Resetear formulario
+    form.nombre_completo = '';
+    form.correo_electronico = '';
+    form.telefono = '';
+    form.mensaje = '';
+    
   } catch (error) {
     console.error('Error al enviar:', error);
-    show_alerta('Error al enviar mensaje', 'error');
+    show_alerta('Error al enviar mensaje. Por favor intente nuevamente.', 'error');
+  } finally {
+    loading.value = false;
   }
 };
 
 onMounted(fetchEmpresaData);
 </script>
-
 <style scoped>
 /* Estilos base */
 .contact-container {

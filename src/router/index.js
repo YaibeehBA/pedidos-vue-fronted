@@ -16,7 +16,7 @@ import Carrusel from '@/views/admin/Carrusel.vue';
 import Empresa from '@/views/admin/Empresa.vue';
 import ConfiguracionEnvio from '@/views/admin/ConfiguracionEnvio.vue';
 import EnviosAdmin from '@/views/admin/EnviosAdmin.vue';
-
+import Consultas from '@/views/admin/Consultas.vue';
 import ReporteIngresos from '@/views/admin/Reportes/ReporteIngresos.vue';
 import ReporteOrdenes from '@/views/admin/Reportes/ReporteOrdenes.vue';
 import ReporteUsuarios from '@/views/admin/Reportes/ReporteUsuarios.vue';
@@ -135,6 +135,11 @@ const router = createRouter({
           path: 'usuarios',
           name: 'usuarios',
           component: Usuarios,
+        },
+        {
+          path: 'consultas',
+          name: 'consultas',
+          component: Consultas,
         },
         {
           path: 'reporteingresos',

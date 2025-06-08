@@ -258,6 +258,15 @@ const areInputsDisabled = computed(() => {
   // Deshabilitar inputs si el estado es "Entregado" o "Entregando"
   return isEntregado || isEntregando;
 });
+
+const totalSubtotales = computed(() => {
+  if (!selectedOrder.value?.detalles_con_tallas_y_colores) return 0;
+  
+  return selectedOrder.value.detalles_con_tallas_y_colores.reduce(
+    (total, item) => total + parseFloat(item.subtotal), 0
+  ).toFixed(2);
+});
+
 </script>
 
 <template>
@@ -357,14 +366,14 @@ const areInputsDisabled = computed(() => {
                       <div class="order-summary mb-4">
                           <h5>Información General</h5>
                           <div class="info-grid">
-                              <p><strong>Cliente:</strong> {{ getUserName(selectedOrder?.usuario_id) }}</p>
-                              <p><strong>Monto Total:</strong> ${{ selectedOrder?.monto_total }}</p>
-                              <p><strong>Fecha de Entrega:</strong> {{ formatDate(selectedOrder?.fecha_entrega) }}</p>
-                              <!-- <p><strong>Fecha de Creación:</strong> {{ formatDate(selectedOrder?.created_at) }}</p> -->
-                              <p><strong>Fecha de Creación:</strong> {{ formatDate(new Date(selectedOrder?.created_at).setDate(new Date(selectedOrder?.created_at).getDate() - 1)) }}</p>
-
-                              
-                          </div>
+                            <p><strong>Cliente:</strong> {{ getUserName(selectedOrder?.usuario_id) }}</p>
+                            <div class="total-with-shipping">
+                                <p><strong>Monto Total:</strong> ${{ selectedOrder?.monto_total }}</p>
+                                <p class="shipping-note text-muted small">Precio final con envío</p>
+                            </div>
+                            <p><strong>Fecha de Entrega:</strong> {{ formatDate(selectedOrder?.fecha_entrega) }}</p>
+                            <p><strong>Fecha de Creación:</strong> {{ formatDate(new Date(selectedOrder?.created_at).setDate(new Date(selectedOrder?.created_at).getDate() - 1)) }}</p>
+                        </div>
                       </div>
 
                       <!-- Order Items -->
@@ -379,6 +388,8 @@ const areInputsDisabled = computed(() => {
                                           <th>Talla</th>
                                           <th>Cantidad</th>
                                           <th>Precio Unit.</th>
+                                          <th>Desc.</th>
+                                          <th>P Final.</th>
                                           <th>Subtotal</th>
                                       </tr>
                                   </thead>
@@ -390,8 +401,14 @@ const areInputsDisabled = computed(() => {
                                           <td>{{ getColorName(detalle.detalle_producto.color) }}</td>
                                           <td>{{ getTallaName(detalle.talla_id, detalle.detalle_producto) }}</td>
                                           <td>{{ detalle.cantidad }}</td>
+                                          <td>${{ detalle.precio_base }}</td>
+                                          <td>${{ detalle.descuento_unitario }}</td>
                                           <td>${{ detalle.precio_unitario }}</td>
                                           <td>${{ detalle.subtotal }}</td>
+                                      </tr>
+                                       <tr class="total-row">
+                                          <td colspan="7" class="text-end fw-bold">Total Productos:</td>
+                                          <td class="fw-bold">${{ totalSubtotales }}</td>
                                       </tr>
                                   </tbody>
                               </table>
@@ -455,6 +472,24 @@ const areInputsDisabled = computed(() => {
 
 
 <style scoped>
+
+.total-row {
+    background-color: #f8f9fa;
+    border-top: 2px solid #dee2e6;
+}
+
+.total-row td {
+    padding-top: 12px;
+    padding-bottom: 12px;
+}
+
+.shipping-note {
+    color: #555555;
+    font-size: 0.9em;
+    margin: -0.8em 0 1em 0; /* Ajusta según necesidad */
+    padding-left: 0.5em; /* Para alinear con el grid */
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
