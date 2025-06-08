@@ -10,39 +10,26 @@ const userStore = useUserStore(); // Accede al store de usuario
 const cartStore = useCartStore();
 const router = useRouter();
 
-
- const logout = async () => {
+const logout = async () => {
   try {
-    // Realizamos la petición al backend para cerrar sesión
-    const response = await User.logout();
-
-    // Verificamos la respuesta
-    if (response.data) {
-      // Eliminamos el token de la sesión
-      cartStore.clearCart();
-       localStorage.removeItem('auth');
-      
-      // // Actualizamos el estado de autenticación en el store de Pinia
-      userStore.authenticated = false;
-      userStore.token = null;
-      userStore.user = null;
-      cartStore.clearCart(); 
-      // Redirigimos al usuario al Login
-      router.push({ name: 'home' });
-
-      // Mostramos el mensaje de éxito
-      show_alerta('Cierre de sesión con éxito', 'success', '');
+   
+    const [response] = await Promise.all([
+      User.logout(),
+      cartStore.clearCart() // Limpiar carrito inmediatamente
+    ]);
+    if (response?.data) {
+      userStore.resetState();
+      router.push({ name: 'home' }).then(() => {
+        show_alerta('Cierre de sesión exitoso', 'success');
+      });
     }
   } catch (error) {
-    // En caso de error mostramos una alerta
-    show_alerta('Error al cerrar sesión', 'error', '');
-    console.error('Error:', error);
+    console.error('Error en logout:', error);
+    show_alerta('Error al cerrar sesión', 'error');
+    userStore.resetState();
+    cartStore.clearCart();
   }
-
 };
-
-
-
 import NotificationComponent from '@/components/layout/Noiticacion/Notificacion.vue';
 import { ref, onMounted } from 'vue';
 import Empresa from '@/apis/Empresa.js';

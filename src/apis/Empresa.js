@@ -1,5 +1,6 @@
 import Api from '@/apis/Api';
-import { getAuthHeaders } from '@/apis/utils';
+import { getAuthHeaders } from '@/apis/Utils';    
+
 
 const Empresa = {
   async fetchEmpresa() {

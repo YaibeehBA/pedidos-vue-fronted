@@ -5,12 +5,14 @@ export const useOrderStore = defineStore('order', () => {
   // Estado principal del pedido
   const pedido = ref({
     cliente: {
+      id: null, 
       nombre: '',
       email: '',
       telefono: '',
       direccion: {
         pais: '',
         ciudad: '',
+        ciudad_id: null, 
         precioFijoCiudad: 0,
         direccionCompleta: '',
         codigoPostal: '',
@@ -171,6 +173,9 @@ export const useOrderStore = defineStore('order', () => {
     if (direccion.ciudad) {
     pedido.value.envio.ciudad = direccion.ciudad;
   }
+  if (direccion.ciudad_id) {
+      pedido.value.cliente.direccion.ciudad_id = direccion.ciudad_id;
+    }
   }
 
   const actualizarFechaEntrega = (fecha) => {
@@ -233,15 +238,31 @@ const actualizarTotales = () => {
     pedido.value.cuposActuales = { ...cupos }
   }
 
+const prepararDatosParaEnvio = () => {
+  return {
+    usuario_id: pedido.value.cliente.id,
+    productos: pedido.value.productos.map(producto => ({
+      detalles_productos_id: producto.id,
+      cantidad: producto.cantidad,
+      talla_id: producto.talla_id 
+    })),
+    tipo_envio: pedido.value.envio.tipo,
+    ciudad_envio_id: pedido.value.cliente.direccion.ciudad_id,
+    direccion: pedido.value.cliente.direccion.direccionCompleta,
+    referencia: pedido.value.cliente.direccion.referencia
+  }
+}
   const limpiarPedido = () => {
     pedido.value = {
       cliente: {
+        id: null,
         nombre: '',
         email: '',
         telefono: '',
         direccion: {
           pais: '',
           ciudad: '',
+          ciudad_id: null,
           direccionCompleta: '',
           codigoPostal: '',
           referencia: ''
@@ -284,7 +305,8 @@ const actualizarTotales = () => {
     actualizarTotales,
     actualizarPrecioPorKg,
     limpiarPedido,
-    inicializarDesdeCarrito
+    inicializarDesdeCarrito,
+    prepararDatosParaEnvio
   }
 },
 {

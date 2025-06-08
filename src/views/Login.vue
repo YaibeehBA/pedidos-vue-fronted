@@ -53,40 +53,49 @@ const validateForm = () => {
 
 
 const login = async () => {
+  if (!validateForm()) return;
+
   try {
-    if (!validateForm()) {
-      return;
+    const { data } = await User.login(form);
+    if (!data?.token) {
+      throw new Error('No se recibió token');
     }
-
-    const response = await User.login(form);
-
-    if (response.data && response.data.token) {
-      // Guardar token e información del usuario
-      localStorage.setItem('auth', response.data.token);
-      userStore.authenticated = true;
-      userStore.token = response.data.token;
-      userStore.user = response.data.user;
-
-      // Actualizar autenticación global si es necesario
-      userStore.syncAuthentication();
-      const esAdmin = Boolean(response.data.user.esadmin);
-      // Redirigir según el contexto
-      if (esAdmin) {
-        router.replace({ name: 'Dashboard' });
-      } else if (route.query.returnTo === 'PedidoOrden') {
-        router.replace({
-          name: 'PedidoOrden',
-          query: route.query
-        });
-      } else {
-        router.replace({ name: 'home' });
-      }
-    }
+    await handleSuccessfulLogin(data);
   } catch (error) {
-    console.error('Error durante el login:', error);
-    show_alerta('Usuario o contraseña incorrecta', 'error', '');
+    handleLoginError(error);
   }
 };
+
+
+const handleSuccessfulLogin = async (data) => {
+  userStore.setSession(data.token, data.user);
+  const redirectTo = determineRedirectPath(data.user);
+  await router.replace(redirectTo);
+  setTimeout(() => userStore.syncAuthentication(), 0);
+};
+
+const determineRedirectPath = (user) => {
+  if (user?.esadmin) {
+    return { name: 'Dashboard' };
+  }
+  if (route.query.returnTo === 'PedidoOrden') {
+    return { 
+      name: 'PedidoOrden',
+      query: { ...route.query } // Copia segura
+    };
+  }
+  return { name: 'home' };
+};
+
+const handleLoginError = (error) => {
+  console.error('Login error:', error);
+  
+  const message = error.response?.status === 401 
+    ? 'Usuario o contraseña incorrecta' 
+    : 'Error en el servidor. Intente más tarde';
+  show_alerta(message, 'error');
+};
+
 
 const isLoading = ref(false);
 

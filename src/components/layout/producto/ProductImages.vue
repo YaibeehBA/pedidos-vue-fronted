@@ -122,13 +122,13 @@
         >
           Añadir al carrito
         </button>
-        <button 
+        <!-- <button 
           class="btn btn-outline-primary w-100"
           :disabled="!tallaSeleccionada"
           @click="realizarPedido"
         >
-          Realizar Pedido
-        </button>
+          Ver mi carrito
+        </button> -->
       </div>
     </div>
   </div>
@@ -145,6 +145,7 @@ import { useUserStore } from '@/stores/authstore';
 import { IMAGE_BASE_URL } from "@/apis/Api";
 import { PublicApi } from "@/apis/Api";
 import { useCartStore } from '@/stores/cartStore';
+
 
 const route = useRoute();
 const router = useRouter();
@@ -304,19 +305,29 @@ const Toast = Swal.mixin({
 });
 
 const añadirAlCarrito = () => {
-  if (!userStore.authenticated) {
-    alert('Por favor inicie sesión para añadir productos al carrito');
-    router.push('/login'); // O la ruta que uses para el login
-    return;
-  }
+            if (!userStore.authenticated) {
+                Swal.fire({
+                icon: 'info',
+                title: 'Acción requerida',
+                text: 'Por favor inicia sesión para añadir productos al carrito',
+                confirmButtonText: 'Ir a Login',
+                showCancelButton: true,
+                cancelButtonText: 'Cancelar'
+              }).then((result) => {
+                if (result.isConfirmed) {
+                  router.push('/login'); // Redirige al login si confirma
+                }
+              });
+              return;
+            }
 
-  if (!tallaSeleccionada.value) {
-  Toast.fire({
-    icon: "warning",
-    title: "Por favor seleccione una talla"
-  });
-  return;
-}
+            if (!tallaSeleccionada.value) {
+            Toast.fire({
+              icon: "warning",
+              title: "Por favor seleccione una talla"
+            });
+            return;
+          }
 
   // Encontrar el ID de la talla seleccionada
   const tallaId = varianteSeleccionada.value.tallas.find(
@@ -437,13 +448,17 @@ const añadirAlCarrito = () => {
 // };
 
 const realizarPedido = () => {
-  // Verificar autenticación
-  if (!userStore.authenticated) {
-    alert('Por favor inicie sesión para realizar un pedido');
-    router.push('/login');
+  // Verificación directa del estado actual (no async)
+  if (!userStore.authenticated || !userStore.user) {
+    router.push('/login');  // Redirige al login directamente
+    
+    Swal.fire({
+      icon: 'warning',
+      title: 'Sesión requerida',
+      text: 'Debes iniciar sesión para acceder al carrito',
+    });
     return;
   }
-
   // Verificar que se haya seleccionado una talla
   if (!tallaSeleccionada.value) {
     alert('Por favor seleccione una talla');

@@ -186,9 +186,9 @@ import { useCartStore } from '@/stores/cartStore'
 import { useUserStore } from '@/stores/authstore'
 import { useOrderStore } from '@/stores/orderStore'
 import { IMAGE_BASE_URL } from "@/apis/Api"
+import Empresa from '@/apis/Empresa.js';
 import { PublicApi } from "@/apis/Api";
 import Swal from "sweetalert2"; 
-
 import axios from 'axios'
 
 const router = useRouter()
@@ -201,6 +201,29 @@ const descuentosActivos = ref([])
 const userStore = useUserStore();
 const orderStore = useOrderStore()
 
+
+const empresa = ref(null);
+
+const fetchEmpresaData = async () => {
+  try {
+    const response = await Empresa.fetchEmpresaPublica();
+    if (response?.data?.length > 0) {
+      empresa.value = response.data[0];
+    } else if (response?.length > 0) {
+      empresa.value = response[0];
+    }
+    
+    if (!empresa.value.direccion) empresa.value.direccion = 'Dirección no especificada';
+    if (!empresa.value.referencia) empresa.value.referencia = 'Referencia no especificada';
+    
+  } catch (error) {
+    console.error('Error al cargar datos:', error);
+    empresa.value = {
+      direccion: 'Dirección no especificada',
+      referencia: 'Referencia no especificada'
+    };
+  }
+};
 // Formatea la fecha, por ejemplo:
 const formattedDate = (dateString) => {
   const date = new Date(dateString);
@@ -247,6 +270,7 @@ const cuposActuales = ref({
 
 onMounted(async () => {
     await Promise.all([
+        fetchEmpresaData(), 
         fetchProductosData(),
         fetchDescuentos()
     ])
@@ -542,6 +566,13 @@ const procederAlPago = () => {
     return
   }
 
+ // Actualizar dirección si es retiro en tienda
+  if (tipoEnvio.value === 'Retiro tienda Física') {
+    orderStore.actualizarDireccion({
+      direccionCompleta: empresa.value.direccion || '',
+      referencia: empresa.value.referencia || ''
+    })
+  }
 
 const pedidoData = {
     productos: productosCarrito.value.map(p => ({
@@ -550,6 +581,7 @@ const pedidoData = {
       imagenUrl: `${IMAGE_BASE_URL}/${p.detalleProducto?.imagen_url}`,
       color: p.detalleProducto?.color?.nombre,
       talla: p.talla?.nombre,
+      talla_id:p.talla?.id,
       cantidad: p.cantidad,
       peso: p.detalleProducto?.peso_kg || 0.5,
       precioUnitario: parseFloat(p.detalleProducto?.precio_base),
@@ -568,19 +600,10 @@ const pedidoData = {
 
  orderStore.inicializarDesdeCarrito(pedidoData)
  
-  // Crear objeto con los datos del pedido
-  // const pedidoData = {
-  //   productos: productosCarrito.value,
-  //   subtotal: subtotalSinDescuento.value,
-  //   descuentos: descuentosAplicados.value,
-  //   total: total.value,
-  //   tipoEnvio: tipoEnvio.value,
-  //   totalConEnvio: totalConEnvio.value,
-  //   fechaEntrega: fechaEntrega.value,
-  //   cuposActuales: cuposActuales.value
-  // }
+  
   if (userStore.user) {
     orderStore.actualizarCliente({
+      id: userStore.user.id,
       nombre: userStore.user.nombre || '',
       email: userStore.user.email || '',
       telefono: userStore.user.celular || ''
@@ -611,6 +634,8 @@ watch(
   },
   { deep: true }
 )
+
+
 </script>
 
 <style scoped>

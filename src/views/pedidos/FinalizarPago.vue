@@ -179,7 +179,7 @@
                       <div class="mb-3">
                         <i class="bi bi-telephone text-success me-2"></i>
                         <strong>Teléfono:</strong>
-                        <a href="tel:0969674222" class="text-decoration-none">096 967 4222</a>
+                        <a :href="empresa?.celular" class="text-decoration-none">{{ empresa?.celular }}</a>
                       </div>
                       <div class="mb-3">
                         <i class="bi bi-geo-alt text-success me-2"></i>
@@ -284,12 +284,12 @@
                   </div>
                 </div>
 
-                <div v-if="orderStore.pedido.envio.fechaEntrega" class="d-flex justify-content-between mb-3 text-info">
+                <div v-if="orderStore.pedido.envio.fechaEntrega" class="d-flex justify-content-between  text-black-50" style="font-size: 0.9rem;">
                   <span>
-                    <i class="bi bi-calendar me-1"></i>
+                    <i class="bi bi-calendar  "></i>
                     Fecha estimada de entrega:
                   </span>
-                  <span>{{ orderStore.pedido.envio.fechaEntrega }}</span>
+                  <span  class="text-end" style="margin-left: 90px; margin-right: -5px;" >{{ orderStore.pedido.envio.fechaEntrega }}</span>
                 </div>
 
                 <hr class="my-3" />
@@ -394,11 +394,33 @@
 import { ref, onMounted ,computed, watch} from 'vue'
 import { useRouter } from 'vue-router'
 import { useOrderStore } from '@/stores/orderStore'
+import { useCartStore } from '@/stores/cartStore'
 import { loadScript } from '@paypal/paypal-js';
 import Ciudades from '@/apis/Ciudades';
 import ConfiguracionPrecio from '@/apis/ConfiguracionPrecio'
-
+import axios from 'axios';
 import Swal from "sweetalert2"; 
+import Empresa from '@/apis/Empresa.js';
+
+const empresa = ref(null);
+const cartStore = useCartStore()
+
+const fetchEmpresaData = async () => {
+  try {
+    const response = await Empresa.fetchEmpresaPublica();
+    if (response?.data?.length > 0) {
+      empresa.value = response.data[0];
+    } else if (response?.length > 0) {
+      empresa.value = response[0];
+    }
+  } catch (error) {
+    console.error('Error al cargar datos:', error);
+    empresa.value = {
+      nombre: 'New Blessings',
+      logo: null
+    };
+  }
+};
 
 const paypalButtonContainer = ref(null);
 const loading = ref(true);
@@ -417,54 +439,74 @@ watch(() => orderStore.pedido.envio.tipo, (newTipo) => {
   envioTipo.value = newTipo === 'Retiro tienda Física' ? 'retiro' : 'nacional';
 });
 
-// Actualiza el store cuando el usuario cambia el input
+
 // const handleEnvioChange = (tipo) => {
 //   envioTipo.value = tipo;
   
 //   if (tipo === 'retiro') {
-//     // Resetear ciudad seleccionada si cambia a retiro
+//     // Resetear todos los campos de envío
 //     ciudadSeleccionada.value = null;
+//     direccionCompleta.value = '';
+//     referencia.value = '';
+    
 //     orderStore.actualizarEnvio('Retiro tienda Física', 0);
-//     orderStore.actualizarDireccion({ ciudad: '' }); // Opcional: limpia la ciudad en el store
+//     orderStore.actualizarDireccion({ 
+//       ciudad: '',
+//       direccionCompleta: '',
+//       referencia: ''
+//     });
 //   } else {
-//     // Resetear ciudad al cambiar a envío nacional
+//     // Resetear todos los campos para envío nacional
 //     ciudadSeleccionada.value = null;
-//     orderStore.actualizarEnvio('Envío Nacional', 0); // Precio temporal 0 hasta seleccionar ciudad
+//     direccionCompleta.value = '';
+//     referencia.value = '';
+    
+//     orderStore.actualizarEnvio('Envío Nacional', 0);
+//     orderStore.actualizarDireccion({ 
+//       ciudad: '',
+//       direccionCompleta: '',
+//       referencia: ''
+//     });
 //   }
 // };
 
+
+// Función para calcular porcentaje de completitud
 
 const handleEnvioChange = (tipo) => {
   envioTipo.value = tipo;
   
   if (tipo === 'retiro') {
-    // Resetear todos los campos de envío
+    // Resetear campos de ciudad para retiro
     ciudadSeleccionada.value = null;
-    direccionCompleta.value = '';
-    referencia.value = '';
+    
+    // Para retiro, usar la dirección de la empresa
+    if (empresa.value) {
+      direccionCompleta.value = empresa.value.direccion || '';
+      referencia.value = empresa.value.referencia || '';
+    }
     
     orderStore.actualizarEnvio('Retiro tienda Física', 0);
     orderStore.actualizarDireccion({ 
       ciudad: '',
-      direccionCompleta: '',
-      referencia: ''
+      direccionCompleta: empresa.value?.direccion || '',
+      referencia: empresa.value?.referencia || ''
     });
   } else {
-    // Resetear todos los campos para envío nacional
+    // Resetear TODOS los campos para envío nacional (incluyendo los que tenían datos de empresa)
     ciudadSeleccionada.value = null;
-    direccionCompleta.value = '';
-    referencia.value = '';
+    direccionCompleta.value = ''; // Limpiar explícitamente
+    referencia.value = ''; // Limpiar explícitamente
     
     orderStore.actualizarEnvio('Envío Nacional', 0);
     orderStore.actualizarDireccion({ 
       ciudad: '',
-      direccionCompleta: '',
-      referencia: ''
+      direccionCompleta: '', // Asegurar que esté vacío
+      referencia: '' // Asegurar que esté vacío
     });
   }
 };
 
-// Función para calcular porcentaje de completitud
 const getCompletionPercentage = computed(() => {
   if (envioTipo.value === 'retiro') {
     return 100; // Siempre completo para retiro
@@ -533,7 +575,8 @@ const handleCiudadChange = () => {
   if (ciudadSeleccionada.value) {
     // Guarda la ciudad en el store
     orderStore.actualizarDireccion({
-      ciudad: ciudadSeleccionada.value.nombre
+      ciudad: ciudadSeleccionada.value.nombre,
+      ciudad_id: ciudadSeleccionada.value.id,
     });
     
     // Actualiza el precio de envío en el store
@@ -544,12 +587,32 @@ const handleCiudadChange = () => {
   }
 };
 
+// const handleRetiroEnTienda = () => {
+//   orderStore.actualizarEnvio(
+//     'Retiro tienda Física', // Tipo explícito
+//     0 // Precio cero para retiro
+//   );
+//   envioTipo.value = 'retiro'; // Actualiza el ref local
+// };
+
 const handleRetiroEnTienda = () => {
   orderStore.actualizarEnvio(
-    'Retiro tienda Física', // Tipo explícito
-    0 // Precio cero para retiro
+    'Retiro tienda Física',
+    0
   );
-  envioTipo.value = 'retiro'; // Actualiza el ref local
+  envioTipo.value = 'retiro';
+  
+  // Establecer la dirección de la empresa para retiro
+  if (empresa.value) {
+    direccionCompleta.value = empresa.value.direccion || '';
+    referencia.value = empresa.value.referencia || '';
+    
+    orderStore.actualizarDireccion({
+      ciudad: '',
+      direccionCompleta: empresa.value.direccion || '',
+      referencia: empresa.value.referencia || ''
+    });
+  }
 };
 
 const obtenerConfiguracion = async () => {
@@ -558,6 +621,8 @@ const obtenerConfiguracion = async () => {
     const data = await ConfiguracionPrecio.fetchConfigPrecio();
     configuracion.value = data;
     nuevoPrecio.value = data.precio_por_kg;
+    orderStore.actualizarPrecioPorKg(nuevoPrecio.value);
+
   } catch (error) {
     Swal.fire({
       icon: 'error',
@@ -569,7 +634,6 @@ const obtenerConfiguracion = async () => {
   }
 };
 
-orderStore.actualizarPrecioPorKg(1.23)
 
 
 
@@ -612,8 +676,15 @@ watch(() => orderStore.pedido.cliente.direccion.referencia, (newValue) => {
   }
 }, { immediate: true })
 
+watch(envioTipo, (newTipo, oldTipo) => {
+  if (oldTipo === 'retiro' && newTipo === 'nacional') {
+    direccionCompleta.value = '';
+    referencia.value = '';
+    ciudadSeleccionada.value = null;
+  }
+});
 
-// Función separada para inicializar PayPal
+
 const initializePayPal = async () => {
   try {
     const paypal = await loadScript({
@@ -643,32 +714,77 @@ const initializePayPal = async () => {
         });
       },
       onApprove: async (data, actions) => {
-        if (envioTipo.value === 'nacional' && !camposEnvioValidos.value) {
-          error.value = 'Por favor completa todos los campos de envío';
-          return;
-        }
-
-        const details = await actions.order.capture();
-        console.log('Pago exitoso:', details);
-        Swal.fire({
-          icon: 'success',
-          title: 'Pago exitoso',
-          text: `Gracias por tu compra, ${details.payer.name.given_name}.`,
+        const swalInstance = Swal.fire({
+          title: 'Procesando tu pedido...',
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
         });
+
+        try {
+          // Validación final
+          if (envioTipo.value === 'nacional' && !camposEnvioValidos.value) {
+            throw new Error('Información de envío incompleta');
+          }
+
+          // 1. Capturar el pago
+          await actions.order.capture();
+
+          // 2. Preparar datos para la orden
+          const datosParaEnviar = orderStore.prepararDatosParaEnvio();
+          console.log('Datos a enviar:', datosParaEnviar); // Debug
+
+          // 3. Crear la orden en el backend usando Axios directamente
+          const response = await axios.post(
+            'http://localhost:8000/api/public/orden',
+            datosParaEnviar
+          );
+          console.log('Respuesta del backend:', response.data); // Debug
+
+          // 4. Cerrar loader y mostrar confirmación
+          await swalInstance.close();
+
+          Swal.fire({
+            icon: 'success',
+            title: '¡Pedido completado!',
+            text: `Tu pedido ha sido registrado`,
+            confirmButtonText: 'Ver mis pedidos',
+            allowOutsideClick: false,
+          }).then(() => {
+            // 5. Redirigir a la página de pedidos
+            router.push('/Pedidos');
+            // 6. Limpiar el carrito
+            cartStore.clearCart()
+            orderStore.limpiarPedido();
+
+          });
+
+        } catch (error) {
+          console.error('Error en el proceso:', error);
+          await swalInstance.close();
+
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al registrar el pedido',
+            text: error.response?.data?.message || error.message || 'Error desconocido',
+            willClose: () => {
+              router.push('/error-pago');
+            }
+          });
+        }
       },
       onCancel: () => {
         Swal.fire({
           icon: 'warning',
           title: 'Pago cancelado',
-          text: 'El pago fue cancelado.',
+          text: 'El pago fue cancelado. Puedes intentarlo nuevamente.',
         });
       },
       onError: (err) => {
         console.error('Error en PayPal:', err);
         Swal.fire({
           icon: 'error',
-          title: 'Error',
-          text: 'Hubo un problema al procesar el pago.',
+          title: 'Error en el pago',
+          text: 'No se pudo completar el proceso de pago. Por favor intenta nuevamente.',
         });
       },
     }).render(paypalButtonContainer.value);
@@ -677,8 +793,8 @@ const initializePayPal = async () => {
     console.error('Error al cargar PayPal:', err);
     Swal.fire({
       icon: 'error',
-      title: 'Error al cargar PayPal',
-      text: 'No se pudo cargar el SDK de PayPal.',
+      title: 'Error de conexión',
+      text: 'No se pudo conectar con PayPal. Por favor intenta más tarde.',
     });
   }
 };
@@ -686,32 +802,33 @@ const initializePayPal = async () => {
 // onMounted simplificado
 onMounted(async () => {
   try {
-    cargarCiudades()
-     obtenerConfiguracion()
+    // Cargar datos de empresa primero
+     fetchEmpresaData();
+     cargarCiudades();
+     obtenerConfiguracion();
+     
+    if (orderStore.pedido.cliente.direccion.ciudad_id) {
+      ciudadSeleccionada.value = ciudades.value.find(
+        c => c.id === orderStore.pedido.cliente.direccion.ciudad_id
+      );
+    }
+    
+    // Si ya está configurado como retiro, aplicar datos de empresa
+    if (envioTipo.value === 'retiro' && empresa.value) {
+      direccionCompleta.value = empresa.value.direccion || '';
+      referencia.value = empresa.value.referencia || '';
+    }
+    
     console.log('Datos del pedido:', JSON.parse(JSON.stringify(orderStore.pedido)))
     hasDataLoaded.value = true
     
-    // Inicializar PayPal
     await initializePayPal()
-    
+    console.log(orderStore.prepararDatosParaEnvio());
   } catch (error) {
     console.error('Error al cargar datos del checkout:', error)
     router.push('/carrito')
   }
 })
-
-// // Inicialización
-// onMounted(() => {
-//   try {
-//     cargarCiudades()
-//     obtenerConfiguracion()
-//     console.log('Datos del pedido:', JSON.parse(JSON.stringify(orderStore.pedido)))
-//     hasDataLoaded.value = true
-//   } catch (error) {
-//     console.error('Error al cargar datos del checkout:', error)
-//     router.push('/carrito')
-//   }
-// })
 
 </script>
 

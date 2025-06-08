@@ -1,263 +1,3 @@
-<template>
-  <div class="company-profile">
-    <!-- Header con fondo y logo -->
-    <div class="company-header">
-      <div class="header-background"></div>
-      <div class="container header-content">
-        <div class="logo-container">
-          <img :src="getFullImageUrl(company.logo)" alt="Logo de la empresa" class="company-logo">
-        </div>
-        <div class="company-info">
-          <h1 class="company-name">{{ company.nombre }}</h1>
-          <p class="company-description">{{ company.descripcion }}</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- Contenido principal -->
-    <div class="container main-content">
-      <div class="company-details">
-        <!-- Sección de información -->
-        <div class="info-section">
-          <div class="info-card">
-            <h2 class="section-title">
-              <span class="material-icons">business</span>
-              Información de Contacto
-            </h2>
-            
-            <div class="contact-info">
-              <div class="contact-item">
-                <span class="material-icons">place</span>
-                <div>
-                  <h3>Dirección</h3>
-                  <p>{{ company.direccion || 'No especificada' }}</p>
-                </div>
-              </div>
-              
-              <div class="contact-item">
-                <span class="material-icons">call</span>
-                <div>
-                  <h3>Teléfono</h3>
-                  <p>{{ company.telefono || 'No especificado' }}</p>
-                </div>
-              </div>
-              
-              <div class="contact-item">
-                <span class="material-icons">smartphone</span>
-                <div>
-                  <h3>Celular</h3>
-                  <p>{{ company.celular || 'No especificado' }}</p>
-                </div>
-              </div>
-              
-              <div class="contact-item">
-                <span class="material-icons">email</span>
-                <div>
-                  <h3>Email</h3>
-                  <p>{{ company.email || 'No especificado' }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Sección de redes sociales -->
-        <div class="social-section">
-          <div class="social-card">
-            <h2 class="section-title">
-              <span class="material-icons">share</span>
-              Redes Sociales
-            </h2>
-            
-            <div class="social-links">
-              <a v-if="company.facebook" :href="company.facebook" target="_blank" class="social-btn facebook">
-                <span class="material-icons">facebook</span>
-                <span>Facebook</span>
-              </a>
-              
-              <a v-if="company.instagram" :href="company.instagram" target="_blank" class="social-btn instagram">
-                <span class="material-icons">photo_camera</span>
-                <span>Instagram</span>
-              </a>
-              
-              <div v-if="!company.facebook && !company.instagram" class="no-socials">
-                <span class="material-icons">link_off</span>
-                <p>No hay redes sociales registradas</p>
-              </div>
-            </div>
-            
-            <button 
-              class="edit-btn "
-              data-bs-toggle="modal" 
-              data-bs-target="#companyModal"
-              @click="prepareEdit"
-            >
-              <span class="material-icons">edit</span>
-              Editar Perfil
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal de edición -->
-     <div class="modal fade" id="companyModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h2 class="modal-title">
-            <span class="material-icons">business</span>
-            {{ isCreating ? 'Crear Perfil Empresarial' : 'Editar Perfil' }}
-          </h2>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        
-        <div class="modal-body">
-          <form @submit.prevent="saveCompany">
-            <div class="form-container">
-              <!-- Sección Izquierda -->
-              <div class="form-section">
-                <div class="form-group">
-                  <label>Nombre de la Empresa *</label>
-                  <input 
-                    type="text" 
-                    class="form-control" 
-                    v-model="form.nombre" 
-                    required
-                    placeholder="Ej: Mi Empresa S.A."
-                  >
-                </div>
-                
-                <div class="form-group">
-                  <label>Descripción</label>
-                  <textarea 
-                    class="form-control" 
-                    v-model="form.descripcion" 
-                    rows="3"
-                    placeholder="Breve descripción de su empresa"
-                  ></textarea>
-                </div>
-                
-                <div class="form-group">
-                  <label>Dirección</label>
-                  <input 
-                    type="text" 
-                    class="form-control" 
-                    v-model="form.direccion" 
-                    placeholder="Dirección completa"
-                  >
-                </div>
-              </div>
-              
-              <!-- Sección Derecha -->
-              <div class="form-section " style="margin-top: -20px;">
-                <div class="form-group">
-                  <label>Logo de la Empresa</label>
-                  <div class="logo-upload-container">
-                    <div class="logo-preview-wrapper" v-if="logoPreview || company.logo">
-                      <div class="logo-preview">
-                        <img 
-                          :src="logoPreview || getFullImageUrl(company.logo)" 
-                          alt="Vista previa del logo"
-                        >
-                        <button 
-                          type="button" 
-                          class="btn-remove-logo"
-                          @click="removeLogo"
-                        >
-                          <span class="material-icons">delete</span>
-                        </button>
-                      </div>
-                    </div>
-                    
-                    <label class="file-upload-btn">
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        @change="handleLogoUpload"
-                      >
-                      <span class="material-icons">cloud_upload</span>
-                      {{ logoPreview ? 'Cambiar imagen' : 'Seleccionar logo' }}
-                    </label>
-                    <small class="file-info">Formatos: JPG, PNG (Max. 2MB)</small>
-                  </div>
-                </div>
-                
-                
-                <div class="phone-group">
-    <div class="form-group">
-      <label>Teléfono</label>
-      <input type="text" class="form-control" v-model="form.telefono">
-    </div>
-    <div class="form-group">
-      <label>Celular</label>
-      <input type="text" class="form-control" v-model="form.celular">
-    </div>
-  </div>
-              </div>
-            </div>
-            
-            <!-- Sección Inferior -->
-            <div class="form-bottom-section">
-              <div class="form-group">
-                <label>Email *</label>
-                <div class="input-with-icon">
-                  <span class="material-icons">alternate_email</span>
-                  <input 
-                    type="email" 
-                    class="form-control" 
-                    v-model="form.email" 
-                    required
-                    placeholder="contacto@empresa.com"
-                  >
-                </div>
-              </div>
-              
-              <div class="social-media-fields">
-                <div class="form-group">
-                  <label>Facebook</label>
-                  <div class="input-with-icon">
-                    <span class="material-icons">facebook</span>
-                    <input 
-                      type="url" 
-                      class="form-control" 
-                      v-model="form.facebook" 
-                      placeholder="https://facebook.com/tuempresa"
-                    >
-                  </div>
-                </div>
-                
-                <div class="form-group">
-                  <label>Instagram</label>
-                  <div class="input-with-icon">
-                    <span class="material-icons">photo_camera</span>
-                    <input 
-                      type="url" 
-                      class="form-control" 
-                      v-model="form.instagram" 
-                      placeholder="https://instagram.com/tuempresa"
-                    >
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                Cancelar
-              </button>
-              <button type="submit" class="btn btn-primary">
-                <span class="material-icons">save</span>
-                {{ isCreating ? 'Crear Perfil' : 'Guardar Cambios' }}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-  </div>
-</template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
@@ -269,6 +9,7 @@ const company = ref({});
 const form = reactive({
   nombre: '',
   direccion: '',
+  referencia: '',
   telefono: '',
   celular: '',
   email: '',
@@ -399,40 +140,243 @@ const saveCompany = async () => {
 onMounted(fetchCompanyProfile);
 </script>
 
+<template>
+  <div class="company-profile">
+    <!-- Header con fondo y logo -->
+    <div class="company-header">
+      <div class="header-background"></div>
+      <div class="container header-content">
+        <div class="logo-container">
+          <img :src="getFullImageUrl(company.logo)" alt="Logo de la empresa" class="company-logo">
+        </div>
+        <div class="company-info">
+          <h1 class="company-name">{{ company.nombre }}</h1>
+          <p class="company-description">{{ company.descripcion }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="container main-content">
+      <div class="company-details">
+        <!-- Sección de información -->
+        <div class="info-section">
+          <div class="info-card">
+            <h2 class="section-title">
+              <span class="material-icons">business</span>
+              Información de Contacto
+            </h2>
+            
+            <div class="contact-info">
+              <div class="contact-item">
+                <span class="material-icons">place</span>
+                <div>
+                  <h3>Dirección</h3>
+                  <p>{{ company.direccion || 'No especificada' }}</p>
+                </div>
+              </div>
+              
+              <div class="contact-item">
+                <span class="material-icons">call</span>
+                <div>
+                  <h3>Teléfono</h3>
+                  <p>{{ company.telefono || 'No especificado' }}</p>
+                </div>
+              </div>
+              
+              <div class="contact-item">
+                <span class="material-icons">smartphone</span>
+                <div>
+                  <h3>Celular</h3>
+                  <p>{{ company.celular || 'No especificado' }}</p>
+                </div>
+              </div>
+              
+              <div class="contact-item">
+                <span class="material-icons">email</span>
+                <div>
+                  <h3>Email</h3>
+                  <p>{{ company.email || 'No especificado' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección de redes sociales -->
+        <div class="social-section">
+          <div class="social-card">
+            <h2 class="section-title">
+              <span class="material-icons">share</span>
+              Redes Sociales
+            </h2>
+            
+            <div class="social-links">
+              <a v-if="company.facebook" :href="company.facebook" target="_blank" class="social-btn facebook">
+                <span class="material-icons">facebook</span>
+                <span>Facebook</span>
+              </a>
+              
+              <a v-if="company.instagram" :href="company.instagram" target="_blank" class="social-btn instagram">
+                <span class="material-icons">photo_camera</span>
+                <span>Instagram</span>
+              </a>
+              
+              <div v-if="!company.facebook && !company.instagram" class="no-socials">
+                <span class="material-icons">link_off</span>
+                <p>No hay redes sociales registradas</p>
+              </div>
+            </div>
+            
+            <button 
+              class="edit-btn "
+              data-bs-toggle="modal" 
+              data-bs-target="#companyModal"
+              @click="prepareEdit"
+            >
+              <span class="material-icons">edit</span>
+              Editar Perfil
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de edición -->
+     <div class="modal fade" id="companyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">
+            <span class="material-icons">business</span>
+            {{ isCreating ? 'Crear Perfil Empresarial' : 'Editar Perfil' }}
+          </h2>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        
+        
+       <div class="modal-body">
+          <form @submit.prevent="saveCompany">
+              <div class="form-container">
+                  <!-- Sección Izquierda -->
+                  <div class="form-section">
+                      <div class="form-group">
+                          <label>Nombre de la Empresa *</label>
+                          <input type="text" class="form-control" v-model="form.nombre" required placeholder="Ej: Mi Empresa S.A." />
+                      </div>
+
+                      <div class="form-group">
+                          <label>Descripción</label>
+                          <textarea class="form-control" v-model="form.descripcion" rows="3" placeholder="Breve descripción de su empresa"></textarea>
+                      </div>
+
+                      <div class="form-group">
+                          <label>Dirección</label>
+                          <input type="text" class="form-control" v-model="form.direccion" placeholder="Dirección completa" />
+                      </div>
+                  </div>
+
+                  <!-- Sección Derecha -->
+                  <div class="form-section" style="margin-top: -20px;">
+                      <div class="form-group">
+                          <label>Logo de la Empresa</label>
+                          <div class="logo-upload-container">
+                              <div class="logo-preview-wrapper" v-if="logoPreview || company.logo">
+                                  <div class="logo-preview">
+                                      <img :src="logoPreview || getFullImageUrl(company.logo)" alt="Vista previa del logo" />
+                                  </div>
+                              </div>
+
+                              <label class="file-upload-btn">
+                                  <input type="file" accept="image/*" @change="handleLogoUpload" />
+                                  <span class="material-icons">cloud_upload</span>
+                                  {{ logoPreview ? 'Cambiar imagen' : 'Seleccionar logo' }}
+                              </label>
+                              <small class="file-info">Formatos: JPG, PNG (Max. 2MB)</small>
+                          </div>
+                      </div>
+
+                      <div class="phone-group">
+                          <div class="form-group">
+                              <label>Teléfono</label>
+                              <input type="text" class="form-control" v-model="form.telefono" />
+                          </div>
+                          <div class="form-group">
+                              <label>Celular</label>
+                              <input type="text" class="form-control" v-model="form.celular" />
+                          </div>
+                      </div>
+                  </div>
+                  
+              </div>
+
+              <!-- Sección Inferior -->
+              <div class="form-bottom-section">
+                  <div class="form-group">
+                      <label>Referencia *</label>
+                      <div class="input-with-icon">
+                          <span class="material-icons">map</span>
+                          <input type="text" class="form-control" v-model="form.referencia" required placeholder="Indicaciones .." />
+                      </div>
+                  </div>
+                  <div class="form-group">
+                      <label>Email *</label>
+                      <div class="input-with-icon">
+                          <span class="material-icons">alternate_email</span>
+                          <input type="email" class="form-control" v-model="form.email" required placeholder="contacto@empresa.com" />
+                      </div>
+                  </div>
+                  
+                  <div class="social-media-fields">
+                      <div class="form-group">
+                          <label>Facebook</label>
+                          <div class="input-with-icon">
+                              <span class="material-icons">facebook</span>
+                              <input type="url" class="form-control" v-model="form.facebook" placeholder="https://facebook.com/tuempresa" />
+                          </div>
+                      </div>
+
+                      <div class="form-group">
+                          <label>Instagram</label>
+                          <div class="input-with-icon">
+                              <span class="material-icons">photo_camera</span>
+                              <input type="url" class="form-control" v-model="form.instagram" placeholder="https://instagram.com/tuempresa" />
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                      Cancelar
+                  </button>
+                  <button type="submit" class="btn btn-primary">
+                      <span class="material-icons">save</span>
+                      {{ isCreating ? 'Crear Perfil' : 'Guardar Cambios' }}
+                  </button>
+              </div>
+          </form>
+      </div>
+
+
+      </div>
+    </div>
+  </div>
+  </div>
+</template>
+
 <style scoped>
 /* Estilos generales */
-.company-profile {
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  color: #333;
-  background-color: #f8f9fa;
-  min-height: 100vh;
-}
 
-/* Header de la empresa */
-.company-header {
-  position: relative;
-  height: 300px;
-  overflow: hidden;
-  margin-bottom: 2rem;
-}
 
-.header-background {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #2c3e50, #3498db);
-  opacity: 0.9;
-}
 
 .header-content {
   position: relative;
   display: flex;
   align-items: center;
   height: 100%;
-  padding: 2rem;
-  color: white;
+  margin-bottom: 20px;
+  
 }
 
 .logo-container {
@@ -440,39 +384,24 @@ onMounted(fetchCompanyProfile);
 }
 
 .company-logo {
-  width: 150px;
-  height: 150px;
+  width: 125px;
+  height: 125px;
   object-fit: cover;
   border-radius: 50%;
-  border: 4px solid white;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  
+ 
 }
 
 .company-info {
   max-width: 600px;
 }
 
-.company-name {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
-}
 
-.company-description {
-  font-size: 1.1rem;
-  line-height: 1.6;
-  opacity: 0.9;
-}
-
-/* Contenido principal */
-.main-content {
-  padding-bottom: 3rem;
-}
 
 .company-details {
+  margin-top: 40px;
   display: grid;
-  grid-template-columns: 1fr 350px;
+  grid-template-columns: 1fr 380px;
   gap: 2rem;
 }
 
@@ -481,7 +410,7 @@ onMounted(fetchCompanyProfile);
   background: white;
   border-radius: 10px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  padding: 2rem;
+  padding: 1rem;
   height: 100%;
 }
 
@@ -494,7 +423,7 @@ onMounted(fetchCompanyProfile);
   align-items: center;
   gap: 0.5rem;
   padding-bottom: 0.8rem;
-  border-bottom: 2px solid #f0f0f0;
+  border-bottom: 2px solid #0c0c0c3f;
 }
 
 .contact-info {
@@ -511,7 +440,7 @@ onMounted(fetchCompanyProfile);
 
 .contact-item .material-icons {
   font-size: 1.8rem;
-  color: #3498db;
+  color: #010f189a;
   margin-top: 0.2rem;
 }
 
@@ -588,7 +517,7 @@ onMounted(fetchCompanyProfile);
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  background-color: #297aa0;
+  background-color: #3b5998;
   color: white;
   border: none;
   border-radius: 8px;
