@@ -189,6 +189,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { jsPDF } from 'jspdf'
+import Swal from 'sweetalert2';
 import 'jspdf-autotable'
 import Reporte from '@/apis/Reportes'
 
@@ -397,13 +398,24 @@ const gananciasPorDia = computed(() => {
 })
 
 // Exportar a PDF
-const exportarPDF = () => {
-  const doc = new jsPDF({
-    orientation: 'portrait',
-    unit: 'mm',
-    format: 'a4'
-  })
+const exportarPDF = async () => {
+  try {
+    // Validación inicial
+    if (!datosAPI.value || !productosMasVendidos.value.length) {
+      await Swal.fire({
+        icon: 'warning',
+        title: 'No hay datos',
+        text: 'No hay información suficiente para generar el reporte',
+        confirmButtonColor: '#4a6cf7'
+      });
+      return;
+    }
 
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
   // Configuración
   const margin = 15
   const pageWidth = doc.internal.pageSize.getWidth()
@@ -530,8 +542,32 @@ const exportarPDF = () => {
   doc.text(datosAPI.value.empresa.descripcion || '', margin, footerY + 20)
   
   // Guardar PDF
-  doc.save(`reporte-ganancias-${formatDate(new Date())}.pdf`)
-}
+const fileName = `reporte-ganancias-${formatDate(new Date())}.pdf`;
+    doc.save(fileName);
+    
+    await Swal.fire({
+      title: '¡Reporte generado!',
+      text: `El archivo "${fileName}" se ha descargado correctamente.`,
+      icon: 'success',
+      confirmButtonText: 'Aceptar',
+      confirmButtonColor: '#4a6cf7', // Usando tu color corporativo
+      timer: 4000,
+      timerProgressBar: true,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+  } catch (error) {
+    console.error('Error al generar PDF:', error);
+    await Swal.fire({
+      title: 'Error',
+      text: 'Ocurrió un error al generar el reporte',
+      icon: 'error',
+      confirmButtonColor: '#4a6cf7'
+    });
+  }
+};
 
 // Formateador de fecha para mostrar
 const formatFecha = (fecha) => {

@@ -171,11 +171,15 @@
                   <h6 class="mb-2 small fw-bold"><i class="material-icons mr-1" style="font-size: 1rem;">receipt</i> Resumen</h6>
                   <div class="d-flex justify-content-between py-1 border-bottom">
                     <span>Subtotal:</span>
-                    <span>${{ selectedPedido.resumen.subtotal }}</span>
+                    <span>${{ selectedPedido.resumen.subtotal_sin_descuento }}</span>
                   </div>
                   <div class="d-flex justify-content-between py-1 border-bottom">
                     <span>Descuento:</span>
-                    <span>${{ selectedPedido.resumen.descuento }}</span>
+                    <span>${{ selectedPedido.resumen.descuento_total }}</span>
+                  </div>
+                  <div class="d-flex justify-content-between py-1 border-bottom">
+                    <span>Subtotal c/desc:</span>
+                    <span>${{ selectedPedido.resumen.subtotal_con_descuento }}</span>
                   </div>
                   <div class="d-flex justify-content-between py-1 border-bottom">
                     <span>Envío:</span>
@@ -198,6 +202,8 @@
                     <tr>
                       <th class="py-1">Producto</th>
                       <th class="py-1 text-end">Precio</th>
+                      <th class="py-1 text-end">Descuento</th>
+                      <th class="py-1 text-end">Precio Final</th>
                       <th class="py-1 text-center">Cant</th>
                       <th class="py-1 text-end">Subtotal</th>
                     </tr>
@@ -218,7 +224,10 @@
                           </div>
                         </div>
                       </td>
+                      <td class="py-2 text-end">${{ producto.precio_real }}</td>
+                      <td class="py-2 text-end">${{ producto.descuento_unitario}}</td>
                       <td class="py-2 text-end">${{ producto.precio_unitario }}</td>
+                      
                       <td class="py-2 text-center">{{ producto.cantidad }}</td>
                       <td class="py-2 text-end fw-bold">${{ producto.subtotal }}</td>
                     </tr>

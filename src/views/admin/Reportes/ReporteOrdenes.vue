@@ -194,6 +194,8 @@
                                     <th class="text-center">Talla</th>
                                     <th class="text-center">Color</th>
                                     <th class="text-end">Precio</th>
+                                    <th class="text-end">Desc</th>
+                                    <th class="text-end">P. Final</th>
                                   </tr>
                                 </thead>
                                 <tbody>
@@ -202,7 +204,10 @@
                                     <td class="text-center">{{ producto.cantidad }}</td>
                                     <td class="text-center">{{ producto.talla }}</td>
                                     <td class="text-center">{{ producto.color }}</td>
+                                    <td class="text-end">${{ formatearNumero(producto.precio_real) }}</td>
+                                     <td class="text-end">${{ formatearNumero(producto.descuento_unitario) }}</td>
                                     <td class="text-end">${{ formatearNumero(producto.precio_unitario) }}</td>
+                                   
                                   </tr>
                                 </tbody>
                               </table>
@@ -217,14 +222,34 @@
                                 <p><strong>Referencia:</strong> {{ pedido.direccion_entrega.referencia }}</p>
                                 <p><strong>Tipo de envío:</strong> {{ pedido.tipo_entrega }}</p>
                                 <div class="price-summary">
+                                  <!-- Subtotal sin descuentos (suma de precios reales) -->
                                   <div class="price-row">
                                     <span>Subtotal:</span>
+                                    <span>${{ formatearNumero(pedido.resumen_pedido.subtotal_sin_descuento) }}</span>
+                                  </div>
+                                  
+                                  <!-- Descuento total -->
+                                  <div v-if="pedido.resumen_pedido.descuento_total > 0" class="price-row discount-row">
+                                    <span style="color: #dc3545;">Descuento:</span>
+                                    <span style="color: #dc3545;">-${{ formatearNumero(pedido.resumen_pedido.descuento_total) }}</span>
+                                  </div>
+                                  
+                                  <!-- Subtotal con descuento aplicado -->
+                                  <div class="price-row">
+                                    <span>Subtotal con descuento:</span>
                                     <span>${{ formatearNumero(pedido.resumen_pedido.subtotal) }}</span>
                                   </div>
+                                  
+                                  <!-- Costo de envío -->
                                   <div class="price-row">
                                     <span>Envío:</span>
-                                    <span>${{ formatearNumero(pedido.resumen_pedido.costo_envio || 0) }}</span>
+                                    <span v-if="pedido.resumen_pedido.costo_envio > 0">
+                                      ${{ formatearNumero(pedido.resumen_pedido.costo_envio) }}
+                                    </span>
+                                    <span v-else>GRATIS</span>
                                   </div>
+                                  
+                                  <!-- Total final -->
                                   <div class="price-row total">
                                     <span>Total:</span>
                                     <span class="fw-bold">${{ formatearNumero(pedido.resumen_pedido.total) }}</span>
@@ -266,6 +291,7 @@ import { ref, computed, onMounted } from 'vue';
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import Reporte from '@/apis/Reportes';
+import Swal from 'sweetalert2';
 
 // Estados reactivos
 const reporteData = ref(null);
@@ -309,12 +335,23 @@ const cargarReporte = async () => {
 };
 
 
-const exportarPDF = () => {
+const exportarPDF = async () => {
   if (!reporteData.value || pedidosFiltrados.value.length === 0) {
-    alert('No hay datos para generar el PDF');
-    return;
-  }
-
+  await Swal.fire({
+    icon: 'warning',
+    title: 'Datos insuficientes',
+    text: 'No hay pedidos que coincidan con los filtros aplicados para generar el reporte.',
+    confirmButtonText: 'Entendido',
+    confirmButtonColor: '#3085d6',
+    showClass: {
+      popup: 'animate__animated animate__fadeInDown'
+    },
+    hideClass: {
+      popup: 'animate__animated animate__fadeOutUp'
+    }
+  });
+  return;
+}
   const doc = new jsPDF({
     orientation: 'portrait',
     unit: 'mm',
@@ -322,154 +359,194 @@ const exportarPDF = () => {
   });
 
   // Configuración general
-  doc.setFont('helvetica');
-  const pageWidth = doc.internal.pageSize.getWidth();
-  const margin = 15;
-  let yPos = 15;
+doc.setFont('helvetica');
+const pageWidth = doc.internal.pageSize.getWidth();
+const margin = 15;
+let yPos = 15;
 
-  // Título del reporte
-  doc.setFontSize(20);
-  doc.setTextColor(40, 53, 147);
-  doc.text('REPORTE DE PEDIDOS', pageWidth / 2, yPos, { align: 'center' });
-  yPos += 10;
+// Título del reporte
+doc.setFontSize(20);
+doc.setTextColor(40, 53, 147);
+doc.text('REPORTE DE PEDIDOS', pageWidth / 2, yPos, { align: 'center' });
+yPos += 10;
 
-  // Información del período
-  doc.setFontSize(12);
-  doc.setTextColor(80, 80, 80);
-  doc.text(`Del ${filtros.value.fechaInicio} al ${filtros.value.fechaFin}`, pageWidth / 2, yPos, { align: 'center' });
-  yPos += 7;
-  doc.text(`Generado el: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPos, { align: 'center' });
-  yPos += 15;
+// Información del período
+doc.setFontSize(12);
+doc.setTextColor(80, 80, 80);
+doc.text(`Del ${filtros.value.fechaInicio} al ${filtros.value.fechaFin}`, pageWidth / 2, yPos, { align: 'center' });
+yPos += 7;
+doc.text(`Generado el: ${new Date().toLocaleDateString()}`, pageWidth / 2, yPos, { align: 'center' });
+yPos += 15;
 
-  // Resumen estadístico
+// Resumen estadístico
+doc.setFontSize(14);
+doc.setTextColor(30, 30, 30);
+doc.text('RESUMEN ESTADÍSTICO', margin, yPos);
+yPos += 10;
+
+doc.setFontSize(12);
+doc.text(`• Total pedidos: ${pedidosFiltrados.value.length}`, margin, yPos);
+yPos += 7;
+doc.text(`• Total ventas: $${formatearNumero(reporteData.value.resumen_general.total_ventas)}`, margin, yPos);
+yPos += 7;
+doc.text(`• Pedidos pendientes: ${reporteData.value.resumen_general.pedidos_pendientes}`, margin, yPos);
+yPos += 7;
+doc.text(`• Pedidos entregados: ${reporteData.value.resumen_general.pedidos_completados}`, margin, yPos);
+yPos += 15;
+
+// Tabla de pedidos
+doc.autoTable({
+  startY: yPos,
+  head: [['ID', 'Cliente', 'Contacto', 'Fecha Entrega', 'Total', 'Estado']],
+  body: pedidosFiltrados.value.map(pedido => [
+    pedido.id_pedido,
+    pedido.cliente.nombre_completo,
+    `${pedido.cliente.telefono}\n${pedido.cliente.email}`,
+    formatearFechaCorta(pedido.estado_pedido.fecha_entrega_estimada),
+    `$${formatearNumero(pedido.resumen_pedido.total)}`,
+    pedido.estado_pedido.estado_envio
+  ]),
+  margin: { left: margin, right: margin },
+  headStyles: {
+    fillColor: [40, 53, 147],
+    textColor: 255,
+    fontSize: 10,
+    halign: 'center'
+  },
+  bodyStyles: {
+    fontSize: 9,
+    cellPadding: 3
+  },
+  alternateRowStyles: {
+    fillColor: [245, 245, 245]
+  },
+  columnStyles: {
+    0: { cellWidth: 15, halign: 'center' },
+    1: { cellWidth: 40 },
+    2: { cellWidth: 30 },
+    3: { cellWidth: 25, halign: 'center' },
+    4: { cellWidth: 20, halign: 'right' },
+    5: { cellWidth: 25, halign: 'center' }
+  }
+});
+
+// Detalle de productos por pedido
+yPos = doc.lastAutoTable.finalY + 10;
+
+pedidosFiltrados.value.forEach(pedido => {
+  if (yPos > 250) {
+    doc.addPage();
+    yPos = 20;
+  }
+
+  // Encabezado del pedido
   doc.setFontSize(14);
-  doc.setTextColor(30, 30, 30);
-  doc.text('RESUMEN ESTADÍSTICO', margin, yPos);
+  doc.setTextColor(40, 53, 147);
+  doc.text(`PEDIDO #${pedido.id_pedido} - ${pedido.cliente.nombre_completo}`, margin, yPos);
+  yPos += 8;
+
+  doc.setFontSize(10);
+  doc.setTextColor(80, 80, 80);
+  doc.text(`Teléfono: ${pedido.cliente.telefono} | Email: ${pedido.cliente.email}`, margin, yPos);
+  yPos += 6;
+  doc.text(`Dirección: ${pedido.direccion_entrega.direccion}, ${pedido.direccion_entrega.ciudad}`, margin, yPos);
+  yPos += 6;
+  doc.text(`Referencia: ${pedido.direccion_entrega.referencia} | Tipo: ${pedido.tipo_entrega}`, margin, yPos);
   yPos += 10;
 
-  doc.setFontSize(12);
-  doc.text(`• Total pedidos: ${pedidosFiltrados.value.length}`, margin, yPos);
-  yPos += 7;
-  doc.text(`• Total ventas: $${formatearNumero(reporteData.value.resumen_general.total_ventas)}`, margin, yPos);
-  yPos += 7;
-  doc.text(`• Pedidos pendientes: ${reporteData.value.resumen_general.pedidos_pendientes}`, margin, yPos);
-  yPos += 7;
-  doc.text(`• Pedidos entregados: ${reporteData.value.resumen_general.pedidos_completados}`, margin, yPos);
-  yPos += 15;
-
-  // Tabla de pedidos
+  // Tabla de productos (con descuentos)
   doc.autoTable({
     startY: yPos,
-    head: [['ID', 'Cliente', 'Contacto', 'Fecha Entrega', 'Total', 'Estado']],
-    body: pedidosFiltrados.value.map(pedido => [
-      pedido.id_pedido,
-      pedido.cliente.nombre_completo,
-      `${pedido.cliente.telefono}\n${pedido.cliente.email}`,
-      formatearFechaCorta(pedido.estado_pedido.fecha_entrega_estimada),
-      `$${formatearNumero(pedido.resumen_pedido.total)}`,
-      pedido.estado_pedido.estado_envio
+    head: [['Producto', 'Cant', 'Talla', 'Color', 'P. Unitario', 'Desc.', 'P. Final', 'Subtotal']],
+    body: pedido.detalle_productos.map(producto => [
+      producto.producto,
+      producto.cantidad,
+      producto.talla,
+      producto.color,
+      `$${formatearNumero(producto.precio_real)}`,
+      producto.descuento_unitario > 0 ? `-$${formatearNumero(producto.descuento_unitario)}` : '$0.00',
+      `$${formatearNumero(producto.precio_unitario)}`,
+      `$${formatearNumero(producto.subtotal)}`
     ]),
-    margin: { left: margin, right: margin },
+    margin: { left: margin },
     headStyles: {
-      fillColor: [40, 53, 147],
+      fillColor: [70, 130, 180],
       textColor: 255,
-      fontSize: 10,
-      halign: 'center'
+      fontSize: 8
     },
     bodyStyles: {
-      fontSize: 9,
-      cellPadding: 3
-    },
-    alternateRowStyles: {
-      fillColor: [245, 245, 245]
+      fontSize: 8
     },
     columnStyles: {
-      0: { cellWidth: 15, halign: 'center' },
-      1: { cellWidth: 40 },
-      2: { cellWidth: 30 },
-      3: { cellWidth: 25, halign: 'center' },
+      0: { cellWidth: 50 },
+      1: { cellWidth: 10, halign: 'center' },
+      2: { cellWidth: 15, halign: 'center' },
+      3: { cellWidth: 15, halign: 'center' },
       4: { cellWidth: 20, halign: 'right' },
-      5: { cellWidth: 25, halign: 'center' }
+      5: { cellWidth: 15, halign: 'right', textColor: [220, 53, 69] },
+      6: { cellWidth: 20, halign: 'right' },
+      7: { cellWidth: 20, halign: 'right' }
     }
   });
 
-  // Detalle de productos por pedido
-  yPos = doc.lastAutoTable.finalY + 10;
-
-  pedidosFiltrados.value.forEach(pedido => {
-    if (yPos > 250) {
-      doc.addPage();
-      yPos = 20;
-    }
-
-    // Encabezado del pedido
-    doc.setFontSize(14);
-    doc.setTextColor(40, 53, 147);
-    doc.text(`PEDIDO #${pedido.id_pedido} - ${pedido.cliente.nombre_completo}`, margin, yPos);
-    yPos += 8;
-
-    doc.setFontSize(10);
+  // Resumen del pedido con descuentos
+  yPos = doc.lastAutoTable.finalY + 5;
+  doc.setFontSize(10);
+  
+  // Subtotal sin descuento
+  doc.text('Subtotal:', margin + 70, yPos, { align: 'right' });
+  doc.text(`$${formatearNumero(pedido.resumen_pedido.subtotal_sin_descuento)}`, margin + 100, yPos, { align: 'right' });
+  yPos += 5;
+  
+  // Descuento (si aplica)
+  if (pedido.resumen_pedido.descuento_total > 0) {
+    doc.setTextColor(220, 53, 69);
+    doc.text('Descuento:', margin + 70, yPos, { align: 'right' });
+    doc.text(`-$${formatearNumero(pedido.resumen_pedido.descuento_total)}`, margin + 100, yPos, { align: 'right' });
+    yPos += 5;
     doc.setTextColor(80, 80, 80);
-    doc.text(`Teléfono: ${pedido.cliente.telefono} | Email: ${pedido.cliente.email}`, margin, yPos);
-    yPos += 6;
-    doc.text(`Dirección: ${pedido.direccion_entrega.direccion}, ${pedido.direccion_entrega.ciudad}`, margin, yPos);
-    yPos += 6;
-    doc.text(`Referencia: ${pedido.direccion_entrega.referencia} | Tipo: ${pedido.tipo_entrega}`, margin, yPos);
-    yPos += 10;
-
-    // Tabla de productos
-    doc.autoTable({
-      startY: yPos,
-      head: [['Producto', 'Cantidad', 'Talla', 'Color', 'Precio']],
-      body: pedido.detalle_productos.map(producto => [
-        producto.producto,
-        producto.cantidad,
-        producto.talla,
-        producto.color,
-        `$${formatearNumero(producto.precio_unitario)}`
-      ]),
-      margin: { left: margin },
-      headStyles: {
-        fillColor: [70, 130, 180],
-        textColor: 255,
-        fontSize: 9
-      },
-      bodyStyles: {
-        fontSize: 8
-      },
-      columnStyles: {
-        0: { cellWidth: 70 },
-        1: { cellWidth: 20, halign: 'center' },
-        2: { cellWidth: 20, halign: 'center' },
-        3: { cellWidth: 20, halign: 'center' },
-        4: { cellWidth: 25, halign: 'right' }
-      }
-    });
-
-    // Resumen del pedido
-    yPos = doc.lastAutoTable.finalY + 5;
-    doc.setFontSize(10);
-    doc.text('Resumen del pedido:', margin, yPos);
+    
+    // Subtotal con descuento
+    doc.text('Subtotal con descuento:', margin + 70, yPos, { align: 'right' });
+    doc.text(`$${formatearNumero(pedido.resumen_pedido.subtotal)}`, margin + 100, yPos, { align: 'right' });
     yPos += 5;
-    doc.text(`Subtotal: $${formatearNumero(pedido.resumen_pedido.subtotal)}`, margin + 100, yPos, { align: 'right' });
-    yPos += 5;
-    doc.text(`Envío: $${formatearNumero(pedido.resumen_pedido.costo_envio || 0)}`, margin + 100, yPos, { align: 'right' });
-    yPos += 5;
-    doc.setFont('helvetica', 'bold');
-    doc.text(`Total: $${formatearNumero(pedido.resumen_pedido.total)}`, margin + 100, yPos, { align: 'right' });
-    doc.setFont('helvetica', 'normal');
-    yPos += 15;
+  }
+  
+  // Envío
+  doc.text('Envío:', margin + 70, yPos, { align: 'right' });
+  doc.text(pedido.resumen_pedido.costo_envio > 0 ? 
+    `$${formatearNumero(pedido.resumen_pedido.costo_envio)}` : 'GRATIS', 
+    margin + 100, yPos, { align: 'right' });
+  yPos += 5;
+  
+  // Total
+  doc.setFont('helvetica', 'bold');
+  doc.text('Total:', margin + 70, yPos, { align: 'right' });
+  doc.text(`$${formatearNumero(pedido.resumen_pedido.total)}`, margin + 100, yPos, { align: 'right' });
+  doc.setFont('helvetica', 'normal');
+  yPos += 15;
 
-    // Línea divisoria
-    doc.setDrawColor(200, 200, 200);
-    doc.line(margin, yPos, pageWidth - margin, yPos);
-    yPos += 10;
-  });
+  // Línea divisoria
+  doc.setDrawColor(200, 200, 200);
+  doc.line(margin, yPos, pageWidth - margin, yPos);
+  yPos += 10;
+});
 
-  // Guardar el PDF
-  doc.save(`reporte-pedidos-${filtros.value.fechaInicio}-${filtros.value.fechaFin}.pdf`);
+// Guardar el PDF
+doc.save(`reporte-pedidos-${filtros.value.fechaInicio}-${filtros.value.fechaFin}.pdf`);
+
+  const { value: accept } = await Swal.fire({
+  title: '¡Reporte generado con éxito!',
+  text: `El archivo "reporte-pedidos-${filtros.value.fechaInicio}-${filtros.value.fechaFin}.pdf" se ha descargado correctamente.`,
+  icon: 'success',
+  confirmButtonText: 'Aceptar',
+  confirmButtonColor: '#3085d6',
+  allowOutsideClick: false,
+  showCloseButton: true,
+  timer: 5000,
+  timerProgressBar: true
+});
 };
-
 
 // Propiedades computadas
 const pedidosFiltrados = computed(() => {
@@ -548,9 +625,20 @@ const pedidosFiltradosExpandido = computed(() => {
   );
 });
 
+
 </script>
 
 <style scoped>
+
+.discount-row {
+  color: #dc3545 !important;
+  font-weight: 500;
+}
+
+.price-row.discount-row span {
+  color: #dc3545 !important;
+}
+
 .card {
   border-radius: 0.5rem;
 }
