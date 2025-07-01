@@ -1,394 +1,392 @@
 <template>
-  <div class="bg-light min-vh-100" v-if="hasDataLoaded">
-    <!-- Header con progreso -->
-    <div class="bg-white shadow-sm py-3" style="margin-left: 145px; margin-top: 20px; margin-right: 145px;">
-      <div class="container">
-        <div class="row justify-content-center">
-          <div class="col-lg-8">
-            <div class="d-flex align-items-center justify-content-center position-relative" style="max-width: 400px; margin: 0 auto;">
-              <!-- Paso 1: Carrito (Completado) -->
-              <div class="d-flex flex-column align-items-center position-relative" style="flex: 0 0 auto;">
-                <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
-                  <span class="material-icons" style="font-size: 1.2rem;">shopping_cart</span>
-                </div>
-
-                <span class="fw-medium text-success mt-1" style="font-size: 0.8rem;">Carrito</span>
-                <div class="position-absolute top-0 start-100 translate-middle">
-                  <span class="material-icons text-success" style="font-size: 1.2rem;">check_circle</span>
-                </div>
-              </div>
-
-              <!-- Línea conectora -->
-              <div class="flex-grow-1 mx-2" style="height: 2px; background-color: #e9ecef; position: relative; top: -8px;">
-                <div class="h-100 bg-success" style="width: 100%;"></div>
-              </div>
-
-              <!-- Paso 2: Pago (Activo) -->
-              <div class="d-flex flex-column align-items-center position-relative" style="flex: 0 0 auto;">
-                <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center position-relative" style="width: 36px; height: 36px; z-index: 2;">
-                  <span class="material-icons" style="font-size: 1.2rem;">credit_card</span>
-                </div>
-                <span class="fw-bold text-primary mt-1" style="font-size: 0.8rem;">Pago</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Contenido principal -->
-    <div class="container py-5">
-      <div class="row justify-content-center g-4">
-        <!-- Columna principal: Información y entrega -->
-        <div class="col-lg-8">
-          <!-- Información del cliente -->
-          <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white py-3">
-              <h5 class="card-title mb-0 d-flex align-items-center">
-                <i class="bi bi-person-circle text-primary me-2"></i>
-                Información del Cliente
-              </h5>
-            </div>
-            <div class="card-body">
-              <div class="row g-3">
-                <div class="col-md-6">
-                  <div class="d-flex flex-column">
-                    <small class="text-muted mb-1">Nombre completo</small>
-                    <div class="fw-medium">{{ orderStore.pedido.cliente.nombre || 'No disponible' }}</div>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="d-flex flex-column">
-                    <small class="text-muted mb-1">Email</small>
-                    <div class="fw-medium">{{ orderStore.pedido.cliente.email || 'No disponible' }}</div>
-                  </div>
-                </div>
-                <div class="col-md-6">
-                  <div class="d-flex flex-column">
-                    <small class="text-muted mb-1">Teléfono</small>
-                    <div class="fw-medium">{{ orderStore.pedido.cliente.telefono || 'No disponible' }}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Método de entrega -->
-          <div class="card shadow-sm mb-4">
-            <div class="card-header bg-white py-3">
-              <h5 class="card-title mb-0 d-flex align-items-center">
-                <i class="bi bi-truck text-primary me-2"></i>
-                Método de Entrega
-              </h5>
-            </div>
-            <div class="card-body">
-              <!-- Opciones de entrega -->
-              <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                  <div class="form-check p-0">
-                    <input class="form-check-input d-none" type="radio" id="envioNacional" v-model="envioTipo" value="nacional" />
-                    <label class="form-check-label w-100" for="envioNacional">
-                      <div class="card h-100 cursor-pointer" :class="{ 'border-primary bg-primary bg-opacity-10': envioTipo === 'nacional', 'border-2': envioTipo === 'nacional' }">
-                        <div class="card-body text-center">
-                          <i class="bi bi-box-seam text-primary fs-1 mb-3"></i>
-                          <h6 class="fw-bold mb-2">Envío a Domicilio</h6>
-                          <p class="text-muted small mb-2">Recibe tu pedido en la comodidad de tu hogar</p>
-                          <div class="d-flex justify-content-between align-items-center">
-                            <span class="badge bg-primary">1-2 días</span>
-                            <span class="fw-bold" :class="ciudadSeleccionada ? 'text-primary' : 'text-muted'">
-                              <template v-if="ciudadSeleccionada"> <i class="fas fa-truck"></i> ${{ ciudadSeleccionada.precio_envio.toFixed(2) }} </template>
-                              <template v-else> <i class="fas fa-map-marker-alt"></i> Selecciona una ciudad </template>
-                            </span>
-                          </div>
+   <div class="bg-light min-vh-100" v-if="hasDataLoaded">
+     
+      <!-- Contenido principal -->
+      <div class="container py-4">
+         <div class="bg-white shadow-sm py-3">
+            <div class="container">
+               <div class="row justify-content-center">
+                  <!-- Añadí gx-3 para espaciado horizontal -->
+                  <div class="col-12 col-lg-8">
+                     <!-- Cambié a col-12 para ocupar todo el ancho en móviles -->
+                     <div class="d-flex align-items-center justify-content-center position-relative mx-auto px-3 px-lg-0" style="max-width: 400px;">
+                        <!-- Paso 1 - Carrito (completado) -->
+                        <div class="d-flex flex-column align-items-center position-relative">
+                           <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                              <span class="material-icons fs-6">shopping_cart</span>
+                           </div>
+                           <span class="fw-medium text-success mt-1 small">Carrito</span>
+                           <div class="position-absolute top-0 start-100 translate-middle">
+                              <span class="material-icons text-success fs-6">check_circle</span>
+                           </div>
                         </div>
-                      </div>
-                    </label>
-                  </div>
-                </div>
 
-                <div class="col-md-6">
-                  <div class="form-check p-0">
-                    <input class="form-check-input d-none" type="radio" id="retiroTienda" :checked="envioTipo === 'retiro'" @change="handleEnvioChange('retiro')" />
-                    <label class="form-check-label w-100" for="retiroTienda">
-                      <div class="card h-100 cursor-pointer" :class="{ 'border-success bg-success bg-opacity-10': envioTipo === 'retiro', 'border-2': envioTipo === 'retiro' }">
-                        <div class="card-body text-center">
-                          <i class="bi bi-shop text-success fs-1 mb-3"></i>
-                          <h6 class="fw-bold mb-2">Retiro en Tienda</h6>
-                          <p class="text-muted small mb-2">Retira tu pedido cuando gustes</p>
-                          <div class="d-flex justify-content-between align-items-center">
-                            <span class="badge bg-success">Inmediato</span>
-                            <span class="fw-bold text-success">GRATIS</span>
-                          </div>
+                        <!-- Línea conectora -->
+                        <div class="progress flex-grow-1 mx-2" style="height: 2px;">
+                           <div class="progress-bar bg-success" style="width: 100%;"></div>
                         </div>
-                      </div>
-                    </label>
-                  </div>
-                </div>
-              </div>
 
-              <!-- Formulario para envío nacional -->
-              <div v-if="envioTipo === 'nacional'" class="border-top pt-4">
-                <h6 class="fw-semibold mb-3 text-primary">
-                  <i class="bi bi-geo-alt me-2"></i>
-                  Dirección de Entrega
-                </h6>
-                <div class="row g-3">
-                  <div class="col-md-6">
-                    <label for="ciudad" class="form-label">Ciudad *</label>
-                    <select v-model="ciudadSeleccionada" class="form-select" @change="handleCiudadChange">
-                      <option :value="null">Seleccione una ciudad</option>
-                      <option v-for="ciudad in ciudades" :key="ciudad.id" :value="ciudad">
-                        {{ ciudad.nombre }}
-                        <span v-if="ciudad.precio_envio !== undefined">
-                          (+${{ ciudad.precio_envio.toFixed(2) }})
-                        </span>
-                      </option>
-                    </select>
+                        <!-- Paso 2 - Pago (activo) -->
+                        <div class="d-flex flex-column align-items-center position-relative">
+                           <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center" style="width: 36px; height: 36px;">
+                              <span class="material-icons fs-6">credit_card</span>
+                           </div>
+                           <span class="fw-bold text-primary mt-1 small">Pago</span>
+                        </div>
+                     </div>
                   </div>
-                  <div class="col-md-6">
-                    <label for="direccion" class="form-label">Dirección completa *</label>
-                    <input type="text" class="form-control" id="direccion" v-model="direccionCompleta" placeholder="Ej: Av. Amazonas N24-12 y Colón, Edificio Torres del Sol" required />
-                    <div class="form-text">
-                      <small class="text-muted">Incluye calle, número y referencias importantes</small>
-                    </div>
-                  </div>
-
-                  <div class="col-12">
-                    <label for="referencia" class="form-label">Referencia *</label>
-                    <textarea class="form-control" id="referencia" v-model="referencia" rows="2" placeholder="Ej: Frente al parque central, casa color azul con portón blanco" required></textarea>
-                    <div class="form-text">
-                      <small class="text-muted">Puntos de referencia que faciliten la entrega</small>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Información de retiro en tienda -->
-              <div v-if="envioTipo === 'retiro'" class="border-top pt-4">
-                <h6 class="fw-semibold mb-3 text-success">
-                  <i class="bi bi-geo-alt me-2"></i>
-                  Ubicación de la Tienda
-                </h6>
-                <div class="row g-4">
-                  <div class="col-md-6">
-                    <div class="bg-light rounded p-3">
-                      <div class="mb-3">
-                        <i class="bi bi-person-badge text-success me-2"></i>
-                        <strong>Contacto:</strong> Jaime Suquilandi Minta
-                      </div>
-                      <div class="mb-3">
-                        <i class="bi bi-telephone text-success me-2"></i>
-                        <strong>Teléfono:</strong>
-                        <a :href="empresa?.celular" class="text-decoration-none">{{ empresa?.celular }}</a>
-                      </div>
-                      <div class="mb-3">
-                        <i class="bi bi-geo-alt text-success me-2"></i>
-                        <strong>Dirección:</strong> Av. 9 de octubre y Bulgaria
-                      </div>
-                      <div>
-                        <i class="bi bi-info-circle text-success me-2"></i>
-                        <strong>Referencia:</strong> Local color blanco, puerta negra
-                      </div>
-                    </div>
-                  </div>
-                  <div class="col-md-6">
-                    <div class="ratio ratio-4x3 rounded overflow-hidden">
-                      <iframe
-                        src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3988.082274863185!2d-78.635305!3d-1.690275!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMcKwNDEnMjUuMCJTIDc4wrAzOCcwNy4xIlc!5e0!3m2!1ses-419!2sec!4v1748654841332!5m2!1ses-419!2sec"
-                        style="border: 0;"
-                        allowfullscreen=""
-                        loading="lazy"
-                        referrerpolicy="no-referrer-when-downgrade"
-                      >
-                      </iframe>
-                    </div>
-                  </div>
-                </div>
-              </div>
+               </div>
             </div>
-          </div>
-        </div>
+         </div>
+         <div class="row justify-content-center g-4 mt-2">
+            <!-- Columna principal: Información y entrega -->
+            <div class="col-lg-8">
+               <!-- Información del cliente -->
+               <div class="card shadow-sm mb-4">
+                  <div class="card-header bg-white py-3">
+                     <h5 class="card-title mb-0 d-flex align-items-center">
+                        <i class="bi bi-person-circle text-primary me-2"></i>
+                        Información del Cliente
+                     </h5>
+                  </div>
+                  <div class="card-body">
+                     <div class="row g-3">
+                        <div class="col-md-6">
+                           <div class="d-flex flex-column">
+                              <small class="text-muted mb-1">Nombre completo</small>
+                              <div class="fw-medium">{{ orderStore.pedido.cliente.nombre || 'No disponible' }}</div>
+                           </div>
+                        </div>
+                        <div class="col-md-6">
+                           <div class="d-flex flex-column">
+                              <small class="text-muted mb-1">Email</small>
+                              <div class="fw-medium">{{ orderStore.pedido.cliente.email || 'No disponible' }}</div>
+                           </div>
+                        </div>
+                        <div class="col-md-6">
+                           <div class="d-flex flex-column">
+                              <small class="text-muted mb-1">Teléfono</small>
+                              <div class="fw-medium">{{ orderStore.pedido.cliente.telefono || 'No disponible' }}</div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
 
-        <!-- Sidebar: Resumen del pedido -->
-        <div class="col-lg-4">
-          <div class="card shadow-sm sticky-top" style="top: 2rem;">
-            <div class="card-header bg-white py-3">
-              <h5 class="card-title mb-0 d-flex align-items-center">
-                <i class="bi bi-bag-check text-primary me-2"></i>
-                Resumen del Pedido
-              </h5>
+               <!-- Método de entrega -->
+               <div class="card shadow-sm mb-4">
+                  <div class="card-header bg-white py-3">
+                     <h5 class="card-title mb-0 d-flex align-items-center">
+                        <i class="bi bi-truck text-primary me-2"></i>
+                        Método de Entrega
+                     </h5>
+                  </div>
+                  <div class="card-body">
+                     <!-- Opciones de entrega -->
+                     <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                           <div class="form-check p-0">
+                              <input class="form-check-input d-none" type="radio" id="envioNacional" v-model="envioTipo" value="nacional" />
+                              <label class="form-check-label w-100" for="envioNacional">
+                                 <div class="card h-100 cursor-pointer" :class="{ 'border-primary bg-primary bg-opacity-10': envioTipo === 'nacional', 'border-2': envioTipo === 'nacional' }">
+                                    <div class="card-body text-center">
+                                       <i class="bi bi-box-seam text-primary fs-1 mb-3"></i>
+                                       <h6 class="fw-bold mb-2">Envío a Domicilio</h6>
+                                       <p class="text-muted small mb-2">Recibe tu pedido en la comodidad de tu hogar</p>
+                                       <div class="d-flex justify-content-between align-items-center">
+                                          <span class="badge bg-primary">1-2 días</span>
+                                          <span class="fw-bold" :class="ciudadSeleccionada ? 'text-primary' : 'text-muted'">
+                                             <template v-if="ciudadSeleccionada"> <i class="fas fa-truck"></i> ${{ ciudadSeleccionada.precio_envio.toFixed(2) }} </template>
+                                             <template v-else> <i class="fas fa-map-marker-alt"></i> Selecciona una ciudad </template>
+                                          </span>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </label>
+                           </div>
+                        </div>
+
+                        <div class="col-md-6">
+                           <div class="form-check p-0">
+                              <input class="form-check-input d-none" type="radio" id="retiroTienda" :checked="envioTipo === 'retiro'" @change="handleEnvioChange('retiro')" />
+                              <label class="form-check-label w-100" for="retiroTienda">
+                                 <div class="card h-100 cursor-pointer" :class="{ 'border-success bg-success bg-opacity-10': envioTipo === 'retiro', 'border-2': envioTipo === 'retiro' }">
+                                    <div class="card-body text-center">
+                                       <i class="bi bi-shop text-success fs-1 mb-3"></i>
+                                       <h6 class="fw-bold mb-2">Retiro en Tienda</h6>
+                                       <p class="text-muted small mb-2">Retira tu pedido cuando gustes</p>
+                                       <div class="d-flex justify-content-between align-items-center">
+                                          <span class="badge bg-success">Inmediato</span>
+                                          <span class="fw-bold text-success">GRATIS</span>
+                                       </div>
+                                    </div>
+                                 </div>
+                              </label>
+                           </div>
+                        </div>
+                     </div>
+
+                     <!-- Formulario para envío nacional -->
+                     <div v-if="envioTipo === 'nacional'" class="border-top pt-4">
+                        <h6 class="fw-semibold mb-3 text-primary">
+                           <i class="bi bi-geo-alt me-2"></i>
+                           Dirección de Entrega
+                        </h6>
+                        <div class="row g-3">
+                           <div class="col-md-6">
+                              <label for="ciudad" class="form-label">Ciudad *</label>
+                              <select v-model="ciudadSeleccionada" class="form-select" @change="handleCiudadChange">
+                                 <option :value="null">Seleccione una ciudad</option>
+                                 <option v-for="ciudad in ciudades" :key="ciudad.id" :value="ciudad">
+                                    {{ ciudad.nombre }}
+                                    <span v-if="ciudad.precio_envio !== undefined">
+                                       (+${{ ciudad.precio_envio.toFixed(2) }})
+                                    </span>
+                                 </option>
+                              </select>
+                           </div>
+                           <div class="col-md-6">
+                              <label for="direccion" class="form-label">Dirección completa *</label>
+                              <input type="text" class="form-control" id="direccion" v-model="direccionCompleta" placeholder="Ej: Av. Amazonas N24-12 y Colón, Edificio Torres del Sol" required />
+                              <div class="form-text">
+                                 <small class="text-muted">Incluye calle, número y referencias importantes</small>
+                              </div>
+                           </div>
+
+                           <div class="col-12">
+                              <label for="referencia" class="form-label">Referencia *</label>
+                              <textarea class="form-control" id="referencia" v-model="referencia" rows="2" placeholder="Ej: Frente al parque central, casa color azul con portón blanco" required></textarea>
+                              <div class="form-text">
+                                 <small class="text-muted">Puntos de referencia que faciliten la entrega</small>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+
+                     <!-- Información de retiro en tienda -->
+                     <div v-if="envioTipo === 'retiro'" class="border-top pt-4">
+                        <h6 class="fw-semibold mb-3 text-success">
+                           <i class="bi bi-geo-alt me-2"></i>
+                           Ubicación de la Tienda
+                        </h6>
+                        <div class="row g-4">
+                           <div class="col-md-6">
+                              <div class="bg-light rounded p-3">
+                                 <div class="mb-3">
+                                    <i class="bi bi-person-badge text-success me-2"></i>
+                                    <strong>Contacto:</strong> Jaime Suquilandi Minta
+                                 </div>
+                                 <div class="mb-3">
+                                    <i class="bi bi-telephone text-success me-2"></i>
+                                    <strong>Teléfono:</strong>
+                                    <a :href="empresa?.celular" class="text-decoration-none">{{ empresa?.celular }}</a>
+                                 </div>
+                                 <div class="mb-3">
+                                    <i class="bi bi-geo-alt text-success me-2"></i>
+                                    <strong>Dirección:</strong> Av. 9 de octubre y Bulgaria
+                                 </div>
+                                 <div>
+                                    <i class="bi bi-info-circle text-success me-2"></i>
+                                    <strong>Referencia:</strong> Local color blanco, puerta negra
+                                 </div>
+                              </div>
+                           </div>
+                           <div class="col-md-6">
+                              <div class="ratio ratio-4x3 rounded overflow-hidden">
+                                 <iframe
+                                    src="https://www.google.com/maps/embed?pb=!1m17!1m12!1m3!1d3988.082274863185!2d-78.635305!3d-1.690275!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m2!1m1!2zMcKwNDEnMjUuMCJTIDc4wrAzOCcwNy4xIlc!5e0!3m2!1ses-419!2sec!4v1748654841332!5m2!1ses-419!2sec"
+                                    style="border: 0;"
+                                    allowfullscreen=""
+                                    loading="lazy"
+                                    referrerpolicy="no-referrer-when-downgrade"
+                                 >
+                                 </iframe>
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+               </div>
             </div>
-            <div class="card-body p-0">
-              <!-- Lista de productos -->
-              <div class="p-3 border-bottom">
-                <div class="d-flex align-items-center justify-content-between mb-3">
-                  <span class="fw-medium">Productos ({{ orderStore.pedido.productos.reduce((total, item) => total + item.cantidad, 0) }})</span>
-                  <button class="btn btn-outline-primary btn-sm" @click="router.push('/carrito')"><i class="bi bi-pencil me-1"></i>Editar</button>
-                </div>
 
-                <div v-for="(item, index) in orderStore.pedido.productos" :key="index" class="d-flex mb-3" :class="{ 'pb-3 border-bottom': index < orderStore.pedido.productos.length - 1 }">
-                  <div class="position-relative me-3">
-                    <img :src="item.imagenUrl" class="rounded" style="width: 60px; height: 60px; object-fit: cover;" :alt="item.nombre" />
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size: 0.7rem;">
-                      {{ item.cantidad }}
-                    </span>
+            <!-- Sidebar: Resumen del pedido -->
+            <div class="col-lg-4">
+               <div class="card shadow-sm sticky-top" style="top: 2rem;">
+                  <div class="card-header bg-white py-3">
+                     <h5 class="card-title mb-0 d-flex align-items-center">
+                        <i class="bi bi-bag-check text-primary me-2"></i>
+                        Resumen del Pedido
+                     </h5>
                   </div>
-                  <div class="flex-grow-1 min-w-0">
-                    <h6 class="mb-1 text-truncate">{{ item.nombre }}</h6>
-                    <div class="small text-muted">
-                      <span v-if="item.talla" class="me-2">Talla: {{ item.talla }}</span>
-                      <span v-if="item.color">Color: {{ item.color }}</span>
-                    </div>
-                    <div class="fw-medium text-end mt-1">
-                      <span v-if="item.descuentoAplicado" class="text-decoration-line-through text-muted me-2">
-                        ${{ (item.precioUnitario * item.cantidad).toFixed(2) }}
-                      </span>
-                      ${{ (item.precioFinal ).toFixed(2) }}
-                    </div>
+                  <div class="card-body p-0">
+                     <!-- Lista de productos -->
+                     <div class="p-3 border-bottom">
+                        <div class="d-flex align-items-center justify-content-between mb-3">
+                           <span class="fw-medium">Productos ({{ orderStore.pedido.productos.reduce((total, item) => total + item.cantidad, 0) }})</span>
+                           <button class="btn btn-outline-primary btn-sm" @click="router.push('/carrito')"><i class="bi bi-pencil me-1"></i>Editar</button>
+                        </div>
+
+                        <div v-for="(item, index) in orderStore.pedido.productos" :key="index" class="d-flex mb-3" :class="{ 'pb-3 border-bottom': index < orderStore.pedido.productos.length - 1 }">
+                           <div class="position-relative me-3">
+                              <img :src="item.imagenUrl" class="rounded" style="width: 60px; height: 60px; object-fit: cover;" :alt="item.nombre" />
+                              <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-primary" style="font-size: 0.7rem;">
+                                 {{ item.cantidad }}
+                              </span>
+                           </div>
+                           <div class="flex-grow-1 min-w-0">
+                              <h6 class="mb-1 text-truncate">{{ item.nombre }}</h6>
+                              <div class="small text-muted">
+                                 <span v-if="item.talla" class="me-2">Talla: {{ item.talla }}</span>
+                                 <span v-if="item.color">Color: {{ item.color }}</span>
+                              </div>
+                              <div class="fw-medium text-end mt-1">
+                                 <span v-if="item.descuentoAplicado" class="text-decoration-line-through text-muted me-2">
+                                    ${{ (item.precioUnitario * item.cantidad).toFixed(2) }}
+                                 </span>
+                                 ${{ (item.precioFinal ).toFixed(2) }}
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+
+                     <!-- Cálculos -->
+                     <div class="p-3">
+                        <div class="d-flex justify-content-between mb-2">
+                           <span>Subtotal ({{ orderStore.pedido.productos.reduce((total, item) => total + item.cantidad, 0) }} artículos):</span>
+                           <span>${{ orderStore.pedido.subtotal.toFixed(2) }}</span>
+                        </div>
+
+                        <template v-if="orderStore.pedido.descuentos.length > 0">
+                           <div v-for="(descuento, index) in orderStore.pedido.descuentos" :key="index" class="d-flex justify-content-between mb-2 text-success">
+                              <span>
+                                 <i class="bi bi-tag me-1"></i>
+                                 {{ descuento.nombre }} (-{{ formatearValorDescuento(descuento.tipo, descuento.valor) }})
+                              </span>
+                              <span>-${{ descuento.total.toFixed(2) }}</span>
+                           </div>
+                        </template>
+                        <div class="d-flex justify-content-between mb-3" :class="envioTipo === 'retiro' ? 'text-success' : ''">
+                           <span>
+                              <i :class="['me-1', envioTipo === 'nacional' ? 'bi-truck' : 'bi-shop']"></i>
+                              {{ envioTipo === 'nacional' ? 'Envío Nacional:' : 'Retiro en tienda:' }}
+                           </span>
+                           <div class="text-end">
+                              <template v-if="envioTipo === 'retiro'">
+                                 <span class="fw-bold text-success">GRATIS</span>
+                              </template>
+                              <template v-else-if="!orderStore.pedido.cliente.direccion.ciudad">
+                                 <span class="text-muted small">Seleccione ciudad*</span>
+                              </template>
+                              <template v-else>
+                                 <div class="fw-bold">${{ orderStore.pedido.envio.precio.toFixed(2) }}</div>
+                                 <div v-if="orderStore.pedido.envio.pesoTotal > 0" class="text-muted" style="font-size: 0.7rem;">Incluye peso</div>
+                              </template>
+                           </div>
+                        </div>
+
+                        <div v-if="orderStore.pedido.envio.fechaEntrega" class="d-flex justify-content-between text-black-50" style="font-size: 0.9rem;">
+                           <span>
+                              <i class="bi bi-calendar"></i>
+                              Fecha estimada de entrega:
+                           </span>
+                           <span class="text-end" style="margin-left: 90px; margin-right: -5px;">{{ orderStore.pedido.envio.fechaEntrega }}</span>
+                        </div>
+
+                        <hr class="my-3" />
+
+                        <div class="d-flex justify-content-between fs-5 fw-bold text-primary">
+                           <span>Total a pagar:</span>
+                           <span>${{ orderStore.pedido.total.toFixed(2) }}</span>
+                        </div>
+                     </div>
                   </div>
-                </div>
-              </div>
 
-              <!-- Cálculos -->
-              <div class="p-3">
-                <div class="d-flex justify-content-between mb-2">
-                  <span>Subtotal ({{ orderStore.pedido.productos.reduce((total, item) => total + item.cantidad, 0) }} artículos):</span>
-                  <span>${{ orderStore.pedido.subtotal.toFixed(2) }}</span>
-                </div>
+                  <!-- Botones de acción -->
+                  <div class="card-footer bg-white">
+                     <div>
+                        <!-- Barra de progreso para envío nacional -->
+                        <div v-if="envioTipo === 'nacional'" class="mb-3">
+                           <div class="d-flex justify-content-between align-items-center mb-2">
+                              <small class="text-muted fw-medium">Información de envío</small>
+                              <small class="text-muted">{{ Math.round(getCompletionPercentage) }}%</small>
+                           </div>
 
-                <template v-if="orderStore.pedido.descuentos.length > 0">
-                  <div v-for="(descuento, index) in orderStore.pedido.descuentos" :key="index" class="d-flex justify-content-between mb-2 text-success">
-                    <span>
-                      <i class="bi bi-tag me-1"></i>
-                      {{ descuento.nombre }} (-{{ formatearValorDescuento(descuento.tipo, descuento.valor) }})
-                    </span>
-                    <span>-${{ descuento.total.toFixed(2) }}</span>
-                  </div>
-                </template>
-                <div class="d-flex justify-content-between mb-3" :class="envioTipo === 'retiro' ? 'text-success' : ''">
-                  <span>
-                    <i :class="['me-1', envioTipo === 'nacional' ? 'bi-truck' : 'bi-shop']"></i>
-                    {{ envioTipo === 'nacional' ? 'Envío Nacional:' : 'Retiro en tienda:' }}
-                  </span>
-                  <div class="text-end">
-                    <template v-if="envioTipo === 'retiro'">
-                      <span class="fw-bold text-success">GRATIS</span>
-                    </template>
-                    <template v-else-if="!orderStore.pedido.cliente.direccion.ciudad">
-                      <span class="text-muted small">Seleccione ciudad*</span>
-                    </template>
-                    <template v-else>
-                      <div class="fw-bold">${{ orderStore.pedido.envio.precio.toFixed(2) }}</div>
-                      <div v-if="orderStore.pedido.envio.pesoTotal > 0" class="text-muted" style="font-size: 0.7rem;">Incluye peso</div>
-                    </template>
-                  </div>
-                </div>
-
-                <div v-if="orderStore.pedido.envio.fechaEntrega" class="d-flex justify-content-between  text-black-50" style="font-size: 0.9rem;">
-                  <span>
-                    <i class="bi bi-calendar  "></i>
-                    Fecha estimada de entrega:
-                  </span>
-                  <span  class="text-end" style="margin-left: 90px; margin-right: -5px;" >{{ orderStore.pedido.envio.fechaEntrega }}</span>
-                </div>
-
-                <hr class="my-3" />
-
-                <div class="d-flex justify-content-between fs-5 fw-bold text-primary">
-                  <span>Total a pagar:</span>
-                  <span>${{ orderStore.pedido.total.toFixed(2) }}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Botones de acción -->
-            <div class="card-footer bg-white">
-              <div>
-                <!-- Barra de progreso para envío nacional -->
-                <div v-if="envioTipo === 'nacional'" class="mb-3">
-                  <div class="d-flex justify-content-between align-items-center mb-2">
-                    <small class="text-muted fw-medium">Información de envío</small>
-                    <small class="text-muted">{{ Math.round(getCompletionPercentage) }}%</small>
-                  </div>
-
-                  <div class="progress mb-2" style="height: 6px;">
-                    <div
-                      class="progress-bar transition-all duration-300"
-                      :class="{
+                           <div class="progress mb-2" style="height: 6px;">
+                              <div
+                                 class="progress-bar transition-all duration-300"
+                                 :class="{
                           'bg-danger': getCompletionPercentage < 34,
                           'bg-warning': getCompletionPercentage >= 34 && getCompletionPercentage < 67,
                           'bg-info': getCompletionPercentage >= 67 && getCompletionPercentage < 100,
                           'bg-success': getCompletionPercentage === 100
                         }"
-                      :style="{ width: `${getCompletionPercentage}%` }"
-                      role="progressbar"
-                    ></div>
-                  </div>
+                                 :style="{ width: `${getCompletionPercentage}%` }"
+                                 role="progressbar"
+                              ></div>
+                           </div>
 
-                  <small class="text-muted d-block">
-                    {{ getProgressText }}
-                  </small>
+                           <small class="text-muted d-block">
+                              {{ getProgressText }}
+                           </small>
 
-                  <!-- Indicadores específicos de lo que falta -->
-                  <div v-if="getCompletionPercentage < 100" class="mt-2">
-                    <div class="d-flex flex-wrap gap-2">
-                      <span v-if="!ciudadSeleccionada" class="badge bg-light text-dark border">
-                        <i class="bi bi-circle me-1" style="font-size: 0.5rem;"></i>
-                        Ciudad
-                      </span>
-                      <span v-if="direccionCompleta.trim().length < 10" class="badge bg-light text-dark border">
-                        <i class="bi bi-circle me-1" style="font-size: 0.5rem;"></i>
-                        Dirección
-                      </span>
-                      <span v-if="referencia.trim().length < 10" class="badge bg-light text-dark border">
-                        <i class="bi bi-circle me-1" style="font-size: 0.5rem;"></i>
-                        Referencia
-                      </span>
-                    </div>
-                  </div>
-                </div>
+                           <!-- Indicadores específicos de lo que falta -->
+                           <div v-if="getCompletionPercentage < 100" class="mt-2">
+                              <div class="d-flex flex-wrap gap-2">
+                                 <span v-if="!ciudadSeleccionada" class="badge bg-light text-dark border">
+                                    <i class="bi bi-circle me-1" style="font-size: 0.5rem;"></i>
+                                    Ciudad
+                                 </span>
+                                 <span v-if="direccionCompleta.trim().length < 10" class="badge bg-light text-dark border">
+                                    <i class="bi bi-circle me-1" style="font-size: 0.5rem;"></i>
+                                    Dirección
+                                 </span>
+                                 <span v-if="referencia.trim().length < 10" class="badge bg-light text-dark border">
+                                    <i class="bi bi-circle me-1" style="font-size: 0.5rem;"></i>
+                                    Referencia
+                                 </span>
+                              </div>
+                           </div>
+                        </div>
 
-                <!-- Mensaje para retiro en tienda -->
-                <div v-if="envioTipo === 'retiro'" class="mb-3">
-                  <div class="d-flex align-items-center text-success">
-                    <i class="bi bi-check-circle-fill me-2"></i>
-                    <small class="fw-medium">{{ getProgressText }}</small>
-                  </div>
-                </div>
+                        <!-- Mensaje para retiro en tienda -->
+                        <div v-if="envioTipo === 'retiro'" class="mb-3">
+                           <div class="d-flex align-items-center text-success">
+                              <i class="bi bi-check-circle-fill me-2"></i>
+                              <small class="fw-medium">{{ getProgressText }}</small>
+                           </div>
+                        </div>
 
-                <!-- Contenedor del botón PayPal -->
-                <div
-                  ref="paypalButtonContainer"
-                  :class="{ 
+                        <!-- Contenedor del botón PayPal -->
+                        <div
+                           ref="paypalButtonContainer"
+                           :class="{ 
                     'opacity-50 pointer-events-none': envioTipo === 'nacional' && !camposEnvioValidos,
                     'transition-opacity duration-300': true
                   }"
-                  class="d-flex justify-content-center mt-3">
-                </div>
+                           class="d-flex justify-content-center mt-3"
+                        ></div>
 
-                <p v-if="error" class="text-danger mt-2 small">{{ error }}</p>
-              </div>
+                        <p v-if="error" class="text-danger mt-2 small">{{ error }}</p>
+                     </div>
+                  </div>
+               </div>
             </div>
-          </div>
-        </div>
+         </div>
       </div>
-    </div>
-  </div>
+   </div>
 
-  <!-- Estado de carga -->
-  <div v-else class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
-    <div class="text-center">
-      <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
-        <span class="visually-hidden">Cargando...</span>
+   <!-- Estado de carga -->
+   <div v-else class="min-vh-100 d-flex align-items-center justify-content-center bg-light">
+      <div class="text-center">
+         <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Cargando...</span>
+         </div>
+         <h5 class="mb-2">Preparando tu pedido</h5>
+         <p class="text-muted">Cargando detalles del checkout...</p>
       </div>
-      <h5 class="mb-2">Preparando tu pedido</h5>
-      <p class="text-muted">Cargando detalles del checkout...</p>
-    </div>
-  </div>
-
- 
-
+   </div>
 </template>
+
 
 <script setup>
 import { ref, onMounted ,computed, watch} from 'vue'
