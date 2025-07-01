@@ -10,9 +10,16 @@ import Colores from '@/views/admin/Colores.vue';
 import ProductoBase from '@/views/admin/ProductoBase.vue';
 import ProductoFinal from '@/views/admin/ProductoFinal.vue';
 import { useUserStore } from '@/stores/authstore';
-import Reportes from '@/views/admin/Reportes.vue';
 import Pedidos from '../views/Pedidos.vue';
 import PedidosAdmin from '@/views/admin/PedidosAdmin.vue';
+import Carrusel from '@/views/admin/Carrusel.vue';
+import Empresa from '@/views/admin/Empresa.vue';
+import ConfiguracionEnvio from '@/views/admin/ConfiguracionEnvio.vue';
+import EnviosAdmin from '@/views/admin/EnviosAdmin.vue';
+import Consultas from '@/views/admin/Consultas.vue';
+import ReporteIngresos from '@/views/admin/Reportes/ReporteIngresos.vue';
+import ReporteOrdenes from '@/views/admin/Reportes/ReporteOrdenes.vue';
+import ReporteUsuarios from '@/views/admin/Reportes/ReporteUsuarios.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -42,6 +49,12 @@ const router = createRouter({
       path: '/PedidoOrden',
       name: 'PedidoOrden',
       component: () => import('../views/pedidos/PedidoOrden.vue'),
+      
+    },
+    {
+      path: '/finalizar-pago',	
+      name: 'finalizar-pago',
+      component: () => import('@/views/pedidos/FinalizarPago.vue'),
       
     },
     {
@@ -124,9 +137,52 @@ const router = createRouter({
           component: Usuarios,
         },
         {
-          path: 'reportes',
-          name: 'reportes',
-          component: Reportes,
+          path: 'consultas',
+          name: 'consultas',
+          component: Consultas,
+        },
+        {
+          path: 'reporteingresos',
+          name: 'reporteingresos',
+          component: ReporteIngresos,
+        },
+        {
+          path: 'reporteordenes',
+          name: 'reporteordenes',
+          component: ReporteOrdenes,
+        },
+        {
+          path: 'reporteusuarios',
+          name: 'reporteusuarios',
+          component: ReporteUsuarios,
+        },
+        {
+          path: 'carrusel',
+          name: 'carrusel',
+          component: Carrusel,
+        }
+        ,
+        {
+          path: 'ConfiguracionEnvio',
+          name: 'ConfiguracionEnvio',
+          component: ConfiguracionEnvio,
+        },
+      // {
+      //     path: 'ciudades-envio/crear',
+      //     name: 'CrearCiudadEnvio',
+      //     component: CrearCiudadEnvio,
+      //     meta: { requiresAuth: true }
+      //   },
+         
+         {
+          path: 'empresa',
+          name: 'empresa',
+          component: Empresa,
+        },
+         {
+          path: 'envios',
+          name: 'envios',
+          component: EnviosAdmin,
         },
         {
           path: 'pedidosadmin',

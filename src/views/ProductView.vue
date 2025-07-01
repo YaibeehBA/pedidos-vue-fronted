@@ -18,7 +18,7 @@
     </div>
 
     <!-- Opiniones y calificaciones (una sola fila) -->
-    <div class="row mt-5">
+    <!-- <div class="row mt-5">
       <div class="col-md-6">
         <Reviews />
       </div>
@@ -26,7 +26,7 @@
 
         <Ratings />
       </div>
-    </div>
+    </div> -->
   </div>
 </template>
   

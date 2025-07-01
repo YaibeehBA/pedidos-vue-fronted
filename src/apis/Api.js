@@ -1,55 +1,55 @@
 import axios from 'axios';
-import Swal from 'sweetalert2'
+import Swal from 'sweetalert2';
 import { nextTick } from '@vue/runtime-core';
 
-
-const Api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+// Configuración base desde variables de entorno
+const BASE_CONFIG = {
   withCredentials: true,
   headers: {
     'Accept': 'application/json',
-    'Content-Type': 'application/json',
     'X-Requested-With': 'XMLHttpRequest'
   }
+};
+
+// Configuración de API principal
+const Api = axios.create({
+  baseURL: import.meta.env.VITE_API_BASE_URL,
+  ...BASE_CONFIG
 });
 
-// Configurar la baseURL para las imágenes públicas (accesibles sin autenticación)
+// Configuración para imágenes públicas
 export const ImagesApi = axios.create({
-  baseURL: 'http://localhost:8000/storage', // Ruta pública para las imágenes
-  withCredentials: false, // No necesita credenciales
-  headers: {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-  }
+  baseURL: import.meta.env.VITE_IMAGE_BASE_URL,
+  ...BASE_CONFIG,
+  withCredentials: false
 });
 
-// Configurar la baseURL para las rutas públicas (sin necesidad de autenticación)
+// Configuración para rutas públicas
 export const PublicApi = axios.create({
-  baseURL: 'http://localhost:8000/api/public', // Rutas públicas sin autenticación
-  withCredentials: false, // No necesita credenciales
-  headers: {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-  }
+  baseURL: import.meta.env.VITE_PUBLIC_API_BASE_URL,
+  ...BASE_CONFIG,
+  withCredentials: false
 });
 
-// Configuración centralizada
-export const IMAGE_BASE_URL = 'http://localhost:8000/storage';
+// URL base para imágenes 
+export const IMAGE_BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
-
-export function show_alerta(msj,icon, focus){
-    if(focus!==''){
-        nextTick(()=> focus.value.focus()); 
-    }
-    Swal.fire({
-        title:msj, 
-        icon:icon,
-        buttonsStyling:true
-    });
+/**
+ * Muestra una alerta usando SweetAlert2
+ * @param {string} msj - Mensaje a mostrar
+ * @param {string} icon - Icono de la alerta (success, error, warning, etc.)
+ * @param {Ref} focus - Referencia Vue para enfocar después de cerrar (opcional)
+ */
+export function show_alerta(msj, icon, focus = '') {
+  if (focus) {
+    nextTick(() => focus.value?.focus());
+  }
+  
+  Swal.fire({
+    title: msj,
+    icon: icon,
+    buttonsStyling: true
+  });
 }
 
-
-
-
 export default Api;
-

@@ -30,10 +30,10 @@
             <div class="d-flex justify-content-between align-items-center">
               <span>{{ notification.data.mensaje }}</span>
               <div>
-                <button class="btn btn-sm btn-link text-success" @click="markAsRead(notification.notifiable_id)">
+                <button class="btn btn-sm btn-link text-success" @click="markAsRead(notification.id)">
                   <span class="material-icons">check</span>
                 </button>
-                <button class="btn btn-sm btn-link text-danger" @click="deleteNotification(notification.notifiable_id)">
+                <button class="btn btn-sm btn-link text-danger" @click="deleteNotification(notification.id)">
                   <span class="material-icons">delete</span>
                 </button>
               </div>

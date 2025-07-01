@@ -10,40 +10,57 @@ const userStore = useUserStore(); // Accede al store de usuario
 const cartStore = useCartStore();
 const router = useRouter();
 
-
- const logout = async () => {
+const logout = async () => {
   try {
-    // Realizamos la petición al backend para cerrar sesión
-    const response = await User.logout();
-
-    // Verificamos la respuesta
-    if (response.data) {
-      // Eliminamos el token de la sesión
-      cartStore.clearCart();
-       localStorage.removeItem('auth');
-      
-      // // Actualizamos el estado de autenticación en el store de Pinia
-      userStore.authenticated = false;
-      userStore.token = null;
-      userStore.user = null;
-      cartStore.clearCart(); 
-      // Redirigimos al usuario al Login
-      router.push({ name: 'home' });
-
-      // Mostramos el mensaje de éxito
-      show_alerta('Cierre de sesión con éxito', 'success', '');
+   
+    const [response] = await Promise.all([
+      User.logout(),
+      cartStore.clearCart() // Limpiar carrito inmediatamente
+    ]);
+    if (response?.data) {
+      userStore.resetState();
+      router.push({ name: 'home' }).then(() => {
+        show_alerta('Cierre de sesión exitoso', 'success');
+      });
     }
   } catch (error) {
-    // En caso de error mostramos una alerta
-    show_alerta('Error al cerrar sesión', 'error', '');
-    console.error('Error:', error);
+    console.error('Error en logout:', error);
+    show_alerta('Error al cerrar sesión', 'error');
+    userStore.resetState();
+    cartStore.clearCart();
   }
+};
+import NotificationComponent from '@/components/layout/Noiticacion/Notificacion.vue';
+import { ref, onMounted } from 'vue';
+import Empresa from '@/apis/Empresa.js';
+import { IMAGE_BASE_URL } from '@/apis/Api.js';
 
+const empresa = ref(null);
+
+const fetchEmpresaData = async () => {
+  try {
+    const response = await Empresa.fetchEmpresaPublica();
+    if (response?.data?.length > 0) {
+      empresa.value = response.data[0];
+    } else if (response?.length > 0) {
+      empresa.value = response[0];
+    }
+  } catch (error) {
+    console.error('Error al cargar datos:', error);
+    empresa.value = {
+      nombre: 'New Blessings',
+      logo: null
+    };
+  }
 };
 
+const getFullImageUrl = (path) => {
+  if (!path) return null;
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${IMAGE_BASE_URL}/${path.replace(/^\//, '')}`;
+};
 
-
-import NotificationComponent from '@/components/layout/Noiticacion/Notificacion.vue';
+onMounted(fetchEmpresaData);
 
 </script>
 
@@ -52,11 +69,26 @@ import NotificationComponent from '@/components/layout/Noiticacion/Notificacion.
     <div class="container-fluid px-4">
       <!-- Logo y enlaces principales -->
       <div class="d-flex align-items-center">
-        <router-link to="/" class="navbar-brand d-flex align-items-center me-4">
-          <img src="/logo.jpeg" height="50" alt="Logo" class="logo-image" />
-          <span class="brand-name ms-3">New Blessings</span>
-        </router-link>
-        
+        <router-link to="/" class="navbar-brand d-flex align-items-center me-4" v-if="empresa">
+        <!-- Logo dinámico -->
+        <img 
+          :src="getFullImageUrl(empresa.logo)" 
+          height="50" 
+          alt="Logo" 
+          class="logo-image" 
+          v-if="empresa.logo"
+        />
+        <!-- Logo por defecto si no hay logo en la API -->
+        <img 
+          src="/logo.jpeg" 
+          height="50" 
+          alt="Logo" 
+          class="logo-image" 
+          v-else
+        />
+        <!-- Nombre de la empresa dinámico -->
+        <span class="brand-name ms-3">{{ empresa.nombre || 'New Blessings' }}</span>
+      </router-link>
         <!-- Enlaces principales -->
         <div class="main-links d-none d-lg-flex">
           <router-link :to="{ name: 'Pedidos' }" v-if="userStore.authenticated" class="nav-link">Mis Pedidos</router-link>
