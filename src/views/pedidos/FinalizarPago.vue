@@ -178,16 +178,16 @@
                                  </div>
                                  <div class="mb-3">
                                     <i class="bi bi-telephone text-success me-2"></i>
-                                    <strong>Teléfono:</strong>
-                                    <a :href="empresa?.celular" class="text-decoration-none">{{ empresa?.celular }}</a>
+                                    <strong>Teléfono: </strong>
+                                    <a :href="empresa?.celular" class="text-decoration-none text-dark">{{ empresa?.celular }}</a>
                                  </div>
                                  <div class="mb-3">
                                     <i class="bi bi-geo-alt text-success me-2"></i>
-                                    <strong>Dirección:</strong> Av. 9 de octubre y Bulgaria
+                                    <strong>Dirección:</strong> {{ empresa?.direccion }}
                                  </div>
                                  <div>
                                     <i class="bi bi-info-circle text-success me-2"></i>
-                                    <strong>Referencia:</strong> Local color blanco, puerta negra
+                                    <strong>Referencia:</strong> {{ empresa?.referencia || 'No disponible' }}
                                  </div>
                               </div>
                            </div>
